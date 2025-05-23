@@ -1,15 +1,25 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTheme } from "../ThemeContext";
-import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
 import WbSunnyOutlinedIcon from "@mui/icons-material/WbSunnyOutlined";
 import { AuthContext } from "../authContext";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
 
 function Navbar({ open, setOpen }) {
   const { theme, toggleTheme } = useTheme(); 
   const { currentUser } = useContext(AuthContext);
+
+  // Time and date state
+  const [now, setNow] = useState(new Date());
+  useEffect(() => {
+    const interval = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(interval);
+  }, []);
+  // Format: Sunday, May 18, 2025, 12:27 PM
+  const dateTimeString = now.toLocaleString(undefined, {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true
+  });
 
   // Choose logo based on theme
   let logoSrc = "/GC_WhiteBG.png";
@@ -17,13 +27,13 @@ function Navbar({ open, setOpen }) {
 
   return (
     <div
-      className={`flex items-center justify-between h-16 px-4 sm:px-6 border-b fixed top-0 left-0 w-full shadow-sm z-50 transition-colors duration-200
+      className={`flex items-center justify-between h-16 px-3 sm:px-4 md:px-6 border-b fixed top-0 left-0 w-full z-50 transition-colors duration-200
       ${theme === "dark" 
         ? "bg-gray-900/95 border-gray-800 text-white backdrop-blur-sm" 
         : "bg-white/95 border-gray-200 text-gray-900 backdrop-blur-sm"}`}
     >
       {/* Left Section (now includes icons) */}
-      <div className="left flex items-center gap-4">
+      <div className="left flex items-center gap-2 sm:gap-4">
         {/* Sidebar Toggle Button */}
         <button
           onClick={() => setOpen(!open)}
@@ -48,23 +58,13 @@ function Navbar({ open, setOpen }) {
             className="h-8 w-auto object-contain drop-shadow"
             draggable="false"
           />
-          <span className={theme === "dark" ? "text-emerald-400" : "text-teal-600"}>
+          <span className={`hidden sm:inline ${theme === "dark" ? "text-emerald-400" : "text-teal-600"}`}>
             GordonConnect
           </span>
         </Link>
 
-        {/* Icons beside GordonConnect */}
+        {/* Icons beside GordonConnect - Home button removed */}
         <div className="flex items-center gap-2 ml-2">
-          <Link 
-            to="/"
-            className={`p-2 rounded-lg transition-all duration-200
-              ${theme === "dark" 
-                ? "hover:bg-gray-800" 
-                : "hover:bg-gray-100"}`}
-          >
-            <HomeOutlinedIcon className="text-xl" />
-          </Link>
-
           {/* Theme Toggle */}
           <button
             onClick={toggleTheme}
@@ -81,8 +81,19 @@ function Navbar({ open, setOpen }) {
           </button>
         </div>
       </div>
+      {/* Right Section: Date and Time with Calendar Icon */}
+      <div className="flex items-center gap-2 min-w-[auto] sm:min-w-[260px] justify-end">
+        <CalendarDays className={`w-4 h-4 sm:w-5 sm:h-5 ${theme === "dark" ? "text-gray-300" : "text-gray-500"}`} />
+        <span className={`text-sm sm:text-base font-medium ${theme === "dark" ? "text-gray-200" : "text-gray-600"}`}>{dateTimeString}</span>
+      </div>
     </div>
   );
 }
 
 export default Navbar;
+
+
+
+
+
+

@@ -1,8 +1,8 @@
-import React, { useContext, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useState, useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../authContext";
 import { motion } from "framer-motion";
-import { Lock, User, LogIn } from "lucide-react";
+import { User, Lock, LogIn } from "lucide-react";
 import { useTheme } from "../ThemeContext";
 
 function Login({ setIsActive }) {
@@ -21,15 +21,14 @@ function Login({ setIsActive }) {
     setInputs((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setErr(null);
     try {
       await login(inputs);
       navigate("/");
     } catch (err) {
-      setErr(err.response?.data || "An error occurred during login");
+      setErr(err.response?.data || "An error occurred");
     } finally {
       setIsLoading(false);
     }
@@ -52,116 +51,150 @@ function Login({ setIsActive }) {
   if (theme === "dark") logoSrc = "/GC_DarkBG.png";
   if (theme === "light") logoSrc = "/GC_WhiteBG.png";
 
+  // Animation variants
+  const formVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.4,
+        staggerChildren: 0.1,
+        delayChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0 },
+  };
+
   return (
-    <div className="h-full w-full flex flex-col items-center justify-center p-8">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="w-full max-w-md"
+    <div className="w-full max-w-md mx-auto">
+      <motion.div 
+        initial="hidden"
+        animate="visible"
+        variants={formVariants}
+        className={`rounded-2xl shadow-xl overflow-hidden ${theme === "dark" ? "bg-gray-800" : "bg-white"}`}
       >
-        <div className="flex justify-center mb-8">
-          <img
-            src={logoSrc}
-            alt="Logo"
-            className="h-20 w-auto object-contain drop-shadow-xl"
-            draggable="false"
-          />
+        <div className="flex flex-col items-center pt-8 pb-4">
+          <motion.div 
+            variants={itemVariants}
+            className="w-16 h-16 rounded-full bg-white shadow-md flex items-center justify-center mb-4"
+          >
+            <img
+              src={logoSrc}
+              alt="Logo"
+              className="h-10 w-auto object-contain"
+              draggable="false"
+            />
+          </motion.div>
+          <motion.h2 
+            variants={itemVariants}
+            className="text-xl font-bold text-gray-900 dark:text-white"
+          >
+            Sign In
+          </motion.h2>
         </div>
-        <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-8 text-center">
-          Sign In
-        </h2>
 
-        <form onSubmit={handleLogin} className="space-y-6">
-          <div className="space-y-4">
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <User className="h-5 w-5 text-gray-400" />
+        <div className="p-6">
+          <form onSubmit={handleSubmit}>
+            <motion.div variants={itemVariants} className="space-y-4">
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <User className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Username"
+                  name="username"
+                  onChange={handleChange}
+                  required
+                  className={`w-full pl-10 pr-4 py-3 rounded-xl border focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-200 ${
+                    theme === "dark"
+                      ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                      : "bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500"
+                  }`}
+                />
               </div>
-              <input
-                type="text"
-                placeholder="Username"
-                name="username"
-                onChange={handleChange}
-                className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
-                required
-              />
-            </div>
 
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Lock className="h-5 w-5 text-gray-400" />
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Lock className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="password"
+                  placeholder="Password"
+                  name="password"
+                  onChange={handleChange}
+                  required
+                  className={`w-full pl-10 pr-4 py-3 rounded-xl border focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-200 ${
+                    theme === "dark"
+                      ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                      : "bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500"
+                  }`}
+                />
               </div>
-              <input
-                type="password"
-                placeholder="Password"
-                name="password"
-                onChange={handleChange}
-                className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
-                required
-              />
-            </div>
-          </div>
-
-          {err && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="p-3 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-sm"
-            >
-              {err}
             </motion.div>
-          )}
 
-          <div className="flex items-center justify-between">
-            <Link
-              to="/forgot-password"
-              className="text-sm text-emerald-600 dark:text-emerald-400 hover:underline"
+            <motion.div variants={itemVariants} className="mt-6 space-y-4">
+              {err && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-3 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-sm"
+                >
+                  {err}
+                </motion.div>
+              )}
+
+              <div className="flex items-center justify-start">
+                <Link
+                  to="/forgot-password"
+                  className="text-sm text-emerald-500 hover:underline"
+                >
+                  Forgot Password?
+                </Link>
+              </div>
+
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                type="submit"
+                disabled={isLoading}
+                className="w-full py-3.5 px-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {isLoading ? (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <LogIn className="w-5 h-5" />
+                    Sign In
+                  </>
+                )}
+              </motion.button>
+            </motion.div>
+          </form>
+
+          <motion.div variants={itemVariants} className="mt-4">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              type="button"
+              onClick={handleGuestLogin}
+              disabled={isLoading}
+              className={`w-full py-3.5 px-4 rounded-full font-medium shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed ${
+                theme === "dark"
+                  ? "bg-gray-700 hover:bg-gray-600 text-gray-200"
+                  : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+              }`}
             >
-              Forgot Password?
-            </Link>
-          </div>
-
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            type="submit"
-            disabled={isLoading}
-            className="w-full py-3 px-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-          >
-            {isLoading ? (
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <>
-                <LogIn className="w-5 h-5" />
-                Sign In
-              </>
-            )}
-          </motion.button>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
-                Or continue with
-              </span>
-            </div>
-          </div>
-
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            type="button"
-            onClick={handleGuestLogin}
-            disabled={isLoading}
-            className="w-full py-3 px-4 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-          >
-            <User className="w-5 h-5" />
-            Continue as Guest
-          </motion.button>
-        </form>
+              <User className="w-5 h-5" />
+              Continue as Guest
+            </motion.button>
+          </motion.div>
+        </div>
       </motion.div>
     </div>
   );

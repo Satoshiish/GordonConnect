@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Mail, ArrowLeft } from "lucide-react";
 import emailjs from "@emailjs/browser";
+import axios from "axios";
+import { useTheme } from "../ThemeContext";
 
 function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -11,36 +13,52 @@ function ForgotPassword() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const formRef = useRef();
+  const { theme } = useTheme();
 
-  const sendEmail = (e) => {
+  const sendEmail = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setErr(null);
     setSuccess("");
 
-    emailjs
-      .sendForm(
+    try {
+      // First check if email exists in database
+      const checkResponse = await axios.post("http://localhost:8800/api/auth/check-email", { email });
+
+      if (!checkResponse.data.exists) {
+        setErr("No account found with this email address.");
+        setIsLoading(false);
+        return;
+      }
+
+      // If email exists, proceed with sending reset email
+      await emailjs.sendForm(
         "service_erxjf8i",
         "template_1oktgx5",
         formRef.current,
         "VciD--jXYRWjpdqNe"
-      )
-      .then(
-        () => {
-          setSuccess("Reset instructions sent to your email.");
-          setEmail("");
-        },
-        (error) => {
-          setErr("Failed to send reset email. Try again.");
-          console.error(error);
-        }
-      )
-      .finally(() => {
-        setIsLoading(false);
-      });
+      );
+
+      setSuccess("Reset instructions sent to your email.");
+      setEmail("");
+    } catch (error) {
+      if (error.response?.status === 404) {
+        setErr("No account found with this email address.");
+      } else {
+        setErr("Failed to send reset email. Try again.");
+        console.error(error);
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const resetLink = `http://localhost:5173/reset-password?email=${encodeURIComponent(email)}`;
+  const baseUrl = `${window.location.protocol}//${window.location.host}`;
+  const resetLink = `${baseUrl}/reset-password?email=${encodeURIComponent(email)}`;
+
+  let logoSrc = "/GC_NoBG.png";
+  if (theme === "dark") logoSrc = "/GC_DarkBG.png";
+  if (theme === "light") logoSrc = "/GC_WhiteBG.png";
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 sm:p-8 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
@@ -48,9 +66,12 @@ function ForgotPassword() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8"
+        className="w-full max-w-md bg-white dark:bg-gray-800 rounded-3xl shadow-2xl border border-gray-200 dark:border-gray-700 p-8 sm:p-10"
       >
         <div className="text-center mb-8">
+          <div className="flex justify-center mb-4">
+            <img src={logoSrc} alt="Logo" className="h-12 w-auto" />
+          </div>
           <h2 className="text-3xl font-bold bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent">
             Forgot Password
           </h2>
@@ -82,7 +103,7 @@ function ForgotPassword() {
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="p-4 rounded-xl bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-sm border border-red-200 dark:border-red-800"
+              className="p-4 rounded-xl bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-sm border border-red-200 dark:border-red-800 shadow"
             >
               {err}
             </motion.div>
@@ -92,7 +113,7 @@ function ForgotPassword() {
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="p-4 rounded-xl bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-sm border border-green-200 dark:border-green-800"
+              className="p-4 rounded-xl bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-sm border border-green-200 dark:border-green-800 shadow"
             >
               {success}
             </motion.div>

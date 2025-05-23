@@ -8,10 +8,12 @@ function Home() {
   const { theme } = useTheme();
 
   return (
-    <div className="space-y-6">
-      {/* Share and Posts Section */}
+    <div className="w-full">
       <div className="space-y-6">
+        {/* Share Component */}
         <Share />
+        
+        {/* Posts Component */}
         <Posts />
       </div>
     </div>

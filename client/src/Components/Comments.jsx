@@ -4,6 +4,7 @@ import { useTheme } from "../ThemeContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { makeRequest } from "../axios";
 import moment from "moment";
+import { motion, AnimatePresence } from "framer-motion";
 
 const Comments = ({ postId }) => {
   const { currentUser, canComment } = useContext(AuthContext);
@@ -47,6 +48,19 @@ const Comments = ({ postId }) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["comments", postId] });
       setDesc(""); // Clear input after successful submission
+    },
+  });
+
+  // Delete comment mutation
+  const deleteMutation = useMutation({
+    mutationFn: async (commentId) => {
+      const token = localStorage.getItem("token");
+      return makeRequest.delete(`/comments/${commentId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["comments", postId] });
     },
   });
 
@@ -126,33 +140,42 @@ const Comments = ({ postId }) => {
         ) : isPending ? (
           <p className="text-gray-500 text-sm">Loading comments...</p>
         ) : data?.length > 0 ? (
-          data.map((comment) => (
-            <div
-              className={`flex items-start gap-3 p-3 rounded-lg shadow-sm
-                ${
-                  theme === "dark"
-                    ? "bg-gray-800 text-white"
-                    : "bg-gray-100 text-gray-900"
-                }
-              `}
-              key={comment.comments_id}
-            >
-              <img
-                src={"/upload/" + comment.profilePic}
-                alt="User Profile"
-                className="w-8 h-8 rounded-full object-cover"
-              />
-              <div className="flex-1">
-                <div className="flex justify-between">
-                  <span className="font-semibold">{comment.name}</span>
-                  <span className="text-gray-500 text-xs">
-                    {moment(comment.createdAt).fromNow()}
-                  </span>
+          <AnimatePresence initial={false}>
+            {data.map((comment) => (
+              <motion.div
+                key={comment.comments_id}
+                initial={{ opacity: 0, scale: 0.95, x: 40 }}
+                animate={{ opacity: 1, scale: 1, x: 0 }}
+                exit={{ opacity: 0, scale: 0.8, x: 40 }}
+                transition={{ duration: 0.3 }}
+                className={`flex items-start gap-3 p-3 rounded-lg shadow-sm
+                  ${theme === "dark" ? "bg-gray-800 text-white" : "bg-gray-100 text-gray-900"}
+                `}
+              >
+                <img
+                  src={"/upload/" + comment.profilePic}
+                  alt="User Profile"
+                  className="w-8 h-8 rounded-full object-cover"
+                />
+                <div className="flex-1">
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold">{comment.name}</span>
+                    {(currentUser?.userId === comment.userId || currentUser?.role === "admin") && (
+                      <button
+                        onClick={() => deleteMutation.mutate(comment.comments_id)}
+                        className="ml-2 text-red-500 hover:text-red-700 transition-colors text-xs font-semibold"
+                        title="Delete comment"
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </div>
+                  <span className="text-gray-500 text-xs block mb-1">{moment(comment.createdAt).fromNow()}</span>
+                  <p className="text-sm">{comment.desc}</p>
                 </div>
-                <p className="text-sm">{comment.desc}</p>
-              </div>
-            </div>
-          ))
+              </motion.div>
+            ))}
+          </AnimatePresence>
         ) : (
           <p className="text-gray-500 text-sm">
             No comments yet. Be the first!

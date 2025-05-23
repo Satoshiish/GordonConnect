@@ -3,6 +3,7 @@ import { useTheme } from "../ThemeContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { makeRequest } from "../axios";
 import { AuthContext } from "../authContext";
+import { Loader2, XCircle } from "lucide-react";
 
 function Rightbar() {
   const { currentUser } = useContext(AuthContext);
@@ -85,18 +86,34 @@ function Rightbar() {
                     className={`px-2 sm:px-3 py-1 text-white rounded-md text-[10px] sm:text-xs md:text-sm transition ${
                       user.isFollowing
                         ? "bg-gray-600 hover:bg-gray-700"
-                        : "bg-blue-500 hover:bg-blue-600"
+                        : "bg-emerald-500 hover:bg-emerald-600"
                     }`}
                   >
-                    {user.isFollowing ? "Following" : "Follow"}
+                    {followMutation.isLoading && followMutation.variables === user.id ? (
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                    ) : user.isFollowing ? (
+                      "Following"
+                    ) : (
+                      "Follow"
+                    )}
                   </button>
                   <button
                     onClick={() => handleDismiss(user.id)}
-                    className="bg-red-500 px-2 sm:px-3 py-1 text-white rounded-md text-[10px] sm:text-xs md:text-sm hover:bg-red-600 transition"
+                    className="p-1 text-gray-500 hover:text-red-500 transition-colors"
+                    title="Dismiss"
                   >
-                    Dismiss
+                    <XCircle size={14} />
                   </button>
                 </>
+              }
+              extraInfo={
+                user.reason && (
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full ${
+                    theme === "dark" ? "bg-gray-700 text-emerald-400" : "bg-emerald-100 text-emerald-700"
+                  }`}>
+                    {user.reason}
+                  </span>
+                )
               }
             />
           ))
@@ -138,7 +155,7 @@ const Section = ({ title, children, theme }) => (
   </div>
 );
 
-const UserCard = ({ user, activity, time, buttons, theme }) => (
+const UserCard = ({ user, activity, time, buttons, theme, extraInfo }) => (
   <div className="user flex items-center justify-between gap-2 sm:gap-3 my-4 flex-wrap">
     <div className="userInfo flex items-center gap-2 sm:gap-3">
       <img
@@ -161,6 +178,7 @@ const UserCard = ({ user, activity, time, buttons, theme }) => (
     ) : (
       <div className="buttons flex items-center gap-1 sm:gap-2">{buttons}</div>
     )}
+    {extraInfo && <div className="extra-info ml-2">{extraInfo}</div>}
   </div>
 );
 

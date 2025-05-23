@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import { useTheme } from "../ThemeContext";
 
 function ResetPassword() {
   const [username, setUsername] = useState("");
@@ -10,6 +11,11 @@ function ResetPassword() {
   const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { theme } = useTheme();
+
+  let logoSrc = "/GC_NoBG.png";
+  if (theme === "dark") logoSrc = "/GC_DarkBG.png";
+  if (theme === "light") logoSrc = "/GC_WhiteBG.png";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -49,8 +55,11 @@ function ResetPassword() {
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 sm:p-8 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-      <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+      <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-3xl shadow-2xl border border-gray-200 dark:border-gray-700 p-8 sm:p-10">
         <div className="text-center mb-8">
+          <div className="flex justify-center mb-4">
+            <img src={logoSrc} alt="Logo" className="h-12 w-auto" />
+          </div>
           <h2 className="text-3xl font-bold bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent">
             Reset Password
           </h2>
@@ -92,12 +101,12 @@ function ResetPassword() {
             />
           </div>
           {err && (
-            <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-sm border border-red-200 dark:border-red-800">
+            <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-sm border border-red-200 dark:border-red-800 shadow">
               {err}
             </div>
           )}
           {success && (
-            <div className="p-4 rounded-xl bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-sm border border-green-200 dark:border-green-800">
+            <div className="p-4 rounded-xl bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-sm border border-green-200 dark:border-green-800 shadow">
               {success}
             </div>
           )}

@@ -143,7 +143,7 @@ const Update = ({ setOpenUpdate, user }) => {
 
           <button
             onClick={handleClick}
-            className="w-full bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-all text-lg"
+            className="w-full bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-all text-lg"
           >
             Update
           </button>

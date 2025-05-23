@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import {
   createBrowserRouter,
   Navigate,
@@ -15,16 +15,37 @@ import Forum from "./pages/Forum";
 import Home from "./pages/Home";
 import People from "./pages/People";
 import Profile from "./pages/Profile";
-import Register from "./Pages/Register";
-import ForgotPassword from "./Pages/ForgotPassword";
-import ResetPassword from "./Pages/ResetPassword";
+import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import { ThemeProvider, useTheme } from "./ThemeContext";
 import { AuthContext, AuthContextProvider } from "./authContext";
+import Reports from "./pages/Reports";
 
 function Layout() {
   const { theme } = useTheme();
   const queryClient = new QueryClient();
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(true); // Default to open on web view
+  
+  // Set sidebar open by default only on larger screens
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) { // md breakpoint
+        setOpen(true);
+      } else {
+        setOpen(false);
+      }
+    };
+    
+    // Initial check
+    handleResize();
+    
+    // Add event listener
+    window.addEventListener('resize', handleResize);
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -34,10 +55,12 @@ function Layout() {
         }`}
       >
         <Navbar open={open} setOpen={setOpen} />
-        <div className="flex pt-16">
+        <div className="flex pt-16 w-full min-h-[calc(100vh-4rem)]">
           <Leftbar open={open} setOpen={setOpen} />
           <main
-            className={`flex-1 p-4 sm:p-6 md:p-8 transition-all duration-200 ${
+            className={`flex-1 p-2 sm:p-4 md:p-6 lg:p-8 transition-all duration-200 ml-0 md:ml-16 ${
+              open ? "md:ml-64" : "md:ml-16"
+            } ${
               theme === "dark" ? "bg-gray-900" : "bg-gray-50"
             }`}
           >
@@ -102,6 +125,7 @@ const router = createBrowserRouter([
       { path: "/events", element: <Events /> },
       { path: "/bookmarks", element: <Bookmarks /> },
       { path: "/people", element: <People /> },
+      { path: "/reports", element: <Reports /> },
     ],
   },
   {
@@ -150,3 +174,9 @@ function App() {
 }
 
 export default App;
+
+
+
+
+
+
