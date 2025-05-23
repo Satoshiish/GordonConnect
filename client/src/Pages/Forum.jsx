@@ -181,7 +181,7 @@ const Forum = () => {
                 </div>
               </div>
               
-              {isAdmin && (
+              {currentUser && currentUser.role !== "guest" && (
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -220,7 +220,7 @@ const Forum = () => {
         )}
 
         {/* Create New Discussion Modal */}
-        {showForm && isAdmin && (
+        {showForm && currentUser && currentUser.role !== "guest" && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -426,7 +426,7 @@ const Forum = () => {
                         {forum.title}
                       </motion.h2>
                     </div>
-                    {isAdmin && (
+                    {(isAdmin || currentUser?.user_id === forum.user_id) && (
                       <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
@@ -624,10 +624,10 @@ const Forum = () => {
                     ? "Be the first to start a conversation in our community" 
                     : "Check back later for new discussions"}
                 </p>
-                {isAdmin && (
+                {currentUser ? (
                   <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => setShowForm(true)}
                     className={`px-8 py-3 rounded-xl text-white font-medium flex items-center gap-2 ${
                       theme === "dark"
@@ -638,6 +638,10 @@ const Forum = () => {
                     <Plus size={20} />
                     Create First Discussion
                   </motion.button>
+                ) : (
+                  <p className={`text-center ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>
+                    Please sign in to create a discussion
+                  </p>
                 )}
               </motion.div>
             )}
@@ -673,6 +677,7 @@ const Forum = () => {
               </div>
               <p className="mb-8 text-gray-700 dark:text-gray-300">
                 Are you sure you want to delete this discussion? All comments will be permanently removed.
+                {isAdmin && currentUser?.user_id !== forum?.user_id && " As an admin, you can delete any discussion."}
               </p>
               <div className="flex justify-end gap-4">
                 <motion.button
@@ -745,6 +750,12 @@ const Forum = () => {
 };
 
 export default Forum;
+
+
+
+
+
+
 
 
 
