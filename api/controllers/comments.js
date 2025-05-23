@@ -60,3 +60,37 @@ export const addComment = (req, res) => {
     });
   });
 };
+
+export const deleteComment = (req, res) => {
+  const token = req.cookies.accessToken;
+  if (!token) return res.status(401).json("Not Authenticated");
+
+  jwt.verify(token, "secretkey", (err, userInfo) => {
+    if (err) return res.status(403).json("Token is not valid");
+
+    const { commentId } = req.params;
+
+    // Check if user is admin or the comment owner
+    const getCommentQuery = `SELECT user_id FROM comments WHERE comments_id = ?`;
+    db.query(getCommentQuery, [commentId], (err, data) => {
+      if (err) return res.status(500).json(err);
+      if (data.length === 0) return res.status(404).json("Comment not found");
+      const commentOwnerId = data[0].user_id;
+
+      const getUserRoleQuery = `SELECT role FROM users WHERE user_id = ?`;
+      db.query(getUserRoleQuery, [userInfo.id], (err, userData) => {
+        if (err) return res.status(500).json(err);
+        const isAdmin = userData[0]?.role === "admin";
+        if (userInfo.id !== commentOwnerId && !isAdmin) {
+          return res.status(403).json("You can only delete your own comments or be an admin.");
+        }
+
+        const deleteQuery = `DELETE FROM comments WHERE comments_id = ?`;
+        db.query(deleteQuery, [commentId], (err, result) => {
+          if (err) return res.status(500).json(err);
+          return res.status(200).json("Comment deleted successfully");
+        });
+      });
+    });
+  });
+};

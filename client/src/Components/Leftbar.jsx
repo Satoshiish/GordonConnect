@@ -34,7 +34,7 @@ function Leftbar({ open, setOpen }) {
               <Link
                 to="/"
                 onClick={handleLinkClick}
-                className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${
+                className={`flex items-center md:justify-${open ? "start" : "center"} gap-3 p-3 rounded-xl transition-all duration-200 ${
                   location.pathname === "/"
                     ? theme === "dark"
                       ? "bg-emerald-900/30 text-emerald-400"
@@ -45,7 +45,7 @@ function Leftbar({ open, setOpen }) {
                 }`}
               >
                 <Home className="h-6 w-6" />
-                <span className={`${!open && "md:hidden"} font-medium`}>Home</span>
+                <span className={`font-medium ${!open && "md:hidden"}`}>Home</span>
               </Link>
             </li>
             
@@ -54,7 +54,7 @@ function Leftbar({ open, setOpen }) {
               <Link
                 to={`/profile/${currentUser?.user_id}`}
                 onClick={handleLinkClick}
-                className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${
+                className={`flex items-center md:justify-${open ? "start" : "center"} gap-3 p-3 rounded-xl transition-all duration-200 ${
                   location.pathname.startsWith("/profile")
                     ? theme === "dark"
                       ? "bg-emerald-900/30 text-emerald-400"
@@ -65,7 +65,7 @@ function Leftbar({ open, setOpen }) {
                 }`}
               >
                 <User className="h-6 w-6" />
-                <span className={`${!open && "md:hidden"} font-medium`}>Profile</span>
+                <span className={`font-medium ${!open && "md:hidden"}`}>Profile</span>
               </Link>
             </li>
             
@@ -74,7 +74,7 @@ function Leftbar({ open, setOpen }) {
               <Link
                 to="/forum"
                 onClick={handleLinkClick}
-                className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${
+                className={`flex items-center md:justify-${open ? "start" : "center"} gap-3 p-3 rounded-xl transition-all duration-200 ${
                   location.pathname === "/forum"
                     ? theme === "dark"
                       ? "bg-emerald-900/30 text-emerald-400"
@@ -85,7 +85,7 @@ function Leftbar({ open, setOpen }) {
                 }`}
               >
                 <MessageSquare className="h-6 w-6" />
-                <span className={`${!open && "md:hidden"} font-medium`}>Forum</span>
+                <span className={`font-medium ${!open && "md:hidden"}`}>Forum</span>
               </Link>
             </li>
             
@@ -94,7 +94,7 @@ function Leftbar({ open, setOpen }) {
               <Link
                 to="/events"
                 onClick={handleLinkClick}
-                className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${
+                className={`flex items-center md:justify-${open ? "start" : "center"} gap-3 p-3 rounded-xl transition-all duration-200 ${
                   location.pathname === "/events"
                     ? theme === "dark"
                       ? "bg-emerald-900/30 text-emerald-400"
@@ -105,7 +105,7 @@ function Leftbar({ open, setOpen }) {
                 }`}
               >
                 <Calendar className="h-6 w-6" />
-                <span className={`${!open && "md:hidden"} font-medium`}>Events</span>
+                <span className={`font-medium ${!open && "md:hidden"}`}>Events</span>
               </Link>
             </li>
             
@@ -114,7 +114,7 @@ function Leftbar({ open, setOpen }) {
               <Link
                 to="/bookmarks"
                 onClick={handleLinkClick}
-                className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${
+                className={`flex items-center md:justify-${open ? "start" : "center"} gap-3 p-3 rounded-xl transition-all duration-200 ${
                   location.pathname === "/bookmarks"
                     ? theme === "dark"
                       ? "bg-emerald-900/30 text-emerald-400"
@@ -125,7 +125,7 @@ function Leftbar({ open, setOpen }) {
                 }`}
               >
                 <Bookmark className="h-6 w-6" />
-                <span className={`${!open && "md:hidden"} font-medium`}>Bookmarks</span>
+                <span className={`font-medium ${!open && "md:hidden"}`}>Bookmarks</span>
               </Link>
             </li>
             
@@ -134,7 +134,7 @@ function Leftbar({ open, setOpen }) {
               <Link
                 to="/people"
                 onClick={handleLinkClick}
-                className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${
+                className={`flex items-center md:justify-${open ? "start" : "center"} gap-3 p-3 rounded-xl transition-all duration-200 ${
                   location.pathname === "/people"
                     ? theme === "dark"
                       ? "bg-emerald-900/30 text-emerald-400"
@@ -145,7 +145,7 @@ function Leftbar({ open, setOpen }) {
                 }`}
               >
                 <Users className="h-6 w-6" />
-                <span className={`${!open && "md:hidden"} font-medium`}>People</span>
+                <span className={`font-medium ${!open && "md:hidden"}`}>People</span>
               </Link>
             </li>
             
@@ -155,7 +155,7 @@ function Leftbar({ open, setOpen }) {
                 <Link
                   to="/reports"
                   onClick={handleLinkClick}
-                  className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${
+                  className={`flex items-center md:justify-${open ? "start" : "center"} gap-3 p-3 rounded-xl transition-all duration-200 ${
                     location.pathname === "/reports"
                       ? theme === "dark"
                         ? "bg-emerald-900/30 text-emerald-400"
@@ -166,7 +166,7 @@ function Leftbar({ open, setOpen }) {
                   }`}
                 >
                   <BarChart2 className="h-6 w-6" />
-                  <span className={`${!open && "md:hidden"} font-medium`}>Reports</span>
+                  <span className={`font-medium ${!open && "md:hidden"}`}>Reports</span>
                 </Link>
               </li>
             )}
@@ -177,14 +177,14 @@ function Leftbar({ open, setOpen }) {
         <div className="mt-auto pt-4">
           <button
             onClick={logout}
-            className={`flex w-full items-center gap-3 p-3 rounded-xl transition-all duration-200 ${
+            className={`flex w-full items-center md:justify-${open ? "start" : "center"} gap-3 p-3 rounded-xl transition-all duration-200 ${
               theme === "dark"
                 ? "hover:bg-gray-800 text-gray-300"
                 : "hover:bg-gray-100 text-gray-600"
             }`}
           >
             <LogOut className="h-6 w-6" />
-            <span className={`${!open && "md:hidden"} font-medium`}>Logout</span>
+            <span className={`font-medium ${!open && "md:hidden"}`}>Logout</span>
           </button>
         </div>
       </div>
@@ -193,6 +193,9 @@ function Leftbar({ open, setOpen }) {
 }
 
 export default Leftbar;
+
+
+
 
 
 
