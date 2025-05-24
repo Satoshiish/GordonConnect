@@ -4,58 +4,46 @@ import dotenv from "dotenv";
 // Load environment variables
 dotenv.config();
 
+// Validate required environment variables
+const requiredEnv = ['DB_HOST', 'DB_USER', 'DB_PASS', 'DB_NAME'];
+requiredEnv.forEach((key) => {
+  if (!process.env[key]) {
+    throw new Error(`Environment variable ${key} is not set.`);
+  }
+});
+
 // Log database connection attempt
 console.log("Attempting to connect to MySQL database...");
-console.log(`Host: ${process.env.DB_HOST || 'localhost'}`);
-console.log(`User: ${process.env.DB_USER || 'Not set'}`);
-console.log(`Database: ${process.env.DB_NAME || 'Not set'}`);
+console.log(`Host: ${process.env.DB_HOST}`);
+console.log(`User: ${process.env.DB_USER}`);
+console.log(`Database: ${process.env.DB_NAME}`);
 
 const dbConfig = {
-  host: process.env.DB_HOST || "localhost",
+  host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
   port: 3306,
-  connectTimeout: 10000
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
 };
 
-export let db;
+export const db = mysql.createPool(dbConfig);
 
-const handleDisconnect = () => {
-  db = mysql.createConnection(dbConfig);
-
-  db.connect((err) => {
-    if (err) {
-      console.error("❌ Database connection failed:", err);
-      console.log("Will retry connection in 5 seconds...");
-      setTimeout(handleDisconnect, 5000); // Try reconnecting after 5 seconds
-    } else {
-      console.log("✅ Connected to MySQL database successfully.");
-    }
+// Optional: keep the connection alive
+setInterval(() => {
+  db.query('SELECT 1', (err) => {
+    if (err) console.error("Keep-alive query failed:", err);
   });
+}, 60000); // Every 60 seconds
 
-  db.on("error", (err) => {
-    console.error("❗ MySQL error:", err);
-    if (err.code === "PROTOCOL_CONNECTION_LOST") {
-      console.log("🔄 Database connection lost. Reconnecting...");
-      handleDisconnect();
-    } else if (err.fatal) {
-      // Only throw fatal errors after logging them
-      console.error("Fatal database error. Exiting gracefully.");
-      process.exit(1);
-    }
-  });
-};
-
-// Initial connection attempt
-handleDisconnect();
-
-// Add a simple query method that handles errors
-export const query = (sql, params) => {
-  return new Promise((resolve, reject) => {
-    db.query(sql, params, (err, result) => {
-      if (err) return reject(err);
-      return resolve(result);
-    });
-  });
-}
+// Optional: log if pool is ready
+db.getConnection((err, connection) => {
+  if (err) {
+    console.error("❌ Database connection failed:", err);
+  } else {
+    console.log("✅ Connected to MySQL database.");
+    connection.release(); // Release after test
+  }
+});
