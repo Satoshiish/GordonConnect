@@ -8,19 +8,19 @@ import {
 } from "react-router-dom";
 import Leftbar from "./Components/Leftbar";
 import Navbar from "./Components/Navbar";
-import Auth from "./pages/Auth";
-import Bookmarks from "./pages/Bookmarks";
-import Events from "./pages/Events";
-import Forum from "./pages/Forum";
-import Home from "./pages/Home";
-import People from "./pages/People";
-import Profile from "./pages/Profile";
-import Register from "./pages/Register";
-import ForgotPassword from "./pages/ForgotPassword";
-import ResetPassword from "./pages/ResetPassword";
+import Auth from "./Pages/Auth";
+import Bookmarks from "./Pages/Bookmarks";
+import Events from "./Pages/Events";
+import Forum from "./Pages/Forum";
+import Home from "./Pages/Home";
+import People from "./Pages/People";
+import Profile from "./Pages/Profile";
+import Register from "./Pages/Register";
+import ForgotPassword from "./Pages/ForgotPassword";
+import ResetPassword from "./Pages/ResetPassword";
 import { ThemeProvider, useTheme } from "./ThemeContext";
 import { AuthContext, AuthContextProvider } from "./authContext";
-import Reports from "./pages/Reports";
+import Reports from "./Pages/Reports";
 
 function Layout() {
   const { theme } = useTheme();
@@ -174,6 +174,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
