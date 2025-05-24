@@ -15,7 +15,7 @@ import Forum from "./Pages/Forum";
 import Home from "./Pages/Home";
 import People from "./Pages/People";
 import Profile from "./Pages/Profile";
-import Register from "./pages/Register";
+import Register from "./Pages/Register";
 import ForgotPassword from "./Pages/ForgotPassword";
 import ResetPassword from "./Pages/ResetPassword";
 import { ThemeProvider, useTheme } from "./ThemeContext";
