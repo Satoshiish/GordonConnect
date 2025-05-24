@@ -28,7 +28,14 @@ function Login({ setIsActive }) {
       await login(inputs);
       navigate("/");
     } catch (err) {
-      setErr(err.response?.data || "An error occurred");
+      // Show detailed error if available
+      if (err.response?.data?.error) {
+        setErr(err.response.data.error);
+      } else if (typeof err.response?.data === "string") {
+        setErr(err.response.data);
+      } else {
+        setErr("An error occurred. Please try again.");
+      }
     } finally {
       setIsLoading(false);
     }
