@@ -20,7 +20,7 @@ export const AuthContextProvider = ({ children }) => {
         }
 
         // Verify token with backend
-        const res = await axios.get("https://gordon-connect-p1pl.vercel.app/api/auth/verify", {
+        const res = await axios.get("http://localhost:8800/api/auth/verify", {
           headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -45,7 +45,7 @@ export const AuthContextProvider = ({ children }) => {
   const login = async (inputs) => {
     try {
       const res = await axios.post(
-        "https://gordon-connect-p1pl.vercel.app/api/auth/login",
+        "http://localhost:8800/api/auth/login",
         inputs,
         {
           withCredentials: true,
@@ -65,7 +65,7 @@ export const AuthContextProvider = ({ children }) => {
   const register = async (inputs) => {
     try {
       const res = await axios.post(
-        "https://gordon-connect-p1pl.vercel.app/api/auth/register",
+        "http://localhost:8800/api/auth/register",
         inputs,
         {
           withCredentials: true,

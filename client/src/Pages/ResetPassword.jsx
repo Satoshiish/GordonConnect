@@ -35,14 +35,11 @@ function ResetPassword() {
     }
 
     try {
-      const response = await fetch(
-        "https://gordon-connect-p1pl.vercel.app/api/auth/reset-password",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, newPassword }),
-        }
-      );
+      const response = await fetch("http://localhost:8800/api/auth/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, newPassword }),
+      });
       const data = await response.json();
       if (!response.ok) {
         setErr(data.error || "Failed to reset password.");
@@ -140,4 +137,4 @@ function ResetPassword() {
   );
 }
 
-export default ResetPassword;
+export default ResetPassword; 

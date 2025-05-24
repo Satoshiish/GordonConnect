@@ -28,14 +28,7 @@ function Login({ setIsActive }) {
       await login(inputs);
       navigate("/");
     } catch (err) {
-      // Show detailed error if available
-      if (err.response?.data?.error) {
-        setErr(err.response.data.error);
-      } else if (typeof err.response?.data === "string") {
-        setErr(err.response.data);
-      } else {
-        setErr("An error occurred. Please try again.");
-      }
+      setErr(err.response?.data || "An error occurred");
     } finally {
       setIsLoading(false);
     }
@@ -88,9 +81,7 @@ function Login({ setIsActive }) {
         <div className="flex flex-col items-center pt-8 pb-4">
           <motion.div 
             variants={itemVariants}
-            className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${
-              theme === "dark" ? "bg-gray-700" : "bg-white shadow-md"
-            }`}
+            className="w-16 h-16 rounded-full bg-white shadow-md flex items-center justify-center mb-4"
           >
             <img
               src={logoSrc}
@@ -101,7 +92,7 @@ function Login({ setIsActive }) {
           </motion.div>
           <motion.h2 
             variants={itemVariants}
-            className={`text-xl font-bold ${theme === "dark" ? "text-white" : "text-gray-900"}`}
+            className="text-xl font-bold text-gray-900 dark:text-white"
           >
             Sign In
           </motion.h2>
@@ -147,32 +138,26 @@ function Login({ setIsActive }) {
               </div>
             </motion.div>
 
-            <motion.div variants={itemVariants} className="mt-2 text-right">
-              <Link 
-                to="/forgot-password" 
-                className={`text-sm font-medium hover:underline ${
-                  theme === "dark" ? "text-emerald-400" : "text-emerald-600"
-                }`}
-              >
-                Forgot password?
-              </Link>
-            </motion.div>
-
-            {err && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`mt-4 p-3 rounded-lg text-sm ${
-                  theme === "dark"
-                    ? "bg-red-900/50 text-red-200 border border-red-800"
-                    : "bg-red-100 text-red-700 border border-red-200"
-                }`}
-              >
-                {err}
-              </motion.div>
-            )}
-
             <motion.div variants={itemVariants} className="mt-6 space-y-4">
+              {err && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-3 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-sm"
+                >
+                  {err}
+                </motion.div>
+              )}
+
+              <div className="flex items-center justify-start">
+                <Link
+                  to="/forgot-password"
+                  className="text-sm text-emerald-500 hover:underline"
+                >
+                  Forgot Password?
+                </Link>
+              </div>
+
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}

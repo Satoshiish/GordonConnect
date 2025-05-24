@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from 'react-hot-toast';
 
-const BASE_URL = "https://gordon-connect.vercel.app";
+const BASE_URL = "http://localhost:5173";
 
 const Forum = () => {
   const { theme } = useTheme();
@@ -426,7 +426,7 @@ const Forum = () => {
                         {forum.title}
                       </motion.h2>
                     </div>
-                    {(isAdmin || currentUser?.user_id === forum.user_id) && (
+                    {isAdmin && (
                       <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
@@ -677,7 +677,6 @@ const Forum = () => {
               </div>
               <p className="mb-8 text-gray-700 dark:text-gray-300">
                 Are you sure you want to delete this discussion? All comments will be permanently removed.
-                {isAdmin && currentUser?.user_id !== forum?.user_id && " As an admin, you can delete any discussion."}
               </p>
               <div className="flex justify-end gap-4">
                 <motion.button
@@ -750,7 +749,6 @@ const Forum = () => {
 };
 
 export default Forum;
-
 
 
 

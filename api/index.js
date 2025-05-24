@@ -14,17 +14,15 @@ import bookmarksRoutes from "./routes/bookmarks.js";
 import forumRoutes from "./routes/forum.js";
 import reportsRoutes from "./routes/reports.js";
 
-// Remove manual CORS header middleware
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Credentials", true);
+  next();
+});
 app.use(express.json());
 app.use(
   cors({
-    origin: [
-      "https://gordon-connect.vercel.app",
-      "https://gordon-connect-p1pl.vercel.app"
-    ],
+    origin: "http://localhost:5174",
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 app.use(cookieParser());
