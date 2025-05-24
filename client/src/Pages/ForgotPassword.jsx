@@ -23,7 +23,7 @@ function ForgotPassword() {
 
     try {
       // First check if email exists in database
-      const checkResponse = await axios.post("http://localhost:8800/api/auth/check-email", { email });
+      const checkResponse = await axios.post("https://gordon-connect-p1pl.vercel.app/api/auth/check-email", { email });
 
       if (!checkResponse.data.exists) {
         setErr("No account found with this email address.");

@@ -43,7 +43,7 @@ function Register({ setIsActive }) {
     }
 
     try {
-      await axios.post("http://localhost:8800/api/auth/register", inputs);
+      await axios.post("https://gordon-connect-p1pl.vercel.app/api/auth/register", inputs);
       setSuccess("Registration successful! Redirecting to login...");
       setTimeout(() => {
         navigate("/auth");
