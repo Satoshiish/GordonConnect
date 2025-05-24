@@ -124,3 +124,16 @@ export const resetPassword = (req, res) => {
     return res.json({ message: "Password has been reset successfully." });
   });
 };
+
+export const checkEmail = (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ error: "Email is required." });
+  }
+
+  const q = "SELECT * FROM users WHERE email = ?";
+  db.query(q, [email], (err, data) => {
+    if (err) return res.status(500).json({ error: "Database error." });
+    return res.json({ exists: data.length > 0 });
+  });
+};

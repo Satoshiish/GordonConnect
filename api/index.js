@@ -12,7 +12,7 @@ import multer from "multer";
 import eventRoutes from "./routes/events.js";
 import bookmarksRoutes from "./routes/bookmarks.js";
 import forumRoutes from "./routes/forum.js";
-import uploadRoute from "./routes/upload.js";
+import reportsRoutes from "./routes/reports.js";
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Credentials", true);
@@ -57,7 +57,7 @@ app.use("/api/relationships", relationshipRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/bookmarks", bookmarksRoutes);
 app.use("/api/forums", forumRoutes);
-app.use("/api/upload", uploadRoute);
+app.use("/api/reports", reportsRoutes);
 
 app.listen(8800, () => {
   console.log("API is WORKING");

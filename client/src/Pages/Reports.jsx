@@ -154,7 +154,7 @@ const Reports = () => {
   if (error) return <div className="text-center py-20 text-red-500 font-semibold">{error}</div>;
 
   return (
-    <div className={`min-h-screen p-2 sm:p-4 md:p-6 lg:p-8 ${theme === "dark" ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"}`}>
+    <div className={`min-h-screen p-2 sm:p-4 md:p-6 lg:p-8 ${theme === "dark" ? "bg-gray-950 text-gray-100" : "bg-gray-50 text-gray-900"}`}>
       <div className="max-w-6xl mx-auto">
         {/* Enhanced Header Card */}
         <motion.div 
@@ -162,11 +162,11 @@ const Reports = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
             className={`mb-8 rounded-3xl shadow-xl overflow-hidden relative ${
-                theme === "dark" ? "bg-gray-800" : "bg-white"
+                theme === "dark" ? "bg-gray-850 border border-gray-700" : "bg-white"
             }`}
         >
             {/* Background Pattern */}
-            <div className="absolute inset-0 overflow-hidden opacity-10">
+            <div className="absolute inset-0 overflow-hidden opacity-15">
                 <div className="absolute -inset-[10px] bg-[radial-gradient(#4ade80_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)]"></div>
             </div>
             
@@ -219,7 +219,7 @@ const Reports = () => {
                 
                 {/* Reports Info */}
                 <div className={`mt-6 p-4 rounded-xl text-sm ${
-                    theme === "dark" ? "bg-gray-700/50 text-gray-300" : "bg-gray-50 text-gray-700"
+                    theme === "dark" ? "bg-gray-800/70 text-gray-200" : "bg-gray-50 text-gray-700"
                 }`}>
                     <p className="flex items-center gap-2">
                         <AlertCircle size={16} className={theme === "dark" ? "text-amber-400" : "text-amber-500"} />
@@ -338,8 +338,8 @@ const Reports = () => {
         
         {/* Desktop Table View (hidden on small screens) */}
         <div className="hidden sm:block overflow-x-auto rounded-xl border shadow-lg">
-          <table className={`w-full min-w-full divide-y ${theme === "dark" ? "bg-gray-800 border-gray-700 divide-gray-700" : "bg-white border-gray-200 divide-gray-200"}`}>
-            <thead className={`${theme === "dark" ? "bg-gray-900/70" : "bg-emerald-50"}`}>
+          <table className={`w-full min-w-full divide-y ${theme === "dark" ? "bg-gray-850 border-gray-700 divide-gray-700" : "bg-white border-gray-200 divide-gray-200"}`}>
+            <thead className={`${theme === "dark" ? "bg-gray-900/90" : "bg-emerald-50"}`}>
               <tr>
                 <th className="px-4 md:px-6 py-3 text-left text-xs sm:text-sm font-bold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">Report ID</th>
                 <th className="px-4 md:px-6 py-3 text-left text-xs sm:text-sm font-bold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">User</th>
@@ -350,9 +350,9 @@ const Reports = () => {
                 <th className="px-4 md:px-6 py-3 text-left text-xs sm:text-sm font-bold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">Actions</th>
               </tr>
             </thead>
-            <tbody className={`divide-y ${theme === "dark" ? "divide-gray-700" : "divide-gray-200"}`}>
+            <tbody className={`divide-y ${theme === "dark" ? "divide-gray-800" : "divide-gray-200"}`}>
               {reports.map((report) => (
-                <tr key={report.id} className={`${theme === "dark" ? "hover:bg-gray-700/50" : "hover:bg-gray-50"} transition-colors`}>
+                <tr key={report.id} className={`${theme === "dark" ? "hover:bg-gray-800/70" : "hover:bg-gray-50"} transition-colors`}>
                   <td className="px-4 md:px-6 py-4 text-sm whitespace-nowrap font-medium">{report.id}</td>
                   <td className="px-4 md:px-6 py-4 text-sm whitespace-nowrap">
                     <div className="flex items-center">
@@ -565,6 +565,7 @@ const Reports = () => {
 };
 
 export default Reports; 
+
 
 
 

@@ -16,13 +16,16 @@ export const createForum = (req, res) => {
         return res.status(403).json("Only admins can create forums");
 
       const insertQuery = `
-        INSERT INTO forums (title, description, createdAt, user_id)
-        VALUES (?, ?, NOW(), ?)
+        INSERT INTO forums (title, description, image, createdAt, user_id)
+        VALUES (?, ?, ?, NOW(), ?)
       `;
+
+      const { title, description, image } = req.body;
+
       db.query(
         insertQuery,
-        [req.body.title, req.body.description, userInfo.id],
-        (err, data) => {
+        [title, description, image || null, userInfo.id],
+        (err, result) => {
           if (err) return res.status(500).json(err);
           return res.status(201).json("Forum created successfully");
         }
@@ -34,10 +37,12 @@ export const createForum = (req, res) => {
 // Get all forums with their comments
 export const getForums = (req, res) => {
   const q = `
-    SELECT f.forum_id, f.title, f.description, f.createdAt, u.name AS username, 
-    c.comment_id, c.comment, c.user_id AS comment_user_id, c.createdAt AS comment_createdAt, 
-    u2.name AS comment_username,
-    COALESCE(SUM(fv.vote_value), 0) AS vote_count
+    SELECT 
+      f.forum_id, f.title, f.description, f.createdAt, f.image,
+      u.name AS username, 
+      c.comment_id, c.comment, c.user_id AS comment_user_id, c.createdAt AS comment_createdAt, 
+      u2.name AS comment_username,
+      COALESCE(SUM(fv.vote_value), 0) AS vote_count
     FROM forums f
     LEFT JOIN users u ON f.user_id = u.user_id
     LEFT JOIN forum_comments c ON f.forum_id = c.forum_id
@@ -46,13 +51,24 @@ export const getForums = (req, res) => {
     GROUP BY f.forum_id, c.comment_id
     ORDER BY f.createdAt DESC, c.createdAt ASC;
   `;
-  
+
   db.query(q, (err, data) => {
     if (err) return res.status(500).json(err);
 
     // Group comments by forum_id
     const forums = data.reduce((acc, row) => {
-      const { forum_id, title, description, createdAt, username, comment_id, comment, comment_user_id, comment_createdAt, comment_username } = row;
+      const {
+        forum_id,
+        title,
+        description,
+        createdAt,
+        username,
+        comment_id,
+        comment,
+        comment_user_id,
+        comment_createdAt,
+        comment_username,
+      } = row;
 
       if (!acc[forum_id]) {
         acc[forum_id] = {
@@ -61,6 +77,7 @@ export const getForums = (req, res) => {
           description,
           createdAt,
           username,
+          image: row.image,
           comments: [],
         };
       }
@@ -101,7 +118,7 @@ export const postComment = (req, res) => {
       INSERT INTO forum_comments (forum_id, user_id, comment)
       VALUES (?, ?, ?)
     `;
-    
+
     db.query(insertQuery, [forum_id, userInfo.id, comment], (err, data) => {
       if (err) return res.status(500).json(err);
       return res.status(201).json("Comment posted successfully");
@@ -133,6 +150,43 @@ export const deleteForum = (req, res) => {
         db.query(deleteForumQuery, [req.params.forum_id], (err, result) => {
           if (err) return res.status(500).json(err);
           return res.status(200).json("Forum deleted successfully");
+        });
+      });
+    });
+  });
+};
+
+// Delete a comment from a forum
+export const deleteForumComment = (req, res) => {
+  const token = req.cookies.accessToken;
+  if (!token) return res.status(401).json("Not Authenticated");
+
+  jwt.verify(token, "secretkey", (err, userInfo) => {
+    if (err) return res.status(403).json("Token is not valid");
+
+    const { forum_id, comment_id } = req.params;
+
+    // Check if user is admin or the comment owner
+    const getCommentQuery = `SELECT user_id FROM forum_comments WHERE comment_id = ? AND forum_id = ?`;
+    db.query(getCommentQuery, [comment_id, forum_id], (err, data) => {
+      if (err) return res.status(500).json(err);
+      if (data.length === 0) return res.status(404).json("Comment not found");
+      const commentOwnerId = data[0].user_id;
+
+      const getUserRoleQuery = `SELECT role FROM users WHERE user_id = ?`;
+      db.query(getUserRoleQuery, [userInfo.id], (err, userData) => {
+        if (err) return res.status(500).json(err);
+        const isAdmin = userData[0]?.role === "admin";
+        if (userInfo.id !== commentOwnerId && !isAdmin) {
+          return res
+            .status(403)
+            .json("You can only delete your own comments or be an admin.");
+        }
+
+        const deleteQuery = `DELETE FROM forum_comments WHERE comment_id = ? AND forum_id = ?`;
+        db.query(deleteQuery, [comment_id, forum_id], (err, result) => {
+          if (err) return res.status(500).json(err);
+          return res.status(200).json("Comment deleted successfully");
         });
       });
     });

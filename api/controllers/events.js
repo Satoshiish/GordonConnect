@@ -3,13 +3,19 @@ import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
 
 export const getEvents = (req, res) => {
-  const q = "SELECT * FROM events ORDER BY date ASC";
+  const q = `
+    SELECT e.*, COUNT(ev.id) as join_count
+    FROM events e
+    LEFT JOIN event_avails ev ON e.id = ev.event_id
+    GROUP BY e.id
+    ORDER BY e.date ASC
+  `;
 
   db.query(q, (err, data) => {
     if (err) return res.status(500).json(err);
     // Log the image field of each event for debugging
     if (Array.isArray(data)) {
-      data.forEach(event => {
+      data.forEach((event) => {
         console.log(`Event ID: ${event.id}, Image: ${event.image}`);
       });
     }
@@ -87,32 +93,8 @@ export const updateEvent = (req, res) => {
         if (err) return res.status(500).json(err);
         if (data.affectedRows === 0)
           return res.status(403).json("You can only update your own events!");
-        // Notify availed users
-        db.query(
-          "SELECT email FROM event_avails WHERE event_id = ?",
-          [req.params.id],
-          async (err, results) => {
-            if (!err && results.length > 0) {
-              // Setup nodemailer (use your SMTP config)
-              let transporter = nodemailer.createTransport({
-                service: 'gmail',
-                auth: {
-                  user: process.env.NOTIFY_EMAIL_USER,
-                  pass: process.env.NOTIFY_EMAIL_PASS,
-                },
-              });
-              for (const row of results) {
-                await transporter.sendMail({
-                  from: process.env.NOTIFY_EMAIL_USER,
-                  to: row.email,
-                  subject: `Event Updated: ${req.body.title}`,
-                  text: `The event you availed has been updated.\n\nTitle: ${req.body.title}\nDate: ${req.body.date}\nTime: ${req.body.time}\nLocation: ${req.body.location}\nDescription: ${req.body.description}`,
-                });
-              }
-            }
-            return res.status(200).json("Event has been updated and users notified!");
-          }
-        );
+        // No email sending, just return success
+        return res.status(200).json("Event has been updated!");
       });
     });
   });
@@ -148,12 +130,45 @@ export const availEvent = (req, res) => {
   const eventId = req.params.id;
   const { email } = req.body;
   if (!email) return res.status(400).json({ error: "Email is required" });
+
+  // Check if already joined
   db.query(
-    "INSERT INTO event_avails (event_id, email) VALUES (?, ?)",
+    "SELECT id FROM event_avails WHERE event_id = ? AND email = ?",
     [eventId, email],
-    (err, result) => {
-      if (err) return res.status(500).json({ error: "Failed to save avail", details: err });
-      return res.status(200).json({ message: "Avail saved" });
+    (err, results) => {
+      if (err) return res.status(500).json({ error: "Database error", details: err });
+      if (results.length > 0) {
+        return res.status(409).json({ error: "This email has already joined this event." });
+      }
+      // Insert if not already joined
+      db.query(
+        "INSERT INTO event_avails (event_id, email) VALUES (?, ?)",
+        [eventId, email],
+        (err, result) => {
+          if (err)
+            return res
+              .status(500)
+              .json({ error: "Failed to save avail", details: err });
+          return res.status(200).json({ message: "Avail saved" });
+        }
+      );
+    }
+  );
+};
+
+export const getEventJoins = (req, res) => {
+  const eventId = req.params.id;
+  db.query(
+    "SELECT email FROM event_avails WHERE event_id = ?",
+    [eventId],
+    (err, results) => {
+      if (err)
+        return res
+          .status(500)
+          .json({ error: "Failed to fetch joins", details: err });
+      return res
+        .status(200)
+        .json({ count: results.length, emails: results.map((r) => r.email) });
     }
   );
 };
