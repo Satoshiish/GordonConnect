@@ -1,35 +1,42 @@
 import { db } from "../connect.js";
 import jwt from "jsonwebtoken";
 
-// Create a forum
+// Create a forum - allow both admins and regular users
 export const createForum = (req, res) => {
   const token = req.cookies.accessToken;
-  if (!token) return res.status(401).json("Not Authenticated");
+  if (!token) return res.status(401).json("Not authenticated");
 
   jwt.verify(token, "secretkey", (err, userInfo) => {
     if (err) return res.status(403).json("Token is not valid");
 
+    // Check if user is a guest
     const q = "SELECT role FROM users WHERE user_id = ?";
     db.query(q, [userInfo.id], (err, data) => {
       if (err) return res.status(500).json(err);
-      if (data[0].role !== "admin")
-        return res.status(403).json("Only admins can create forums");
+      
+      if (data.length === 0) return res.status(404).json("User not found");
+      
+      if (data[0].role === "guest") {
+        return res.status(403).json("Guests cannot create forums");
+      }
 
+      // If not a guest, proceed with forum creation
       const insertQuery = `
         INSERT INTO forums (title, description, image, createdAt, user_id)
         VALUES (?, ?, ?, NOW(), ?)
       `;
 
-      const { title, description, image } = req.body;
+      const values = [
+        req.body.title,
+        req.body.description,
+        req.body.image || null,
+        userInfo.id
+      ];
 
-      db.query(
-        insertQuery,
-        [title, description, image || null, userInfo.id],
-        (err, result) => {
-          if (err) return res.status(500).json(err);
-          return res.status(201).json("Forum created successfully");
-        }
-      );
+      db.query(insertQuery, values, (err, result) => {
+        if (err) return res.status(500).json(err);
+        return res.status(201).json("Forum created successfully");
+      });
     });
   });
 };
@@ -126,7 +133,7 @@ export const postComment = (req, res) => {
   });
 };
 
-// Delete a forum (Admin only)
+// Delete a forum (Admin or owner only)
 export const deleteForum = (req, res) => {
   const token = req.cookies.accessToken;
   if (!token) return res.status(401).json("Not Authenticated");
@@ -134,11 +141,24 @@ export const deleteForum = (req, res) => {
   jwt.verify(token, "secretkey", (err, userInfo) => {
     if (err) return res.status(403).json("Token is not valid");
 
-    const q = "SELECT role FROM users WHERE user_id = ?";
-    db.query(q, [userInfo.id], (err, data) => {
+    // First check if the user is the owner of the forum or an admin
+    const checkOwnershipQuery = `
+      SELECT user_id, 
+             (SELECT role FROM users WHERE user_id = ?) as user_role 
+      FROM forums 
+      WHERE forum_id = ?
+    `;
+    
+    db.query(checkOwnershipQuery, [userInfo.id, req.params.forum_id], (err, data) => {
       if (err) return res.status(500).json(err);
-      if (data[0].role !== "admin")
-        return res.status(403).json("Only admins can delete forums");
+      if (data.length === 0) return res.status(404).json("Forum not found");
+      
+      const isOwner = data[0].user_id === userInfo.id;
+      const isAdmin = data[0].user_role === "admin";
+      
+      if (!isOwner && !isAdmin) {
+        return res.status(403).json("You can only delete your own forums or be an admin");
+      }
 
       // First, delete all related comments
       const deleteCommentsQuery = `DELETE FROM forum_comments WHERE forum_id = ?`;

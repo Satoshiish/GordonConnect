@@ -113,13 +113,13 @@ const Forum = () => {
     setDeletingForum(forum_id);
     try {
       await makeRequest.delete(`/forums/${forum_id}`);
-      setTimeout(() => {
-        setForums((prev) => prev.filter((forum) => forum.forum_id !== forum_id));
-        setDeletingForum(null);
-      }, 500);
+      toast.success("Forum deleted successfully");
+      // Update the forums list by filtering out the deleted forum
+      setForums((prev) => prev.filter((forum) => forum.forum_id !== forum_id));
     } catch (err) {
       console.error("Failed to delete forum:", err);
-      setError("Failed to delete forum. Please try again.");
+      toast.error(err.response?.data || "Failed to delete forum");
+    } finally {
       setDeletingForum(null);
     }
   };
@@ -181,7 +181,7 @@ const Forum = () => {
                 </div>
               </div>
               
-              {isAdmin && (
+              {currentUser && currentUser.role !== "guest" && (
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -220,7 +220,7 @@ const Forum = () => {
         )}
 
         {/* Create New Discussion Modal */}
-        {showForm && isAdmin && (
+        {showForm && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -426,19 +426,15 @@ const Forum = () => {
                         {forum.title}
                       </motion.h2>
                     </div>
-                    {isAdmin && (
+                    {/* Show delete button for forum owner or admin */}
+                    {(currentUser?.id === forum.user_id || isAdmin) && (
                       <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => setPendingDeleteForum(forum.forum_id)}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                          theme === "dark" 
-                            ? "text-red-400 hover:bg-red-900/30 hover:text-red-300" 
-                            : "text-red-500 hover:bg-red-50 hover:text-red-600"
-                        }`}
+                        className={`absolute top-4 right-4 p-2 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-500 transition-all`}
                       >
                         <Trash2 size={18} />
-                        <span className="text-sm font-medium">Delete</span>
                       </motion.button>
                     )}
                   </div>
@@ -522,7 +518,8 @@ const Forum = () => {
                                       </p>
                                     </div>
                                   </div>
-                                  {(currentUser?.username === comment.username || isAdmin) && (
+                                  {/* Update delete button to show for comment owner or admin */}
+                                  {(currentUser?.id === comment.user_id || isAdmin) && (
                                     <motion.button
                                       whileHover={{ scale: 1.05 }}
                                       whileTap={{ scale: 0.95 }}
@@ -620,11 +617,11 @@ const Forum = () => {
                 </div>
                 <h2 className="text-2xl font-bold mb-4">No discussions yet</h2>
                 <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-md mx-auto">
-                  {isAdmin 
+                  {currentUser && currentUser.role !== "guest"
                     ? "Be the first to start a conversation in our community" 
                     : "Check back later for new discussions"}
                 </p>
-                {isAdmin && (
+                {currentUser && currentUser.role !== "guest" && (
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
@@ -745,6 +742,18 @@ const Forum = () => {
 };
 
 export default Forum;
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
