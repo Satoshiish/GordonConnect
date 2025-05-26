@@ -45,3 +45,4 @@ router.get('/:id/emails', verifyToken, (req, res) => {
 });
 
 export default router;
+

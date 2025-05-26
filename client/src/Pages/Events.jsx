@@ -189,10 +189,23 @@ const Events = () => {
     // Wait for animation to finish before removing
     setTimeout(async () => {
       try {
-        await makeRequest.delete(`events/${id}`);
+        const token = localStorage.getItem("token");
+        console.log("Deleting event with ID:", id);
+        console.log("Using token:", token);
+        
+        await makeRequest.delete(`events/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        
         setEvents(events.filter((e) => e.id !== id));
+        toast.success("Event deleted successfully");
       } catch (err) {
         console.error("Failed to delete event", err);
+        console.error("Response data:", err.response?.data);
+        console.error("Response status:", err.response?.status);
+        toast.error("Failed to delete event: " + (err.response?.data || err.message));
       } finally {
         setDeletingEventId(null);
       }
@@ -1179,9 +1192,13 @@ const Events = () => {
                 </button>
                 <button
                   onClick={async () => {
-                    await handleDelete(eventToDelete.id);
-                    setShowDeleteModal(false);
-                    setEventToDelete(null);
+                    try {
+                      await handleDelete(eventToDelete.id);
+                      setShowDeleteModal(false);
+                      setEventToDelete(null);
+                    } catch (error) {
+                      console.error("Error in delete button handler:", error);
+                    }
                   }}
                   className="px-6 py-2 rounded-xl font-medium bg-red-500 text-white hover:bg-red-600 transition-all duration-200"
                 >
@@ -1416,6 +1433,9 @@ const Events = () => {
 };
 
 export default Events;
+
+
+
 
 
 

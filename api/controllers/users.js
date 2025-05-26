@@ -59,19 +59,43 @@ export const getSuggestions = (req, res) => {
   // Use userInfo from middleware
   const userInfo = req.userInfo;
   
+  console.log("Getting suggestions for user:", userInfo.id);
+  
   // Get current user's info for better suggestions
   const q = "SELECT city, interests FROM users WHERE user_id = ?";
   
   db.query(q, [userInfo.id], (err, userData) => {
-    if (err) return res.status(500).json(err);
-    if (!userData || userData.length === 0) return res.status(404).json("User not found");
+    if (err) {
+      console.error("Error fetching user data:", err);
+      return res.status(500).json(err);
+    }
     
-    const userCity = userData[0].city;
-    const userInterests = userData[0].interests ? JSON.parse(userData[0].interests) : [];
+    if (!userData || userData.length === 0) {
+      console.log("User not found:", userInfo.id);
+      return res.status(404).json("User not found");
+    }
+    
+    const userCity = userData[0].city || "";
+    let userInterests = [];
+    
+    try {
+      // Safely parse interests, handling null or invalid JSON
+      if (userData[0].interests) {
+        userInterests = typeof userData[0].interests === 'string' 
+          ? JSON.parse(userData[0].interests) 
+          : userData[0].interests;
+      }
+    } catch (e) {
+      console.error("Error parsing interests:", e);
+      userInterests = [];
+    }
     
     // Extract primary and secondary interests if available
     const primaryInterest = userInterests[0] || "";
     const secondaryInterest = userInterests[1] || "";
+    
+    console.log("User city:", userCity);
+    console.log("User interests:", primaryInterest, secondaryInterest);
     
     // Find users not followed by current user
     const suggestionsQuery = `
@@ -85,32 +109,21 @@ export const getSuggestions = (req, res) => {
     `;
     
     db.query(suggestionsQuery, [userInfo.id, userInfo.id], (err, data) => {
-      if (err) return res.status(500).json(err);
+      if (err) {
+        console.error("Error fetching suggestions:", err);
+        return res.status(500).json(err);
+      }
       
-      // Add relevance reason to each suggestion
+      console.log("Found suggestions:", data.length);
+      
+      // Add a reason to each suggestion without async operations
       const enhancedSuggestions = data.map(user => {
         let reason = "";
         
         if (user.city && user.city === userCity) {
           reason = "From your city";
         } else {
-          // Check if they have posts in user's interests
-          const checkInterestsQuery = `
-            SELECT category FROM posts 
-            WHERE user_id = ? AND category IN (?, ?)
-            LIMIT 1
-          `;
-          
-          db.query(checkInterestsQuery, [user.user_id, primaryInterest, secondaryInterest], (err, interestMatch) => {
-            if (!err && interestMatch.length > 0) {
-              reason = `Interested in ${interestMatch[0].category}`;
-            }
-          });
-          
-          // If no reason set yet, use a generic one
-          if (!reason) {
-            reason = "Popular in the community";
-          }
+          reason = "Popular in the community";
         }
         
         return {
