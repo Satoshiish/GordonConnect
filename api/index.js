@@ -18,6 +18,8 @@ app.use((req, res, next) => {
   res.header("Access-Control-Allow-Credentials", true);
   next();
 });
+app.use(cookieParser());
+
 app.use(express.json());
 app.use(
   cors({
@@ -25,7 +27,6 @@ app.use(
     credentials: true,
   })
 );
-app.use(cookieParser());
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
