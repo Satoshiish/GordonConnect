@@ -191,33 +191,33 @@ const Reports = () => {
                     </div>
                     
                     <div className="flex flex-col sm:flex-row gap-3">
-                        <button
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
                             onClick={exportAllReports}
-                            className={`px-4 py-2 rounded-lg flex items-center gap-2 ${
+                            disabled={reports.length === 0}
+                            className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all duration-200 ${
                                 theme === "dark" 
                                     ? "bg-gray-700 hover:bg-gray-600 text-white" 
                                     : "bg-gray-100 hover:bg-gray-200 text-gray-700"
-                            } transition-colors disabled:opacity-50`}
-                            disabled={reports.length === 0}
+                            } disabled:opacity-50 disabled:cursor-not-allowed`}
                         >
                             <FileSpreadsheet size={16} />
                             Export All
-                        </button>
+                        </motion.button>
                         
-                        <button
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
                             onClick={handleRefresh}
-                            className={`px-4 py-2 rounded-lg flex items-center gap-2 ${
-                                theme === "dark" 
-                                    ? "bg-emerald-600 hover:bg-emerald-500 text-white" 
-                                    : "bg-emerald-500 hover:bg-emerald-600 text-white"
-                            } transition-colors`}
+                            className="px-4 py-2 rounded-full flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white transition-all duration-200"
                         >
                             <RefreshCw 
                                 size={16} 
                                 className={`${isRefreshing ? "animate-spin" : ""}`} 
                             />
                             Refresh
-                        </button>
+                        </motion.button>
                     </div>
                 </div>
                 
@@ -227,7 +227,7 @@ const Reports = () => {
                 }`}>
                     <p className="flex items-center gap-2">
                         <AlertCircle size={14} className={theme === "dark" ? "text-amber-400" : "text-amber-500"} />
-                        <span>Review reported content to maintain community standards and safety.</span>
+                        <span>Our algorithm identifies potentially inappropriate content for review.</span>
                     </p>
                 </div>
             </div>
@@ -287,52 +287,56 @@ const Reports = () => {
                 </div>
                 
                 <div>
-                  <button 
+                  <motion.button 
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => handleViewPost(report.post_id)}
-                    className={`w-full py-2 mt-2 rounded-lg font-medium text-sm flex items-center justify-center gap-2 ${
-                      theme === "dark" 
-                        ? "bg-gray-700 text-gray-200 hover:bg-gray-600" 
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    } transition-colors`}
+                    className="w-full py-2 mt-2 rounded-full font-medium text-sm flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white transition-all duration-200"
                   >
                     <Eye size={16} />
                     View Reported Post
-                  </button>
+                  </motion.button>
                 </div>
               </div>
               
               <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700/50 flex justify-end space-x-2">
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => handleReview(report.id, 1)}
                   disabled={report.reviewed === 1}
-                  className={`p-2 rounded-lg ${
+                  className={`p-2 rounded-full ${
                     report.reviewed === 0 || report.reviewed === null
-                      ? 'bg-green-100 text-green-600 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-800/50'
-                      : 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-500'
-                  }`}
+                      ? 'bg-green-500 text-white hover:bg-green-600'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
+                  } transition-all duration-200`}
                   title="Mark as Resolved"
                 >
                   <CheckCircle2 className="w-5 h-5" />
-                </button>
-                <button
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => handleReview(report.id, 2)}
                   disabled={report.reviewed === 2}
-                  className={`p-2 rounded-lg ${
+                  className={`p-2 rounded-full ${
                     report.reviewed === 0 || report.reviewed === null
-                      ? 'bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-800/50'
-                      : 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-500'
-                  }`}
+                      ? 'bg-red-500 text-white hover:bg-red-600'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
+                  } transition-all duration-200`}
                   title="Reject Report"
                 >
                   <XCircle className="w-5 h-5" />
-                </button>
-                <button
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => handleExport(report)}
-                  className="p-2 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-800/50"
+                  className="p-2 rounded-full bg-blue-500 text-white hover:bg-blue-600 transition-all duration-200"
                   title="Export Report"
                 >
                   <Download className="w-5 h-5" />
-                </button>
+                </motion.button>
               </div>
             </motion.div>
           ))}
@@ -369,17 +373,15 @@ const Reports = () => {
                     </div>
                   </td>
                   <td className="px-4 py-3 text-sm">
-                    <button 
+                    <motion.button 
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                       onClick={() => handleViewPost(report.post_id)}
-                      className={`px-3 py-1 rounded-lg text-xs font-medium flex items-center gap-1.5 ${
-                        theme === "dark" 
-                          ? "bg-gray-700 text-gray-200 hover:bg-gray-600" 
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      } transition-colors`}
+                      className="px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1.5 bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white transition-all duration-200"
                     >
                       <Eye size={14} />
                       View Post
-                    </button>
+                    </motion.button>
                   </td>
                   <td className="px-4 py-3 text-sm">
                     <div className="max-w-[200px] truncate">
@@ -403,37 +405,43 @@ const Reports = () => {
                   </td>
                   <td className="px-4 py-3 text-sm whitespace-nowrap">
                     <div className="flex space-x-2">
-                      <button
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                         onClick={() => handleReview(report.id, 1)}
                         disabled={report.reviewed === 1}
-                        className={`p-1.5 rounded-lg ${
+                        className={`p-1.5 rounded-full ${
                           report.reviewed === 0 || report.reviewed === null
-                            ? 'bg-green-100 text-green-600 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-800/50'
-                            : 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-500'
-                        }`}
+                            ? 'bg-green-500 text-white hover:bg-green-600'
+                            : 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
+                        } transition-all duration-200`}
                         title="Mark as Resolved"
                       >
                         <CheckCircle2 className="w-4 h-4" />
-                      </button>
-                      <button
+                      </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                         onClick={() => handleReview(report.id, 2)}
                         disabled={report.reviewed === 2}
-                        className={`p-1.5 rounded-lg ${
+                        className={`p-1.5 rounded-full ${
                           report.reviewed === 0 || report.reviewed === null
-                            ? 'bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-800/50'
-                            : 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-500'
-                        }`}
+                            ? 'bg-red-500 text-white hover:bg-red-600'
+                            : 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
+                        } transition-all duration-200`}
                         title="Reject Report"
                       >
                         <XCircle className="w-4 h-4" />
-                      </button>
-                      <button
+                      </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                         onClick={() => handleExport(report)}
-                        className="p-1.5 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-800/50"
+                        className="p-1.5 rounded-full bg-blue-500 text-white hover:bg-blue-600 transition-all duration-200"
                         title="Export Report"
                       >
                         <Download className="w-4 h-4" />
-                      </button>
+                      </motion.button>
                     </div>
                   </td>
                 </tr>
@@ -458,15 +466,17 @@ const Reports = () => {
         {/* Post Modal */}
         {postModalOpen && selectedPost && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div
-              className="w-full max-w-lg rounded-lg p-6 bg-white dark:bg-gray-800 shadow-xl border border-gray-100 dark:border-gray-700 relative"
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="w-full max-w-lg rounded-3xl p-8 bg-white dark:bg-gray-900 shadow-2xl border border-gray-100 dark:border-gray-800 relative"
             >
               <button
-                className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 dark:hover:text-white transition"
+                className="absolute top-6 right-6 text-gray-400 hover:text-gray-700 dark:hover:text-white text-2xl transition"
                 onClick={closePostModal}
                 aria-label="Close"
               >
-                <XCircle size={24} />
+                <XCircle size={28} strokeWidth={2.5} />
               </button>
               <h2 className="text-2xl font-bold mb-1 text-gray-900 dark:text-white">Reported Post</h2>
               <p className="text-gray-500 dark:text-gray-400 mb-6">This post was reported by a user.</p>
