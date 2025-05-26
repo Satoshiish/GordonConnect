@@ -25,31 +25,10 @@ const Posts = ({ userId = null }) => {
       if (currentUser?.id || currentUser?.user_id) {
         try {
           const token = localStorage.getItem("token");
-          if (!token) {
-            console.warn("No authentication token found");
-            setUserInterests([]);
-            return;
-          }
-          
-          try {
-            const res = await makeRequest.get("/users/interests", {
-              headers: { Authorization: `Bearer ${token}` },
-            });
-            setUserInterests(res.data || []);
-          } catch (err) {
-            // If 404, the endpoint doesn't exist - use default categories
-            if (err.response?.status === 404) {
-              console.warn("User interests endpoint not found, using default categories");
-              // Use the category tabs as fallback interests
-              const defaultInterests = categoryTabs
-                .filter(tab => tab.value) // Filter out the "All" tab
-                .map(tab => tab.value);
-              setUserInterests(defaultInterests);
-            } else {
-              console.error("Failed to fetch user interests", err);
-              setUserInterests([]);
-            }
-          }
+          const res = await makeRequest.get("/users/interests", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setUserInterests(res.data || []);
         } catch (err) {
           console.error("Failed to fetch user interests", err);
           setUserInterests([]);
@@ -322,7 +301,6 @@ const Posts = ({ userId = null }) => {
 };
 
 export default Posts;
-
 
 
 

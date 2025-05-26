@@ -41,6 +41,7 @@ export const AuthContextProvider = ({ children }) => {
     };
 
     checkAuth();
+    // eslint-disable-next-line
   }, []);
 
   const login = async (inputs) => {
@@ -121,32 +122,6 @@ export const AuthContextProvider = ({ children }) => {
     document.cookie = "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
   };
 
-  // Add this function to check and refresh token if needed
-  const refreshToken = async () => {
-    try {
-      // Get current token
-      const token = localStorage.getItem("token");
-      if (!token) return false;
-      
-      // Verify token with backend
-      const res = await makeRequest.get("/auth/verify", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      if (res.data && !res.data.error) {
-        return true;
-      } else {
-        // Token is invalid, try to log in again
-        logout();
-        return false;
-      }
-    } catch (error) {
-      console.error("Token refresh failed:", error);
-      logout();
-      return false;
-    }
-  };
-
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -169,7 +144,6 @@ export const AuthContextProvider = ({ children }) => {
         canPost,
         canEdit,
         canDelete,
-        refreshToken,
       }}
     >
       {children}
