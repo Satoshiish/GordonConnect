@@ -50,15 +50,27 @@ useEffect(() => {
   const { isPending, error, data } = useQuery({
     queryKey: userId ? ["posts", userId, category] : ["posts", category],
     queryFn: async () => {
-      const token = localStorage.getItem("token");  
-      let url = userId ? `/posts?userId=${userId}` : "/posts";
-      if (category) url += (url.includes("?") ? "&" : "?") + `anyCategory=${encodeURIComponent(category)}`;
-      const res = await makeRequest.get(url, {  
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return res.data;
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          console.warn("No authentication token found for posts request");
+          return [];
+        }
+        
+        let url = userId ? `/posts?userId=${userId}` : "/posts";
+        if (category) url += (url.includes("?") ? "&" : "?") + `anyCategory=${encodeURIComponent(category)}`;
+        
+        const res = await makeRequest.get(url, {  
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        return res.data;
+      } catch (err) {
+        console.error("Failed to fetch posts:", err);
+        return [];
+      }
     },
-    enabled: userId !== undefined,
+    enabled: userId !== undefined && !!localStorage.getItem("token"),
+    retry: false,
   });
 
    if (isPending) {
@@ -309,6 +321,7 @@ useEffect(() => {
 };
 
 export default Posts;
+
 
 
 
