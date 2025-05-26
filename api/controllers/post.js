@@ -174,33 +174,26 @@ export const getPosts = async (req, res) => {
 };
 
 export const addPost = (req, res) => {
-  const token = req.cookies.accessToken;
-  if (!token) return res.status(401).json("Not logged in!");
+  const q =
+    "INSERT INTO posts (`desc`, `img`, `createdAt`, `user_id`, `category`, `category2`, `category3`, `category4`) VALUES (?)";
 
-  jwt.verify(token, "secretkey", (err, userInfo) => {
-    if (err) return res.status(403).json("Token is not valid!");
+  const values = [
+    req.body.desc,
+    req.body.img || null, 
+    moment().format("YYYY-MM-DD HH:mm:ss"), 
+    req.userInfo.id,
+    req.body.category || 'student_life',
+    req.body.category2 || null,
+    req.body.category3 || null,
+    req.body.category4 || null,
+  ];
 
-    const q =
-      "INSERT INTO posts (`desc`, `img`, `createdAt`, `user_id`, `category`, `category2`, `category3`, `category4`) VALUES (?)";
-
-    const values = [
-      req.body.desc,
-      req.body.img || null, 
-      moment().format("YYYY-MM-DD HH:mm:ss"), 
-      userInfo.id,
-      req.body.category || 'student_life',
-      req.body.category2 || null,
-      req.body.category3 || null,
-      req.body.category4 || null,
-    ];
-
-    db.query(q, [values], (err, data) => {
-      if (err) {
-        console.error("MySQL Error:", err);
-        return res.status(500).json(err);
-      }
-      return res.status(200).json("Post has been created!");
-    });
+  db.query(q, [values], (err, data) => {
+    if (err) {
+      console.error("MySQL Error:", err);
+      return res.status(500).json(err);
+    }
+    return res.status(200).json("Post has been created!");
   });
 };
 
@@ -225,6 +218,8 @@ export const deletePost = (req, res) => {
     });
   });
 };
+
+
 
 
 
