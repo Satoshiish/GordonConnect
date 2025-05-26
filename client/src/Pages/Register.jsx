@@ -1,12 +1,13 @@
 import axios from "axios";
-import React, { useState, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useContext, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { User, Mail, Lock, UserPlus } from "lucide-react";
 import { AuthContext } from "../authContext";
 import { makeRequest } from "../axios";
+import { useTheme } from "../ThemeContext";
 
-function Register({ setIsActive }) {
+function Register() {
   const [inputs, setInputs] = useState({
     username: "",
     email: "",
@@ -18,10 +19,11 @@ function Register({ setIsActive }) {
   const [isLoading, setIsLoading] = useState(false);
   
   const navigate = useNavigate();
-  const { currentUser } = useContext(AuthContext);
+  const { currentUser, register } = useContext(AuthContext);
+  const { theme } = useTheme();
 
   // If user is already logged in, redirect to home
-  React.useEffect(() => {
+  useEffect(() => {
     if (currentUser) {
       navigate("/");
     }
