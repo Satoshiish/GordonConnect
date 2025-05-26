@@ -4,7 +4,11 @@ import jwt from "jsonwebtoken";
 // Get all bookmarks for a user (with optional postId filtering)
 export const getBookmarks = (req, res) => {
   const { postId } = req.query;
-  const token = req.cookies.accessToken;
+  
+  // Check for token in cookies or Authorization header
+  const cookieToken = req.cookies.accessToken;
+  const headerToken = req.headers.authorization?.split(" ")[1];
+  const token = cookieToken || headerToken;
 
   if (!token) return res.status(401).json({ error: "Not logged in!" });
 
@@ -37,7 +41,11 @@ export const getBookmarks = (req, res) => {
 // Add or remove bookmark for a post
 export const toggleBookmark = (req, res) => {
   const { postId } = req.body;
-  const token = req.cookies.accessToken;
+  
+  // Check for token in cookies or Authorization header
+  const cookieToken = req.cookies.accessToken;
+  const headerToken = req.headers.authorization?.split(" ")[1];
+  const token = cookieToken || headerToken;
 
   if (!token) return res.status(401).json({ error: "Not logged in!" });
 
@@ -81,7 +89,11 @@ export const toggleBookmark = (req, res) => {
 // Get bookmark status for a specific post
 export const getBookmarkStatus = (req, res) => {
   const { postId } = req.query;
-  const token = req.cookies.accessToken;
+  
+  // Check for token in cookies or Authorization header
+  const cookieToken = req.cookies.accessToken;
+  const headerToken = req.headers.authorization?.split(" ")[1];
+  const token = cookieToken || headerToken;
 
   if (!token) return res.status(401).json({ error: "Not logged in!" });
 

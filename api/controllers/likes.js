@@ -9,23 +9,20 @@ export const getLikes = (req, res) => {
     WHERE posts_id = ?
   `;
 
-  const token = req.cookies.accessToken;
-  if (!token) return res.status(401).json({ error: "Not logged in!" });
-
-  jwt.verify(token, "secretkey", (err, userInfo) => {
-    if (err) return res.status(403).json({ error: "Token is not valid!" });
-
-    db.query(q, [userInfo.id, req.query.postId], (err, data) => {
-      if (err) {
-        return res.status(500).json({ error: "Database error", details: err });
-      }
-      return res.status(200).json(data[0]);
-    });
+  db.query(q, [req.userInfo.id, req.query.postId], (err, data) => {
+    if (err) {
+      return res.status(500).json({ error: "Database error", details: err });
+    }
+    return res.status(200).json(data[0]);
   });
 };
 
 export const addLike = (req, res) => {
-  const token = req.cookies.accessToken;
+  // Check for token in cookies or Authorization header
+  const cookieToken = req.cookies.accessToken;
+  const headerToken = req.headers.authorization?.split(" ")[1];
+  const token = cookieToken || headerToken;
+  
   if (!token) return res.status(401).json({ error: "Not logged in!" });
 
   jwt.verify(token, "secretkey", (err, userInfo) => {
@@ -55,7 +52,11 @@ export const addLike = (req, res) => {
 };
 
 export const deleteLike = (req, res) => {
-  const token = req.cookies.accessToken;
+  // Check for token in cookies or Authorization header
+  const cookieToken = req.cookies.accessToken;
+  const headerToken = req.headers.authorization?.split(" ")[1];
+  const token = cookieToken || headerToken;
+  
   if (!token) return res.status(401).json({ error: "Not logged in!" });
 
   jwt.verify(token, "secretkey", (err, userInfo) => {

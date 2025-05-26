@@ -1,9 +1,11 @@
 import express from "express";
-import { getBookmarks, toggleBookmark } from "../controllers/bookmarks.js"; // Import toggleBookmark
+import { getBookmarks, toggleBookmark, getBookmarkStatus } from "../controllers/bookmarks.js";
+import { verifyToken } from "../middleware/auth.js";
 
 const router = express.Router();
 
-router.get("/", getBookmarks);  // To get bookmarks for the user
-router.post("/", toggleBookmark);  // To toggle (add/remove) a bookmark
+router.get("/", verifyToken, getBookmarks);
+router.post("/", verifyToken, toggleBookmark);
+router.get("/status", verifyToken, getBookmarkStatus);
 
 export default router;

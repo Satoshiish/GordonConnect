@@ -19,7 +19,11 @@ export const getComments = (req, res) => {
 export const addComment = (req, res) => {
   console.log("Received request to add comment:", req.body); // Debug log
 
-  const token = req.cookies.accessToken;
+  // Check for token in cookies or Authorization header
+  const cookieToken = req.cookies.accessToken;
+  const headerToken = req.headers.authorization?.split(" ")[1];
+  const token = cookieToken || headerToken;
+  
   if (!token) {
     console.log("No token found!");
     return res.status(401).json({ error: "Not logged in!" });
