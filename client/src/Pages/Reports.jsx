@@ -155,83 +155,46 @@ const Reports = () => {
 
   return (
     <div className={`min-h-screen ${theme === "dark" ? "bg-gray-900 text-gray-100" : "bg-gray-50 text-gray-900"}`}>
-      <div className="max-w-6xl mx-auto">
-        {/* Enhanced Header Card */}
-        <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className={`mb-8 rounded-xl shadow-lg overflow-hidden relative ${
-                theme === "dark" ? "bg-gray-800 border border-gray-700" : "bg-white"
-            }`}
-        >
-            {/* Background Pattern */}
-            <div className="absolute inset-0 overflow-hidden opacity-10">
-                <div className="absolute -inset-[10px] bg-[radial-gradient(#4ade80_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)]"></div>
+      <div className="max-w-6xl mx-auto p-4">
+        {/* Header Section - Styled exactly like the image */}
+        <div className={`mb-8 rounded-xl overflow-hidden ${theme === "dark" ? "bg-gray-800/80" : "bg-white"}`}>
+          <div className="p-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-lg bg-emerald-500/20">
+                  <Flag size={24} className="text-emerald-400" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-emerald-400">
+                    Content Reports
+                  </h1>
+                  <p className="text-sm text-gray-400">
+                    Review and manage reported content
+                  </p>
+                </div>
+              </div>
+              
+              <button
+                onClick={handleRefresh}
+                className="px-4 py-2 rounded-full flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-blue-500 text-white transition-all duration-200 hover:shadow-lg"
+              >
+                <RefreshCw 
+                  size={16} 
+                  className={`${isRefreshing ? "animate-spin" : ""}`} 
+                />
+                Refresh Reports
+              </button>
             </div>
             
-            <div className="relative p-6">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div className="flex items-start gap-4">
-                        <div className={`p-3 rounded-lg ${
-                            theme === "dark" ? "bg-emerald-500/20" : "bg-emerald-100"
-                        }`}>
-                            <Flag size={24} className={
-                                theme === "dark" ? "text-emerald-400" : "text-emerald-600"
-                            } />
-                        </div>
-                        <div>
-                            <h1 className="text-2xl font-bold mb-1">
-                                Content Reports
-                            </h1>
-                            <p className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}>
-                                Review and manage reported content
-                            </p>
-                        </div>
-                    </div>
-                    
-                    <div className="flex flex-col sm:flex-row gap-3">
-                        <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            onClick={exportAllReports}
-                            disabled={reports.length === 0}
-                            className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all duration-200 ${
-                                theme === "dark" 
-                                    ? "bg-gray-700 hover:bg-gray-600 text-white" 
-                                    : "bg-gray-100 hover:bg-gray-200 text-gray-700"
-                            } disabled:opacity-50 disabled:cursor-not-allowed`}
-                        >
-                            <FileSpreadsheet size={16} />
-                            Export All
-                        </motion.button>
-                        
-                        <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            onClick={handleRefresh}
-                            className="px-4 py-2 rounded-full flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white transition-all duration-200"
-                        >
-                            <RefreshCw 
-                                size={16} 
-                                className={`${isRefreshing ? "animate-spin" : ""}`} 
-                            />
-                            Refresh
-                        </motion.button>
-                    </div>
-                </div>
-                
-                {/* Reports Info */}
-                <div className={`mt-4 p-3 rounded-lg text-sm ${
-                    theme === "dark" ? "bg-gray-700/50 text-gray-300" : "bg-gray-100 text-gray-700"
-                }`}>
-                    <p className="flex items-center gap-2">
-                        <AlertCircle size={14} className={theme === "dark" ? "text-amber-400" : "text-amber-500"} />
-                        <span>Our algorithm identifies potentially inappropriate content for review.</span>
-                    </p>
-                </div>
+            {/* Info Banner */}
+            <div className="mt-4 p-3 rounded-lg bg-gray-700/50 text-gray-300 text-sm">
+              <p className="flex items-center gap-2">
+                <span className="text-yellow-400">✦</span>
+                <span>Our algorithm identifies potentially inappropriate content for review.</span>
+              </p>
             </div>
-        </motion.div>
+          </div>
+        </div>
         
         {/* Mobile Card View (visible on small screens only) */}
         <div className="block sm:hidden space-y-4">
@@ -287,22 +250,18 @@ const Reports = () => {
                 </div>
                 
                 <div>
-                  <motion.button 
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                  <button 
                     onClick={() => handleViewPost(report.post_id)}
-                    className="w-full py-2 mt-2 rounded-full font-medium text-sm flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white transition-all duration-200"
+                    className="w-full py-2 mt-2 rounded-full font-medium text-sm flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-blue-500 text-white transition-all duration-200"
                   >
                     <Eye size={16} />
                     View Reported Post
-                  </motion.button>
+                  </button>
                 </div>
               </div>
               
               <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700/50 flex justify-end space-x-2">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                <button
                   onClick={() => handleReview(report.id, 1)}
                   disabled={report.reviewed === 1}
                   className={`p-2 rounded-full ${
@@ -313,10 +272,8 @@ const Reports = () => {
                   title="Mark as Resolved"
                 >
                   <CheckCircle2 className="w-5 h-5" />
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                </button>
+                <button
                   onClick={() => handleReview(report.id, 2)}
                   disabled={report.reviewed === 2}
                   className={`p-2 rounded-full ${
@@ -327,16 +284,14 @@ const Reports = () => {
                   title="Reject Report"
                 >
                   <XCircle className="w-5 h-5" />
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                </button>
+                <button
                   onClick={() => handleExport(report)}
                   className="p-2 rounded-full bg-blue-500 text-white hover:bg-blue-600 transition-all duration-200"
                   title="Export Report"
                 >
                   <Download className="w-5 h-5" />
-                </motion.button>
+                </button>
               </div>
             </motion.div>
           ))}
@@ -373,15 +328,13 @@ const Reports = () => {
                     </div>
                   </td>
                   <td className="px-4 py-3 text-sm">
-                    <motion.button 
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
+                    <button 
                       onClick={() => handleViewPost(report.post_id)}
-                      className="px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1.5 bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white transition-all duration-200"
+                      className="px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1.5 bg-gradient-to-r from-emerald-500 to-blue-500 text-white transition-all duration-200"
                     >
                       <Eye size={14} />
                       View Post
-                    </motion.button>
+                    </button>
                   </td>
                   <td className="px-4 py-3 text-sm">
                     <div className="max-w-[200px] truncate">
@@ -405,9 +358,7 @@ const Reports = () => {
                   </td>
                   <td className="px-4 py-3 text-sm whitespace-nowrap">
                     <div className="flex space-x-2">
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                      <button
                         onClick={() => handleReview(report.id, 1)}
                         disabled={report.reviewed === 1}
                         className={`p-1.5 rounded-full ${
@@ -418,10 +369,8 @@ const Reports = () => {
                         title="Mark as Resolved"
                       >
                         <CheckCircle2 className="w-4 h-4" />
-                      </motion.button>
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                      </button>
+                      <button
                         onClick={() => handleReview(report.id, 2)}
                         disabled={report.reviewed === 2}
                         className={`p-1.5 rounded-full ${
@@ -432,16 +381,14 @@ const Reports = () => {
                         title="Reject Report"
                       >
                         <XCircle className="w-4 h-4" />
-                      </motion.button>
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                      </button>
+                      <button
                         onClick={() => handleExport(report)}
                         className="p-1.5 rounded-full bg-blue-500 text-white hover:bg-blue-600 transition-all duration-200"
                         title="Export Report"
                       >
                         <Download className="w-4 h-4" />
-                      </motion.button>
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -466,23 +413,21 @@ const Reports = () => {
         {/* Post Modal */}
         {postModalOpen && selectedPost && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="w-full max-w-lg rounded-3xl p-8 bg-white dark:bg-gray-900 shadow-2xl border border-gray-100 dark:border-gray-800 relative"
+            <div
+              className="w-full max-w-lg rounded-xl p-6 bg-gray-800 border border-gray-700 shadow-xl relative"
             >
               <button
-                className="absolute top-6 right-6 text-gray-400 hover:text-gray-700 dark:hover:text-white text-2xl transition"
+                className="absolute top-4 right-4 text-gray-400 hover:text-white transition"
                 onClick={closePostModal}
                 aria-label="Close"
               >
-                <XCircle size={28} strokeWidth={2.5} />
+                <XCircle size={24} />
               </button>
-              <h2 className="text-2xl font-bold mb-1 text-gray-900 dark:text-white">Reported Post</h2>
-              <p className="text-gray-500 dark:text-gray-400 mb-6">This post was reported by a user.</p>
+              <h2 className="text-xl font-bold mb-1 text-white">Reported Post</h2>
+              <p className="text-gray-400 mb-6 text-sm">This post was reported by a user.</p>
               
               {/* Post Content */}
-              <div className="p-5 rounded-xl border bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 mb-6">
+              <div className="p-5 rounded-xl border bg-gray-700/50 border-gray-700 mb-6">
                 <div className="flex items-center mb-4">
                   <img 
                     src={selectedPost.profilePic ? `/upload/${selectedPost.profilePic}` : "/default-profile.jpg"} 
@@ -490,21 +435,21 @@ const Reports = () => {
                     className="w-10 h-10 rounded-full mr-3 border-2 border-emerald-400"
                   />
                   <div>
-                    <div className="font-medium text-gray-900 dark:text-white">{selectedPost.name || "Anonymous User"}</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                    <div className="font-medium text-white">{selectedPost.name || "Anonymous User"}</div>
+                    <div className="text-xs text-gray-400">
                       {new Date(selectedPost.createdAt).toLocaleString()}
                     </div>
                   </div>
                 </div>
                 
-                <p className="mb-4 text-gray-800 dark:text-gray-200">{selectedPost.desc}</p>
+                <p className="mb-4 text-gray-200">{selectedPost.desc}</p>
                 
                 {selectedPost.img && (
                   <div className="mt-3">
                     <img 
                       src={`/upload/${selectedPost.img}`} 
                       alt="Post" 
-                      className="w-full rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm"
+                      className="w-full rounded-lg border border-gray-600 shadow-sm"
                     />
                   </div>
                 )}
@@ -512,19 +457,19 @@ const Reports = () => {
               
               {/* Report Information */}
               <div className="mb-6">
-                <h4 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                <h4 className="text-sm font-medium mb-2 text-gray-300">
                   Report Information
                 </h4>
-                <div className="p-4 rounded-xl border bg-red-50 dark:bg-red-900/20 border-red-100 dark:border-red-800/30">
+                <div className="p-4 rounded-xl border bg-red-900/20 border-red-800/30">
                   <div className="text-sm mb-2">
                     <span className="font-medium">Reason: </span>
-                    <span className="text-gray-700 dark:text-gray-300">
+                    <span className="text-gray-300">
                       {reports.find(r => r.post_id === selectedPost.id || r.post_id === selectedPost.posts_id)?.reason || "No reason provided"}
                     </span>
                   </div>
                   <div className="text-sm">
                     <span className="font-medium">Reported on: </span>
-                    <span className="text-gray-700 dark:text-gray-300">
+                    <span className="text-gray-300">
                       {reports.find(r => r.post_id === selectedPost.id || r.post_id === selectedPost.posts_id)?.created_at 
                         ? new Date(reports.find(r => r.post_id === selectedPost.id || r.post_id === selectedPost.posts_id).created_at).toLocaleString()
                         : "Unknown date"}
@@ -537,7 +482,7 @@ const Reports = () => {
               <div className="flex justify-end gap-3">
                 <button
                   onClick={closePostModal}
-                  className="px-6 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+                  className="px-6 py-2 rounded-full bg-gray-700 text-gray-200 font-medium hover:bg-gray-600 transition"
                 >
                   Close
                 </button>
@@ -549,7 +494,7 @@ const Reports = () => {
                         if (report) handleReview(report.id, 1);
                         closePostModal();
                       }}
-                      className="px-6 py-2 rounded-xl bg-green-500 text-white font-semibold hover:bg-green-600 transition shadow"
+                      className="px-6 py-2 rounded-full bg-green-500 text-white font-semibold hover:bg-green-600 transition shadow"
                     >
                       Approve
                     </button>
@@ -559,7 +504,7 @@ const Reports = () => {
                         if (report) handleReview(report.id, 2);
                         closePostModal();
                       }}
-                      className="px-6 py-2 rounded-xl bg-red-500 text-white font-semibold hover:bg-red-600 transition shadow"
+                      className="px-6 py-2 rounded-full bg-red-500 text-white font-semibold hover:bg-red-600 transition shadow"
                     >
                       Reject
                     </button>
@@ -575,4 +520,5 @@ const Reports = () => {
 };
 
 export default Reports; 
+
 
