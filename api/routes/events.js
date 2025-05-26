@@ -8,11 +8,17 @@ import {
   getEventJoins,
   availEvent
 } from "../controllers/events.js";
+import { db } from "../connect.js";
 import { verifyToken } from "../middleware/auth.js";
 
 const router = express.Router();
 
-// Get all events - allow guest access
+// Test endpoint that just returns a simple response
+router.get("/test", (req, res) => {
+  res.status(200).json({ message: "Events API is working" });
+});
+
+// Get all events - public access
 router.get("/", getEvents);
 
 // Create new event (admin only)
@@ -24,11 +30,11 @@ router.put("/:id", verifyToken, updateEvent);
 // Delete event (admin only)
 router.delete("/:id", verifyToken, deleteEvent);
 
-// Get who joined an event - allow guest access
+// Get who joined an event
 router.get("/:id/joins", getEventJoins);
 
 // Add this route for joining an event
-router.post("/:id/avail", verifyToken, availEvent);
+router.post("/:id/avail", availEvent);
 
 // Get all emails who joined a specific event
 router.get('/:id/emails', verifyToken, (req, res) => {
@@ -44,6 +50,3 @@ router.get('/:id/emails', verifyToken, (req, res) => {
 });
 
 export default router;
-
-
-

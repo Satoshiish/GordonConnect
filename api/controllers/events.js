@@ -1,66 +1,70 @@
 import { db } from "../connect.js";
 import jwt from "jsonwebtoken";
-import nodemailer from "nodemailer";
 
-export const getEvents = async (req, res) => {
-  try {
-    // Simple query to get all events
-    const q = `
-      SELECT e.*, u.name as creator_name, u.profilePic as creator_pic,
-             (SELECT COUNT(*) FROM event_avails WHERE event_id = e.id) as join_count
-      FROM events e
-      LEFT JOIN users u ON e.creator_id = u.user_id
-      ORDER BY e.date ASC, e.time ASC
-    `;
+export const getEvents = (req, res) => {
+  // Simple query to get all events
+  const q = `
+    SELECT e.*, 
+           (SELECT COUNT(*) FROM event_avails WHERE event_id = e.id) as join_count
+    FROM events e
+    ORDER BY e.date ASC
+  `;
+
+  db.query(q, (err, data) => {
+    if (err) {
+      console.error("Database error in getEvents:", err);
+      return res.status(500).json({ error: "Database error", details: err.message });
+    }
     
-    db.query(q, (err, data) => {
-      if (err) return res.status(500).json(err);
-      return res.status(200).json(data);
-    });
-  } catch (error) {
-    console.error("Error in getEvents:", error);
-    return res.status(500).json("Server error");
-  }
+    // Log the image field of each event for debugging
+    if (Array.isArray(data)) {
+      data.forEach((event) => {
+        console.log(`Event ID: ${event.id}, Image: ${event.image}`);
+      });
+    }
+    
+    return res.status(200).json(data || []);
+  });
 };
 
 export const addEvent = (req, res) => {
-  // Use userInfo from middleware
-  const userInfo = req.userInfo;
-  
-  // Check if user is admin
-  const checkAdminQ = "SELECT role FROM users WHERE user_id = ?";
-  db.query(checkAdminQ, [userInfo.id], (err, data) => {
-    if (err) return res.status(500).json(err);
-    if (data[0].role !== "admin")
-      return res.status(403).json("Only admins can create events!");
+  const token = req.cookies.accessToken || req.headers.authorization?.split(" ")[1];
+  if (!token) return res.status(401).json("Not authenticated!");
 
-    const q = `
-      INSERT INTO events (title, date, time, location, description, image, user_id)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `;
-    const values = [
-      req.body.title,
-      req.body.date,
-      req.body.time,
-      req.body.location,
-      req.body.description,
-      req.body.image || null,
-      userInfo.id,
-    ];
+  jwt.verify(token, "secretkey", (err, userInfo) => {
+    if (err) return res.status(403).json("Token is not valid!");
 
-    db.query(q, values, (err, data) => {
+    // Check if user is admin
+    const checkAdminQ = "SELECT role FROM users WHERE user_id = ?";
+    db.query(checkAdminQ, [userInfo.id], (err, data) => {
       if (err) return res.status(500).json(err);
-      return res.status(201).json("Event has been created!");
+      if (data[0].role !== "admin")
+        return res.status(403).json("Only admins can create events!");
+
+      const q = `
+        INSERT INTO events (title, date, time, location, description, image, user_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `;
+      const values = [
+        req.body.title,
+        req.body.date,
+        req.body.time,
+        req.body.location,
+        req.body.description,
+        req.body.image || null,
+        userInfo.id,
+      ];
+
+      db.query(q, values, (err, data) => {
+        if (err) return res.status(500).json(err);
+        return res.status(201).json("Event has been created!");
+      });
     });
   });
 };
 
 export const updateEvent = (req, res) => {
-  // Check for token in cookies or Authorization header
-  const cookieToken = req.cookies.accessToken;
-  const headerToken = req.headers.authorization?.split(" ")[1];
-  const token = cookieToken || headerToken;
-  
+  const token = req.cookies.accessToken || req.headers.authorization?.split(" ")[1];
   if (!token) return res.status(401).json("Not authenticated!");
 
   jwt.verify(token, "secretkey", (err, userInfo) => {
@@ -93,7 +97,6 @@ export const updateEvent = (req, res) => {
         if (err) return res.status(500).json(err);
         if (data.affectedRows === 0)
           return res.status(403).json("You can only update your own events!");
-        // No email sending, just return success
         return res.status(200).json("Event has been updated!");
       });
     });
@@ -101,66 +104,26 @@ export const updateEvent = (req, res) => {
 };
 
 export const deleteEvent = (req, res) => {
-  // Check for token in cookies or Authorization header
-  const cookieToken = req.cookies.accessToken;
-  const headerToken = req.headers.authorization?.split(" ")[1];
-  const token = cookieToken || headerToken;
-  
-  if (!token) {
-    console.log("No token provided for event deletion");
-    return res.status(401).json("Not authenticated!");
-  }
+  const token = req.cookies.accessToken || req.headers.authorization?.split(" ")[1];
+  if (!token) return res.status(401).json("Not authenticated!");
 
   jwt.verify(token, "secretkey", (err, userInfo) => {
-    if (err) {
-      console.log("Token verification failed:", err.message);
-      return res.status(403).json("Token is not valid!");
-    }
+    if (err) return res.status(403).json("Token is not valid!");
 
     // Check if user is admin
     const checkAdminQ = "SELECT role FROM users WHERE user_id = ?";
     db.query(checkAdminQ, [userInfo.id], (err, data) => {
-      if (err) {
-        console.log("Database error checking admin role:", err);
-        return res.status(500).json(err);
-      }
-      
-      if (!data || data.length === 0) {
-        console.log("User not found:", userInfo.id);
-        return res.status(404).json("User not found");
-      }
-      
-      if (data[0].role !== "admin") {
-        console.log("Non-admin tried to delete event. User role:", data[0].role);
+      if (err) return res.status(500).json(err);
+      if (data[0].role !== "admin")
         return res.status(403).json("Only admins can delete events!");
-      }
 
-      console.log("Admin verified, proceeding with event deletion");
-      
-      // First delete related records from event_avails
-      const deleteAvailsQ = "DELETE FROM event_avails WHERE event_id = ?";
-      db.query(deleteAvailsQ, [req.params.id], (err) => {
-        if (err) {
-          console.log("Error deleting event avails:", err);
-          return res.status(500).json(err);
-        }
-        
-        // Now delete the event
-        const deleteEventQ = "DELETE FROM events WHERE id = ?";
-        db.query(deleteEventQ, [req.params.id], (err, result) => {
-          if (err) {
-            console.log("Error deleting event:", err);
-            return res.status(500).json(err);
-          }
-          
-          if (result.affectedRows === 0) {
-            console.log("Event not found:", req.params.id);
-            return res.status(404).json("Event not found!");
-          }
-          
-          console.log("Event deleted successfully:", req.params.id);
-          return res.status(200).json("Event has been deleted!");
-        });
+      const q = "DELETE FROM events WHERE id = ? AND user_id = ?";
+
+      db.query(q, [req.params.id, userInfo.id], (err, data) => {
+        if (err) return res.status(500).json(err);
+        if (data.affectedRows === 0)
+          return res.status(403).json("You can only delete your own events!");
+        return res.status(200).json("Event has been deleted!");
       });
     });
   });
@@ -212,7 +175,4 @@ export const getEventJoins = (req, res) => {
     }
   );
 };
-
-
-
 

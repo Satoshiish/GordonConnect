@@ -103,7 +103,10 @@ const Events = () => {
     setIsLoading(true);
     try {
       console.log("Fetching events...");
-      const res = await makeRequest.get("/events");
+      const token = localStorage.getItem("token");
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      
+      const res = await makeRequest.get("/events", { headers });
       console.log("Events response:", res.data);
       
       // Handle empty response
@@ -164,10 +167,12 @@ const Events = () => {
       if (selectedImage) {
         const formData = new FormData();
         formData.append("file", selectedImage);
+        const token = localStorage.getItem("token");
+        
         const uploadRes = await makeRequest.post("upload", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
-            "Authorization": `Bearer ${localStorage.getItem("token")}`
+            "Authorization": `Bearer ${token}`
           },
         });
         imageUrl = "/upload/" + uploadRes.data; // Use the filename directly as in posts
@@ -183,9 +188,10 @@ const Events = () => {
         image: imageUrl
       };
 
+      const token = localStorage.getItem("token");
       await makeRequest.post("events", eventData, {
         headers: {
-          "Authorization": `Bearer ${localStorage.getItem("token")}`
+          "Authorization": `Bearer ${token}`
         }
       });
       
@@ -230,7 +236,7 @@ const Events = () => {
       } finally {
         setDeletingEventId(null);
       }
-    }, 400); // 400ms matches animation duration
+    }, 300);
   };
 
   const handleAvailClick = (event) => {
@@ -1461,6 +1467,7 @@ const Events = () => {
 };
 
 export default Events;
+
 
 
 
