@@ -1,11 +1,12 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
 import { useTheme } from "../ThemeContext";
 import { AuthContext } from "../authContext";
 import { makeRequest } from "../axios";
 import { XCircle, Trash2, Image as ImageIcon, Maximize2, Edit2, Plus, MessageCircle, Clock, User, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from 'react-hot-toast';
+import { Link } from "react-router-dom";
 
 const BASE_URL = "https://gordon-connect.vercel.app";
 
@@ -13,56 +14,130 @@ const Forum = () => {
   const { theme } = useTheme();
   const { currentUser, canComment } = useContext(AuthContext);
   const isAdmin = currentUser?.role === "admin";
+  const queryClient = useQueryClient();
 
-  const [forums, setForums] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [newForum, setNewForum] = useState({ title: "", description: "" });
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [newComment, setNewComment] = useState({});
-  const [error, setError] = useState("");
   const [expandedForums, setExpandedForums] = useState({});
-  const [deletingForum, setDeletingForum] = useState(null);
   const [pendingDeleteForum, setPendingDeleteForum] = useState(null);
   const [showImagePreview, setShowImagePreview] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
 
-  const queryClient = useQueryClient();
-
-  const fetchForums = async () => {
-    setIsLoading(true);
-    try {
+  // Fetch forums using React Query
+  const { data: forums = [], isLoading, error } = useQuery({
+    queryKey: ['forums'],
+    queryFn: async () => {
       const res = await makeRequest.get("/forums");
       console.log("Forums response:", res.data);
       
-      // Ensure forums are sorted by createdAt (newest first)
-      const sortedForums = Array.isArray(res.data) 
-        ? [...res.data].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-        : [];
+      if (!Array.isArray(res.data)) {
+        console.error("Invalid forum data format:", res.data);
+        return [];
+      }
       
-      setForums(sortedForums);
-    } catch (err) {
-      console.error("Failed to fetch forums", err);
-      toast.error("Failed to load discussions");
-      setForums([]); // Set empty array on error
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      // Sort forums by createdAt (newest first)
+      return [...res.data].sort((a, b) => 
+        new Date(b.createdAt) - new Date(a.createdAt)
+      );
+    },
+    staleTime: 60000, // 1 minute
+    retry: 1
+  });
 
-  // Add a function to test the forum API
-  const testForumApi = async () => {
-    try {
-      console.log("Testing forum API...");
-      const res = await makeRequest.get("/forums/test");
-      console.log("Forum API test response:", res.data);
-      toast.success("Forum API is working!");
-    } catch (err) {
-      console.error("Forum API test failed:", err);
-      toast.error("Forum API test failed");
+  // Create forum mutation
+  const createForumMutation = useMutation({
+    mutationFn: async (forumData) => {
+      const res = await makeRequest.post("/forums", forumData);
+      return res.data;
+    },
+    onSuccess: () => {
+      // Invalidate and refetch forums query
+      queryClient.invalidateQueries({ queryKey: ['forums'] });
+      
+      // Reset form
+      setNewForum({ title: "", description: "" });
+      setSelectedImage(null);
+      setImagePreview(null);
+      setShowForm(false);
+      
+      toast.success("Discussion created successfully!");
+    },
+    onError: (error) => {
+      console.error("Failed to create forum:", error);
+      toast.error("Failed to create discussion. Please try again.");
     }
-  };
+  });
+
+  // Delete forum mutation
+  const deleteForumMutation = useMutation({
+    mutationFn: async (forum_id) => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("You must be logged in to delete a discussion");
+      }
+      
+      const res = await makeRequest.delete(`/forums/${forum_id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      // Invalidate and refetch forums query
+      queryClient.invalidateQueries({ queryKey: ['forums'] });
+      toast.success("Discussion deleted successfully");
+    },
+    onError: (error) => {
+      console.error("Failed to delete forum:", error);
+      toast.error(error.response?.data || "Failed to delete forum");
+    }
+  });
+
+  // Add comment mutation
+  const addCommentMutation = useMutation({
+    mutationFn: async ({ forum_id, comment }) => {
+      const res = await makeRequest.post(`/forums/${forum_id}/comments`, { comment });
+      return res.data;
+    },
+    onSuccess: () => {
+      // Invalidate and refetch forums query
+      queryClient.invalidateQueries({ queryKey: ['forums'] });
+    },
+    onError: (error) => {
+      console.error("Failed to post comment:", error);
+      toast.error("Failed to post comment. Please try again.");
+    }
+  });
+
+  // Delete comment mutation
+  const deleteCommentMutation = useMutation({
+    mutationFn: async ({ forum_id, comment_id }) => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("You must be logged in to delete a comment");
+      }
+      
+      const res = await makeRequest.delete(`/forums/${forum_id}/comments/${comment_id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      // Invalidate and refetch forums query
+      queryClient.invalidateQueries({ queryKey: ['forums'] });
+      toast.success("Comment deleted successfully");
+    },
+    onError: (error) => {
+      console.error("Failed to delete comment:", error);
+      toast.error(error.response?.data || "Failed to delete comment");
+    }
+  });
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -88,6 +163,7 @@ const Forum = () => {
 
   const handleCreate = async (event) => {
     event.preventDefault();
+    
     try {
       let imageUrl = null;
       if (selectedImage) {
@@ -107,72 +183,43 @@ const Forum = () => {
         image: imageUrl,
       };
       
-      await makeRequest.post("/forums", forumData);
-      
-      // After creating a new forum, fetch all forums again
-      fetchForums();
-      
-      // Reset form
-      setNewForum({ title: "", description: "" });
-      setSelectedImage(null);
-      setImagePreview(null);
-      setShowForm(false);
-      
-      toast.success("Discussion created successfully!");
+      createForumMutation.mutate(forumData);
     } catch (error) {
-      console.error("Failed to create forum:", error);
-      toast.error("Failed to create discussion. Please try again.");
+      console.error("Failed to upload image:", error);
+      toast.error("Failed to upload image. Please try again.");
     }
   };
 
-  const handleCommentSubmit = async (forum_id) => {
+  const handleCommentSubmit = (forum_id) => {
     if (!newComment[forum_id]?.trim()) return;
     if (!canComment) {
-      setError("Please sign in to comment");
+      toast.error("Please sign in to comment");
       return;
     }
-    try {
-      await makeRequest.post(`/forums/${forum_id}/comments`, { comment: newComment[forum_id] });
-      setNewComment((prev) => ({ ...prev, [forum_id]: "" }));
-      fetchForums();
-    } catch (error) {
-      console.error("Failed to post comment:", error);
-      setError("Failed to post comment. Please try again.");
-    }
+    
+    addCommentMutation.mutate({ 
+      forum_id, 
+      comment: newComment[forum_id] 
+    });
+    
+    // Clear the comment input
+    setNewComment((prev) => ({ ...prev, [forum_id]: "" }));
   };
 
-  const handleDelete = async (forum_id) => {
-    setDeletingForum(forum_id);
-    try {
-      const token = localStorage.getItem("token");
-      await makeRequest.delete(`/forums/${forum_id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      toast.success("Forum deleted successfully");
-      // Update the forums list by filtering out the deleted forum
-      setForums((prev) => prev.filter((forum) => forum.forum_id !== forum_id));
-    } catch (err) {
-      console.error("Failed to delete forum:", err);
-      toast.error(err.response?.data || "Failed to delete forum");
-    } finally {
-      setDeletingForum(null);
+  const handleDelete = (forum_id) => {
+    if (!confirm("Are you sure you want to delete this discussion?")) {
+      return;
     }
+    
+    deleteForumMutation.mutate(forum_id);
   };
 
-  const handleDeleteComment = async (forum_id, comment_id) => {
-    try {
-      const token = localStorage.getItem("token");
-      await makeRequest.delete(`/forums/${forum_id}/comments/${comment_id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      fetchForums();
-    } catch (error) {
-      setError("Failed to delete comment. Please try again.");
+  const handleDeleteComment = (forum_id, comment_id) => {
+    if (!confirm("Are you sure you want to delete this comment?")) {
+      return;
     }
+    
+    deleteCommentMutation.mutate({ forum_id, comment_id });
   };
 
   const toggleForumExpansion = (forum_id) => {
@@ -182,15 +229,10 @@ const Forum = () => {
     }));
   };
 
-  useEffect(() => {
-    testForumApi(); // Test the API first
-    fetchForums();
-  }, [currentUser]);
-
   return (
     <div className={`min-h-screen ${theme === "dark" ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-100" : "bg-gradient-to-br from-gray-50 via-white to-gray-50 text-gray-900"} transition-colors`}>
       <div className="max-w-6xl mx-auto p-2 sm:p-4 md:p-6 lg:p-8">
-        {/* Enhanced Header Card */}
+        {/* Header Card */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -236,189 +278,8 @@ const Forum = () => {
                 </motion.button>
               )}
             </div>
-            
-            {/* Forum Guidelines */}
-            <div className={`mt-6 p-4 rounded-xl text-sm ${
-              theme === "dark" ? "bg-gray-700/50 text-gray-300" : "bg-gray-50 text-gray-700"
-            }`}>
-              <p className="flex items-center gap-2">
-                <MessageCircle size={16} className={theme === "dark" ? "text-amber-400" : "text-amber-500"} />
-                <span>Share your thoughts, ask questions, and connect with other community members.</span>
-              </p>
-            </div>
           </div>
         </motion.div>
-
-        {/* Error Toast */}
-        {error && (
-          <motion.div 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="mb-8 p-4 rounded-xl bg-red-100/90 dark:bg-red-900/30 text-red-600 dark:text-red-400 shadow-lg backdrop-blur-sm border border-red-200 dark:border-red-800/50 flex items-center gap-3"
-          >
-            <XCircle size={20} className="flex-shrink-0" />
-            <p>{error}</p>
-          </motion.div>
-        )}
-
-        {/* Create New Discussion Modal */}
-        {showForm && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className={`w-full max-w-2xl rounded-2xl p-6 sm:p-8 ${
-                theme === "dark" ? "bg-gray-900" : "bg-white"
-              } shadow-2xl border ${
-                theme === "dark" ? "border-gray-700" : "border-gray-200"
-              }`}
-            >
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h2 className={`text-2xl font-bold mb-2 ${
-                    theme === "dark" ? "text-white" : "text-gray-900"
-                  }`}>Create New Discussion</h2>
-                  <p className={`text-sm ${
-                    theme === "dark" ? "text-gray-400" : "text-gray-500"
-                  }`}>Share your thoughts with the community</p>
-                </div>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setShowForm(false)}
-                  className={`p-2 rounded-lg transition-colors duration-200 ${
-                    theme === "dark" 
-                      ? "text-gray-400 hover:text-white hover:bg-gray-800" 
-                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                  }`}
-                >
-                  <XCircle size={24} strokeWidth={2.5} />
-                </motion.button>
-              </div>
-
-              <form className="space-y-6" onSubmit={handleCreate}>
-                <div>
-                  <label className={`block text-sm font-medium mb-2 ${
-                    theme === "dark" ? "text-gray-300" : "text-gray-700"
-                  }`}>Title</label>
-                  <input
-                    type="text"
-                    placeholder="Enter discussion title"
-                    value={newForum.title}
-                    onChange={(e) => setNewForum({ ...newForum, title: e.target.value })}
-                    className={`w-full p-3 rounded-xl outline-none transition-all duration-200 ${
-                      theme === "dark" 
-                        ? "bg-gray-800 text-white placeholder-gray-400 focus:bg-gray-700 focus:ring-2 focus:ring-teal-500" 
-                        : "bg-gray-50 text-gray-900 placeholder-gray-500 focus:bg-gray-100 focus:ring-2 focus:ring-emerald-400"
-                    }`}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className={`block text-sm font-medium mb-2 ${
-                    theme === "dark" ? "text-gray-300" : "text-gray-700"
-                  }`}>Content</label>
-                  <textarea
-                    placeholder="Write your discussion content..."
-                    value={newForum.description}
-                    onChange={(e) => setNewForum({ ...newForum, description: e.target.value })}
-                    className={`w-full p-3 rounded-xl outline-none resize-none transition-all duration-200 ${
-                      theme === "dark" 
-                        ? "bg-gray-800 text-white placeholder-gray-400 focus:bg-gray-700 focus:ring-2 focus:ring-teal-500" 
-                        : "bg-gray-50 text-gray-900 placeholder-gray-500 focus:bg-gray-100 focus:ring-2 focus:ring-emerald-400"
-                    }`}
-                    rows={6}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className={`block text-sm font-medium mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>
-                    Add Image <span className="font-normal text-gray-400">(Optional)</span>
-                  </label>
-                  <div className="flex items-center gap-4">
-                    <input
-                      type="file"
-                      id="forum-image"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      className="hidden"
-                    />
-                    <label
-                      htmlFor="forum-image"
-                      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl cursor-pointer transition-all duration-200 ${
-                        theme === "dark" 
-                          ? "bg-gray-800 text-gray-300 hover:bg-gray-700" 
-                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                      }`}
-                    >
-                      <ImageIcon size={20} />
-                      <span>Choose Image</span>
-                    </label>
-                    {imagePreview && (
-                      <div className="relative w-24 h-24">
-                        <img
-                          src={imagePreview}
-                          alt="Preview"
-                          className="w-full h-full object-cover rounded-xl"
-                        />
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          type="button"
-                          onClick={() => { setSelectedImage(null); setImagePreview(null); }}
-                          className="absolute -top-2 -right-2 p-1 rounded-full bg-red-500 text-white shadow-lg"
-                        >
-                          <XCircle size={20} strokeWidth={2.5} />
-                        </motion.button>
-                      </div>
-                    )}
-                  </div>
-                  <p className={`mt-2 text-xs ${
-                    theme === "dark" ? "text-gray-400" : "text-gray-500"
-                  }`}>Maximum file size: 5MB. Supported formats: JPG, PNG, GIF</p>
-                </div>
-
-                <div className="flex justify-end gap-4 pt-4">
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    type="button"
-                    onClick={() => setShowForm(false)}
-                    className={`px-6 py-2.5 rounded-xl font-medium transition-all duration-200 ${
-                      theme === "dark" 
-                        ? "bg-gray-800 text-gray-300 hover:bg-gray-700" 
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`}
-                  >
-                    Cancel
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    type="submit"
-                    className={`px-6 py-2.5 rounded-xl font-medium text-white transition-all duration-200 ${
-                      theme === "dark"
-                        ? "bg-gradient-to-r from-teal-500 via-teal-600 to-teal-500 hover:from-teal-600 hover:via-teal-700 hover:to-teal-600"
-                        : "bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-400 hover:from-emerald-500 hover:via-emerald-600 hover:to-emerald-500"
-                    } flex items-center gap-2`}
-                  >
-                    <Plus size={20} />
-                    Create Discussion
-                  </motion.button>
-                </div>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
 
         {/* Forum Posts */}
         <div className="space-y-8">
@@ -428,231 +289,215 @@ const Forum = () => {
                 <Loader2 size={40} className="animate-spin mx-auto mb-4 text-emerald-500" />
                 <p className="text-gray-500">Loading discussions...</p>
               </div>
-            ) : forums.length ? forums.map((forum) => (
-              <motion.div
-                key={forum.forum_id}
-                initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                animate={{ 
-                  opacity: deletingForum === forum.forum_id ? 0 : 1,
-                  y: deletingForum === forum.forum_id ? -20 : 0,
-                  scale: deletingForum === forum.forum_id ? 0.9 : 1
-                }}
-                exit={{ opacity: 0, y: -20, scale: 0.9 }}
-                transition={{ duration: 0.4, ease: "easeInOut" }}
-                className={`group rounded-2xl overflow-hidden transition-all duration-300 ${
-                  theme === "dark" 
-                    ? "bg-gray-800/40 hover:bg-gray-800/60 backdrop-blur-md border border-gray-700/50" 
-                    : "bg-white hover:bg-gray-50/80 shadow-lg border border-gray-100"
-                } ${deletingForum === forum.forum_id ? "pointer-events-none" : ""}`}
-              >
-                <div className="p-4 sm:p-6 md:p-8">
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-6">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-3">
+            ) : forums.length ? forums.map((forum) => {
+              // Check if current user can delete this forum
+              const canDelete = isAdmin || (currentUser && currentUser.user_id === forum.user_id);
+              
+              return (
+                <motion.div
+                  key={forum.forum_id}
+                  initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                  animate={{ 
+                    opacity: deleteForumMutation.isPending && deleteForumMutation.variables === forum.forum_id ? 0 : 1,
+                    y: deleteForumMutation.isPending && deleteForumMutation.variables === forum.forum_id ? -20 : 0,
+                    scale: deleteForumMutation.isPending && deleteForumMutation.variables === forum.forum_id ? 0.9 : 1
+                  }}
+                  exit={{ opacity: 0, y: -20, scale: 0.9 }}
+                  transition={{ duration: 0.3 }}
+                  className={`rounded-2xl overflow-hidden shadow-lg ${
+                    theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-900"
+                  }`}
+                >
+                  <div className="p-6">
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="flex items-center gap-3">
                         <div className={`p-2 rounded-full ${
-                          theme === "dark" ? "bg-gray-700/50" : "bg-gray-100"
+                          theme === "dark" ? "bg-gray-700" : "bg-gray-100"
                         }`}>
                           <User size={20} className={theme === "dark" ? "text-teal-400" : "text-emerald-500"} />
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-emerald-500 dark:text-teal-400">
-                            {forum.username}
-                          </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                          <h3 className="font-medium">{forum.username}</h3>
+                          <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
                             <Clock size={12} />
-                            {new Date(forum.createdAt).toLocaleDateString()}
-                          </p>
+                            <span>{new Date(forum.createdAt).toLocaleDateString('en-US', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric',
+                            })}</span>
+                          </div>
                         </div>
                       </div>
-                      <motion.h2
-                        initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        transition={{ duration: 0.4, delay: 0.1 }}
-                        className="text-2xl font-bold mb-3 cursor-pointer group-hover:text-emerald-500 dark:group-hover:text-teal-400 transition-colors"
-                        onClick={() => toggleForumExpansion(forum.forum_id)}
-                      >
-                        {forum.title}
-                      </motion.h2>
-                    </div>
-                    {/* Show delete button for forum owner or admin */}
-                    {(currentUser?.id === forum.user_id || isAdmin) && (
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => setPendingDeleteForum(forum.forum_id)}
-                        className={`absolute top-4 right-4 p-2 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-500 transition-all`}
-                      >
-                        <Trash2 size={18} />
-                      </motion.button>
-                    )}
-                  </div>
-
-                  {expandedForums[forum.forum_id] && (
-                    <>
-                      <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.4, delay: 0.15 }}
-                        className="overflow-hidden"
-                      >
-                        <motion.p
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.4, delay: 0.2 }}
-                          className="text-gray-700 dark:text-gray-300 leading-relaxed mb-6"
+                      
+                      {/* Show delete button if user is admin or owner of the post */}
+                      {canDelete && (
+                        <button
+                          onClick={() => handleDelete(forum.forum_id)}
+                          disabled={deleteForumMutation.isPending}
+                          className={`p-2 rounded-full transition-colors ${
+                            theme === "dark" 
+                              ? "hover:bg-red-900/30 text-red-400" 
+                              : "hover:bg-red-100 text-red-500"
+                          } ${deleteForumMutation.isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          title="Delete discussion"
                         >
-                          {forum.description}
-                        </motion.p>
-                        
-                        {forum.image && (
-                          <div 
-                            className="relative h-64 sm:h-80 group cursor-pointer mb-8 rounded-xl overflow-hidden"
-                            onClick={() => { 
-                              setPreviewImage(forum.image.startsWith("http") ? forum.image : `${BASE_URL}${forum.image}`); 
-                              setShowImagePreview(true); 
-                            }}
-                          >
-                            <img
-                              src={forum.image.startsWith("http") ? forum.image : `${BASE_URL}${forum.image}`}
-                              alt="Forum post"
-                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center p-6">
-                              <div className="flex items-center gap-2 text-white">
-                                <Maximize2 size={20} />
-                                <span className="text-sm font-medium">Click to enlarge</span>
-                              </div>
-                            </div>
-                          </div>
+                          {deleteForumMutation.isPending && deleteForumMutation.variables === forum.forum_id ? (
+                            <Loader2 size={18} className="animate-spin" />
+                          ) : (
+                            <Trash2 size={18} />
+                          )}
+                        </button>
+                      )}
+                    </div>
+                    
+                    <h2 className="text-xl font-bold mb-2">{forum.title}</h2>
+                    <p className="text-gray-600 dark:text-gray-300">{forum.description}</p>
+                    
+                    {/* Show forum image if available */}
+                    {forum.image && (
+                      <div className="mt-4 relative">
+                        <img 
+                          src={`${BASE_URL}${forum.image}`} 
+                          alt={forum.title}
+                          className="w-full h-auto rounded-xl object-cover max-h-96"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = 'https://via.placeholder.com/800x400?text=Image+Not+Available';
+                          }}
+                        />
+                      </div>
+                    )}
+                    
+                    <div className="flex justify-between items-center mt-4">
+                      <div className="flex items-center gap-2">
+                        <MessageCircle size={18} className={theme === "dark" ? "text-teal-400" : "text-emerald-500"} />
+                        <span className="text-sm text-gray-500 dark:text-gray-400">
+                          {forum.comments?.length || 0} comments
+                        </span>
+                      </div>
+                      
+                      <button
+                        onClick={() => toggleForumExpansion(forum.forum_id)}
+                        className={`flex items-center gap-1 text-sm font-medium ${
+                          theme === "dark" ? "text-teal-400" : "text-emerald-500"
+                        }`}
+                      >
+                        {expandedForums[forum.forum_id] ? (
+                          <>
+                            <ChevronUp size={18} />
+                            <span>Show less</span>
+                          </>
+                        ) : (
+                          <>
+                            <ChevronDown size={18} />
+                            <span>Show more</span>
+                          </>
                         )}
-
-                        {/* Enhanced Comments Section */}
-                        <div className={`space-y-6 mt-8 pt-8 border-t ${theme === "dark" ? "border-gray-700/50" : "border-gray-200"}`}>
-                          <div className="flex items-center gap-2 mb-6">
-                            <MessageCircle size={20} className={theme === "dark" ? "text-teal-400" : "text-emerald-500"} />
-                            <h3 className="text-lg font-semibold">
-                              {forum.comments?.length || 0} {forum.comments?.length <= 1 ? "comment" : "comments"}
-                            </h3>
-                          </div>
-
-                          <AnimatePresence initial={false}>
-                            {forum.comments?.map((comment) => (
-                              <motion.div
-                                key={comment.comment_id}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
-                                transition={{ duration: 0.2 }}
-                                className={`relative pl-6 border-l-4 rounded-r-xl py-4 px-6 ${
-                                  theme === "dark" 
-                                    ? "bg-gray-700/30 text-gray-300 border-teal-500" 
-                                    : "bg-gray-50 text-gray-800 border-emerald-400"
-                                }`}
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Comments section */}
+                  {expandedForums[forum.forum_id] && (
+                    <div className={`p-6 border-t ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}>
+                      <h3 className="font-bold mb-4">Comments</h3>
+                      
+                      {/* Comment list */}
+                      <div className="space-y-4 mb-6">
+                        {forum.comments && forum.comments.length > 0 ? (
+                          forum.comments.map((comment) => {
+                            // Check if current user can delete this comment
+                            const canDeleteComment = isAdmin || (currentUser && currentUser.user_id === comment.user_id);
+                            
+                            return (
+                              <div 
+                                key={comment.comment_id} 
+                                className={`p-4 rounded-xl ${theme === "dark" ? "bg-gray-700" : "bg-gray-50"}`}
                               >
-                                <div className="flex justify-between items-start gap-4">
-                                  <div className="flex items-center gap-3">
-                                    <div className={`p-2 rounded-full ${
-                                      theme === "dark" ? "bg-gray-600/50" : "bg-gray-200"
-                                    }`}>
+                                <div className="flex justify-between items-start">
+                                  <div className="flex items-start gap-3">
+                                    <div className={`p-1.5 rounded-full ${theme === "dark" ? "bg-gray-600" : "bg-gray-200"}`}>
                                       <User size={16} className={theme === "dark" ? "text-teal-400" : "text-emerald-500"} />
                                     </div>
                                     <div>
-                                      <p className={`text-sm font-medium ${theme === "dark" ? "text-teal-400" : "text-emerald-500"}`}>
-                                        {comment.username}
-                                      </p>
-                                      <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                                        <Clock size={12} />
-                                        {new Date(comment.createdAt).toLocaleDateString()}
-                                      </p>
+                                      <div className="flex items-center gap-2">
+                                        <p className={`text-sm font-medium ${theme === "dark" ? "text-teal-400" : "text-emerald-500"}`}>
+                                          {comment.username}
+                                        </p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                          <Clock size={12} />
+                                          {new Date(comment.createdAt).toLocaleDateString()}
+                                        </p>
+                                      </div>
+                                      <p className="mt-1 text-sm">{comment.comment}</p>
                                     </div>
                                   </div>
-                                  {/* Update delete button to show for comment owner or admin */}
-                                  {(currentUser?.id === comment.user_id || isAdmin) && (
-                                    <motion.button
-                                      whileHover={{ scale: 1.05 }}
-                                      whileTap={{ scale: 0.95 }}
+                                  
+                                  {/* Show delete button if user is admin or comment owner */}
+                                  {canDeleteComment && (
+                                    <button
                                       onClick={() => handleDeleteComment(forum.forum_id, comment.comment_id)}
-                                      className="text-red-500 hover:text-red-700 transition-colors text-xs font-semibold flex items-center gap-1"
+                                      disabled={deleteCommentMutation.isPending}
+                                      className={`p-2 rounded-full transition-colors ${
+                                        theme === "dark" 
+                                          ? "hover:bg-red-900/30 text-red-400" 
+                                          : "hover:bg-red-100 text-red-500"
+                                      } ${deleteCommentMutation.isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                      title="Delete comment"
                                     >
-                                      <Trash2 size={14} />
-                                      Delete
-                                    </motion.button>
+                                      {deleteCommentMutation.isPending && deleteCommentMutation.variables?.comment_id === comment.comment_id ? (
+                                        <Loader2 size={18} className="animate-spin" />
+                                      ) : (
+                                        <Trash2 size={18} />
+                                      )}
+                                    </button>
                                   )}
                                 </div>
-                                <p className="mt-3 text-base">{comment.comment}</p>
-                              </motion.div>
-                            ))}
-                          </AnimatePresence>
-
-                          {/* Enhanced Comment Input */}
-                          <div className="mt-8">
-                            <textarea
-                              placeholder={canComment ? "Share your thoughts..." : "Please sign in to comment"}
-                              value={newComment[forum.forum_id] || ""}
-                              onChange={(e) => setNewComment((prev) => ({ ...prev, [forum.forum_id]: e.target.value }))}
-                              disabled={!canComment}
-                              className={`w-full p-4 rounded-xl border focus:ring-2 transition-all duration-200 ${
-                                theme === "dark" 
-                                  ? "bg-gray-700/30 border-gray-600 text-white placeholder-gray-400 focus:ring-teal-500 focus:border-teal-500" 
-                                  : "bg-white border-gray-300 text-gray-800 placeholder-gray-500 focus:ring-emerald-400 focus:border-emerald-400"
-                              } ${!canComment ? "opacity-50 cursor-not-allowed" : ""} shadow-inner`}
-                              rows={3}
-                            />
-                            <div className="flex justify-end mt-4">
-                              <motion.button
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                                onClick={() => handleCommentSubmit(forum.forum_id)}
-                                disabled={!newComment[forum.forum_id]?.trim() || !canComment}
-                                className={`px-6 py-3 rounded-xl text-white font-medium flex items-center gap-2 ${
-                                  theme === "dark"
-                                    ? "bg-gradient-to-r from-teal-500 via-teal-600 to-teal-500 hover:from-teal-600 hover:via-teal-700 hover:to-teal-600"
-                                    : "bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-400 hover:from-emerald-500 hover:via-emerald-600 hover:to-emerald-500"
-                                } transition-all shadow-lg ${!canComment ? "opacity-50 cursor-not-allowed" : ""}`}
-                                title={!canComment ? "Please sign in to comment" : ""}
-                              >
-                                <MessageCircle size={18} />
-                                Post Comment
-                              </motion.button>
-                            </div>
-                          </div>
+                              </div>
+                            );
+                          })
+                        ) : (
+                          <p className="text-gray-500 dark:text-gray-400">No comments yet. Be the first to comment!</p>
+                        )}
+                      </div>
+                      
+                      {/* Comment input */}
+                      <div className="mt-6">
+                        <textarea
+                          placeholder={canComment ? "Share your thoughts..." : "Please sign in to comment"}
+                          value={newComment[forum.forum_id] || ""}
+                          onChange={(e) => setNewComment((prev) => ({ ...prev, [forum.forum_id]: e.target.value }))}
+                          disabled={!canComment}
+                          className={`w-full p-4 rounded-xl border focus:ring-2 transition-all duration-200 ${
+                            theme === "dark" 
+                              ? "bg-gray-700/30 border-gray-600 text-white placeholder-gray-400 focus:ring-teal-500 focus:border-teal-500" 
+                              : "bg-white border-gray-300 text-gray-800 placeholder-gray-500 focus:ring-emerald-400 focus:border-emerald-400"
+                          } ${!canComment ? "opacity-50 cursor-not-allowed" : ""} shadow-inner`}
+                          rows={3}
+                        />
+                        <div className="flex justify-end mt-4">
+                          <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => handleCommentSubmit(forum.forum_id)}
+                            disabled={!newComment[forum.forum_id]?.trim() || !canComment}
+                            className={`px-6 py-3 rounded-xl text-white font-medium flex items-center gap-2 ${
+                              theme === "dark"
+                                ? "bg-gradient-to-r from-teal-500 via-teal-600 to-teal-500 hover:from-teal-600 hover:via-teal-700 hover:to-teal-600"
+                                : "bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-400 hover:from-emerald-500 hover:via-emerald-600 hover:to-emerald-500"
+                            } transition-all shadow-lg ${!canComment ? "opacity-50 cursor-not-allowed" : ""}`}
+                            title={!canComment ? "Please sign in to comment" : ""}
+                          >
+                            <MessageCircle size={18} />
+                            Post Comment
+                          </motion.button>
                         </div>
-                      </motion.div>
-                    </>
+                      </div>
+                    </div>
                   )}
-                </div>
-
-                {/* Enhanced Footer */}
-                <div className={`px-6 py-4 flex items-center justify-between transition-colors ${
-                  theme === "dark" ? "bg-gray-700/30" : "bg-gray-50"
-                }`}>
-                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                    <MessageCircle size={16} />
-                    <span>{forum.comments?.length || 0} {forum.comments?.length <= 1 ? "comment" : "comments"}</span>
-                  </div>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => toggleForumExpansion(forum.forum_id)}
-                    className={`flex items-center gap-2 text-sm font-medium transition ${
-                      theme === "dark" ? "text-teal-400" : "text-emerald-600"
-                    }`}
-                  >
-                    {expandedForums[forum.forum_id] ? (
-                      <>
-                        <span>Hide details</span>
-                        <ChevronUp size={16} />
-                      </>
-                    ) : (
-                      <>
-                        <span>View details</span>
-                        <ChevronDown size={16} />
-                      </>
-                    )}
-                  </motion.button>
-                </div>
-              </motion.div>
-            )) : (
+                </motion.div>
+              );
+            }) : (
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -790,6 +635,7 @@ const Forum = () => {
 };
 
 export default Forum;
+
 
 
 
