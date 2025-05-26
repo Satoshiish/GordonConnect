@@ -4,7 +4,11 @@ import jwt from "jsonwebtoken";
 import util from 'util';
 
 export const getPosts = async (req, res) => {
-  const token = req.cookies.accessToken;
+  // Check for token in cookies or Authorization header
+  const cookieToken = req.cookies.accessToken;
+  const headerToken = req.headers.authorization?.split(" ")[1];
+  const token = cookieToken || headerToken;
+  
   if (!token) return res.status(401).json("Not logged in!");
 
   jwt.verify(token, "secretkey", async (err, userInfo) => {
@@ -217,6 +221,7 @@ export const deletePost = (req, res) => {
     });
   });
 };
+
 
 
 
