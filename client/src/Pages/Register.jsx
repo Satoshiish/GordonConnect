@@ -2,7 +2,7 @@ import axios from "axios";
 import React, { useState, useContext, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { User, Mail, Lock, UserPlus } from "lucide-react";
+import { User, Mail, Lock, UserPlus, ArrowLeft } from "lucide-react";
 import { AuthContext } from "../authContext";
 import { makeRequest } from "../axios";
 import { useTheme } from "../ThemeContext";
@@ -19,7 +19,7 @@ function Register() {
   const [isLoading, setIsLoading] = useState(false);
   
   const navigate = useNavigate();
-  const { currentUser, register } = useContext(AuthContext);
+  const { currentUser } = useContext(AuthContext);
   const { theme } = useTheme();
 
   // If user is already logged in, redirect to home
@@ -176,9 +176,10 @@ function Register() {
             <button
               type="button"
               onClick={() => navigate("/auth")}
-              className="text-sm text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors duration-200"
+              className="text-sm text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors duration-200 flex items-center justify-center gap-2 hover:underline"
             >
-              Already have an account? <span className="font-semibold hover:underline">Sign in</span>
+              <ArrowLeft className="w-4 h-4" />
+              Back to Sign In
             </button>
           </div>
         </form>
