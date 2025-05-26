@@ -62,7 +62,47 @@ export const getSuggestions = (req, res) => {
     
     console.log("Getting suggestions for user:", userInfo.id);
     
-    // Modified query to exclude users that are already being followed
+    // If user is a guest, return a limited set of suggestions
+    if (userInfo.role === 'guest' || userInfo.id === 'guest') {
+      console.log("Providing guest suggestions");
+      
+      // For guests, just return some random users
+      const guestSuggestionsQuery = `
+        SELECT 
+          u.user_id, 
+          u.username, 
+          u.name, 
+          u.profilePic, 
+          u.city
+        FROM users u
+        WHERE u.role != 'guest'
+        ORDER BY RAND()
+        LIMIT 10
+      `;
+      
+      db.query(guestSuggestionsQuery, (err, data) => {
+        if (err) {
+          console.error("Error fetching guest suggestions:", err);
+          return res.status(500).json(err);
+        }
+        
+        console.log("Found guest suggestions:", data.length);
+        
+        // Map the data to include the id property
+        const enhancedSuggestions = data.map(user => ({
+          ...user,
+          id: user.user_id,
+          isFollowing: false,
+          reason: "Popular in the community"
+        }));
+        
+        return res.status(200).json(enhancedSuggestions);
+      });
+      
+      return;
+    }
+    
+    // For logged-in users, use the original query
     const suggestionsQuery = `
       SELECT 
         u.user_id, 

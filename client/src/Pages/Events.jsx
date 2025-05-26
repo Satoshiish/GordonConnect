@@ -106,6 +106,8 @@ const Events = () => {
       setEvents(filterPastEvents(res.data));
     } catch (err) {
       console.error("Failed to fetch events", err);
+      // Set empty array instead of showing error
+      setEvents([]);
     } finally {
       setIsLoading(false);
     }
@@ -1446,6 +1448,7 @@ const Events = () => {
 };
 
 export default Events;
+
 
 
 

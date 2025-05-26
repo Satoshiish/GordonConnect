@@ -2,7 +2,7 @@ import { db } from "../connect.js";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
 
-export const getEvents = async (req, res) => {
+export const getEvents = (req, res) => {
   try {
     // Simple query to get all events
     const q = `
@@ -14,7 +14,10 @@ export const getEvents = async (req, res) => {
     `;
     
     db.query(q, (err, data) => {
-      if (err) return res.status(500).json(err);
+      if (err) {
+        console.error("Database error in getEvents:", err);
+        return res.status(500).json(err);
+      }
       return res.status(200).json(data);
     });
   } catch (error) {
@@ -212,6 +215,7 @@ export const getEventJoins = (req, res) => {
     }
   );
 };
+
 
 
 

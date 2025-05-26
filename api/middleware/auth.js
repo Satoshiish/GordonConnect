@@ -13,7 +13,8 @@ export const verifyToken = (req, res, next) => {
       req.path.startsWith('/posts') ||
       req.path.startsWith('/events') ||
       req.path.startsWith('/forums') ||
-      req.path.startsWith('/users/find/')
+      req.path.startsWith('/users/find/') ||
+      req.path === '/users/suggestions'
     );
     
     // If no token and it's a public route, proceed as guest
@@ -61,6 +62,7 @@ export const verifyToken = (req, res, next) => {
     return res.status(500).json("Authentication error");
   }
 };
+
 
 
 
