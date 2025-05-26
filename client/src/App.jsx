@@ -78,35 +78,54 @@ function Layout() {
 const ProtectedRoute = ({ children }) => {
   const { currentUser, loading } = useContext(AuthContext);
   
-  // Show loading state while checking authentication
   if (loading) {
     return <div>Loading...</div>;
   }
   
-  // If no user is logged in, redirect to auth page
   if (!currentUser) {
     return <Navigate to="/auth" replace />;
   }
-
-  // If user is logged in, render the protected content
+  
   return children;
 };
 
-// Public Route Component (for auth and register pages)
-const PublicRoute = ({ children }) => {
+// Admin Route Component
+const AdminRoute = ({ children }) => {
   const { currentUser, loading } = useContext(AuthContext);
   
-  // Show loading state while checking authentication
   if (loading) {
     return <div>Loading...</div>;
   }
   
-  // If user is already logged in, redirect to home
+  if (!currentUser) {
+    return <Navigate to="/auth" replace />;
+  }
+  
+  if (currentUser.role !== "admin") {
+    return <Navigate to="/" replace />;
+  }
+  
+  return children;
+};
+
+// Public Route Component (for auth pages)
+const PublicRoute = ({ children }) => {
+  const { currentUser, loading } = useContext(AuthContext);
+  
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+  
+  // For the register route, allow admins to access it even when logged in
+  if (window.location.pathname === "/register" && currentUser?.role === "admin") {
+    return children;
+  }
+  
+  // For other public routes, redirect logged-in users to home
   if (currentUser) {
     return <Navigate to="/" replace />;
   }
-
-  // If no user is logged in, show the auth/register page
+  
   return children;
 };
 
@@ -125,7 +144,22 @@ const router = createBrowserRouter([
       { path: "/events", element: <Events /> },
       { path: "/bookmarks", element: <Bookmarks /> },
       { path: "/people", element: <People /> },
-      { path: "/reports", element: <Reports /> },
+      { 
+        path: "/reports", 
+        element: (
+          <AdminRoute>
+            <Reports />
+          </AdminRoute>
+        ) 
+      },
+      { 
+        path: "/register", 
+        element: (
+          <AdminRoute>
+            <Register adminMode={true} />
+          </AdminRoute>
+        ) 
+      },
     ],
   },
   {
@@ -137,10 +171,10 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/register",
+    path: "/public/register",
     element: (
       <PublicRoute>
-        <Register />
+        <Register adminMode={false} />
       </PublicRoute>
     ),
   },
@@ -174,6 +208,7 @@ function App() {
 }
 
 export default App;
+
 
 
 

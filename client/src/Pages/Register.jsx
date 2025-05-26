@@ -2,17 +2,18 @@ import axios from "axios";
 import React, { useState, useContext, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { User, Mail, Lock, UserPlus, ArrowLeft } from "lucide-react";
+import { User, Mail, Lock, UserPlus, ArrowLeft, Shield } from "lucide-react";
 import { AuthContext } from "../authContext";
 import { makeRequest } from "../axios";
 import { useTheme } from "../ThemeContext";
 
-function Register() {
+function Register({ adminMode = false }) {
   const [inputs, setInputs] = useState({
     username: "",
     email: "",
     password: "",
     name: "",
+    role: "user" // Default role
   });
   const [err, setErr] = useState(null);
   const [success, setSuccess] = useState("");
@@ -22,12 +23,16 @@ function Register() {
   const { currentUser } = useContext(AuthContext);
   const { theme } = useTheme();
 
-  // If user is already logged in, redirect to home
+  // If user is not admin and trying to access admin register page, redirect
   useEffect(() => {
-    if (currentUser) {
+    if (adminMode && (!currentUser || currentUser.role !== "admin")) {
       navigate("/");
     }
-  }, [currentUser, navigate]);
+    // If not in admin mode and user is already logged in (and not admin), redirect to home
+    if (!adminMode && currentUser && currentUser.role !== "admin") {
+      navigate("/");
+    }
+  }, [currentUser, navigate, adminMode]);
 
   const handleChange = (e) => {
     setInputs((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -47,10 +52,25 @@ function Register() {
 
     try {
       await makeRequest.post("/auth/register", inputs);
-      setSuccess("Registration successful! Redirecting to login...");
-      setTimeout(() => {
-        navigate("/auth");
-      }, 2000);
+      setSuccess(adminMode 
+        ? "User registered successfully!" 
+        : "Registration successful! Redirecting to login...");
+      
+      // Clear form after successful registration
+      setInputs({
+        username: "",
+        email: "",
+        password: "",
+        name: "",
+        role: "user"
+      });
+      
+      // If not in admin mode, redirect to login after a delay
+      if (!adminMode) {
+        setTimeout(() => {
+          navigate("/auth");
+        }, 2000);
+      }
     } catch (err) {
       setErr(err.response?.data?.message || "Registration failed.");
     } finally {
@@ -59,19 +79,25 @@ function Register() {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 sm:p-8 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+    <div className={`min-h-screen w-full flex flex-col items-center justify-center p-4 sm:p-8 ${
+      theme === "dark" 
+        ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" 
+        : "bg-gradient-to-br from-gray-50 via-white to-gray-50"
+    }`}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8"
+        className={`w-full max-w-md rounded-2xl shadow-xl p-8 ${
+          theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-900"
+        }`}
       >
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent">
-            Create Account
+            {adminMode ? "Register New User" : "Create Account"}
           </h2>
-          <p className="text-gray-500 dark:text-gray-400 mt-2">
-            Join our community today
+          <p className={`mt-2 ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>
+            {adminMode ? "Admin user registration" : "Join our community today"}
           </p>
         </div>
 
@@ -79,57 +105,77 @@ function Register() {
           <div className="space-y-4">
             <div className="relative group">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <User className="h-5 w-5 text-gray-400 group-focus-within:text-emerald-500 transition-colors duration-200" />
+                <User className={`h-5 w-5 ${theme === "dark" ? "text-gray-400" : "text-gray-500"} group-focus-within:text-emerald-500 transition-colors duration-200`} />
               </div>
               <input
                 type="text"
                 placeholder="Username"
                 name="username"
+                value={inputs.username}
                 onChange={handleChange}
-                className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
+                className={`w-full pl-10 pr-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 ${
+                  theme === "dark" 
+                    ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400" 
+                    : "bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500"
+                }`}
                 required
               />
             </div>
 
             <div className="relative group">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Mail className="h-5 w-5 text-gray-400 group-focus-within:text-emerald-500 transition-colors duration-200" />
+                <Mail className={`h-5 w-5 ${theme === "dark" ? "text-gray-400" : "text-gray-500"} group-focus-within:text-emerald-500 transition-colors duration-200`} />
               </div>
               <input
                 type="email"
                 placeholder="Email"
                 name="email"
+                value={inputs.email}
                 onChange={handleChange}
-                className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
+                className={`w-full pl-10 pr-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 ${
+                  theme === "dark" 
+                    ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400" 
+                    : "bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500"
+                }`}
                 required
               />
             </div>
 
             <div className="relative group">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Lock className="h-5 w-5 text-gray-400 group-focus-within:text-emerald-500 transition-colors duration-200" />
+                <Lock className={`h-5 w-5 ${theme === "dark" ? "text-gray-400" : "text-gray-500"} group-focus-within:text-emerald-500 transition-colors duration-200`} />
               </div>
               <input
                 type="password"
                 placeholder="Password (min 8 characters)"
                 name="password"
+                value={inputs.password}
                 onChange={handleChange}
                 minLength={8}
-                className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
+                className={`w-full pl-10 pr-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 ${
+                  theme === "dark" 
+                    ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400" 
+                    : "bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500"
+                }`}
                 required
               />
             </div>
 
             <div className="relative group">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <UserPlus className="h-5 w-5 text-gray-400 group-focus-within:text-emerald-500 transition-colors duration-200" />
+                <UserPlus className={`h-5 w-5 ${theme === "dark" ? "text-gray-400" : "text-gray-500"} group-focus-within:text-emerald-500 transition-colors duration-200`} />
               </div>
               <input
                 type="text"
                 placeholder="Full Name"
                 name="name"
+                value={inputs.name}
                 onChange={handleChange}
-                className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
+                className={`w-full pl-10 pr-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 ${
+                  theme === "dark" 
+                    ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400" 
+                    : "bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500"
+                }`}
                 required
               />
             </div>

@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useTheme } from "../ThemeContext";
 import { useContext } from "react";
 import { AuthContext } from "../authContext";
-import { MessageSquare, Calendar, Bookmark, Users, BarChart2, LogOut, Home, User } from "lucide-react";
+import { MessageSquare, Calendar, Bookmark, Users, BarChart2, LogOut, Home, User, UserPlus } from "lucide-react";
 
 function Leftbar({ open, setOpen }) {
   const location = useLocation();
@@ -149,26 +149,49 @@ function Leftbar({ open, setOpen }) {
               </Link>
             </li>
             
-            {/* Reports - Only show for admins */}
+            {/* Admin Section */}
             {currentUser?.role === "admin" && (
-              <li>
-                <Link
-                  to="/reports"
-                  onClick={handleLinkClick}
-                  className={`flex items-center md:justify-${open ? "start" : "center"} gap-3 p-3 rounded-xl transition-all duration-200 ${
-                    location.pathname === "/reports"
-                      ? theme === "dark"
-                        ? "bg-emerald-900/30 text-emerald-400"
-                        : "bg-teal-100/50 text-teal-600"
-                      : theme === "dark"
-                      ? "hover:bg-gray-800 text-gray-300"
-                      : "hover:bg-gray-100 text-gray-600"
-                  }`}
-                >
-                  <BarChart2 className="h-6 w-6" />
-                  <span className={`font-medium ${!open && "md:hidden"}`}>Reports</span>
-                </Link>
-              </li>
+              <>
+                {/* Reports */}
+                <li>
+                  <Link
+                    to="/reports"
+                    onClick={handleLinkClick}
+                    className={`flex items-center md:justify-${open ? "start" : "center"} gap-3 p-3 rounded-xl transition-all duration-200 ${
+                      location.pathname === "/reports"
+                        ? theme === "dark"
+                          ? "bg-emerald-900/30 text-emerald-400"
+                          : "bg-teal-100/50 text-teal-600"
+                        : theme === "dark"
+                        ? "hover:bg-gray-800 text-gray-300"
+                        : "hover:bg-gray-100 text-gray-600"
+                    }`}
+                  >
+                    <BarChart2 className="h-6 w-6" />
+                    <span className={`font-medium ${!open && "md:hidden"}`}>Reports</span>
+                  </Link>
+                </li>
+                
+                {/* Register User - New Admin Option */}
+                <li>
+                  <Link
+                    to="/register"
+                    onClick={handleLinkClick}
+                    className={`flex items-center md:justify-${open ? "start" : "center"} gap-3 p-3 rounded-xl transition-all duration-200 ${
+                      location.pathname === "/register"
+                        ? theme === "dark"
+                          ? "bg-purple-900/30 text-purple-400"
+                          : "bg-purple-100/50 text-purple-600"
+                        : theme === "dark"
+                        ? "hover:bg-gray-800 text-gray-300"
+                        : "hover:bg-gray-100 text-gray-600"
+                    }`}
+                  >
+                    <UserPlus className="h-6 w-6" />
+                    <span className={`font-medium ${!open && "md:hidden"}`}>Register User</span>
+                  </Link>
+                </li>
+              </>
             )}
           </ul>
         </nav>
@@ -193,6 +216,7 @@ function Leftbar({ open, setOpen }) {
 }
 
 export default Leftbar;
+
 
 
 
