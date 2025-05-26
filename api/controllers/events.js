@@ -60,7 +60,11 @@ export const addEvent = (req, res) => {
 };
 
 export const updateEvent = (req, res) => {
-  const token = req.cookies.accessToken;
+  // Check for token in cookies or Authorization header
+  const cookieToken = req.cookies.accessToken;
+  const headerToken = req.headers.authorization?.split(" ")[1];
+  const token = cookieToken || headerToken;
+  
   if (!token) return res.status(401).json("Not authenticated!");
 
   jwt.verify(token, "secretkey", (err, userInfo) => {
@@ -172,3 +176,4 @@ export const getEventJoins = (req, res) => {
     }
   );
 };
+

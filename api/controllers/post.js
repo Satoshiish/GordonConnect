@@ -205,7 +205,11 @@ export const addPost = (req, res) => {
 };
 
 export const deletePost = (req, res) => {
-  const token = req.cookies.accessToken;
+  // Check for token in cookies or Authorization header
+  const cookieToken = req.cookies.accessToken;
+  const headerToken = req.headers.authorization?.split(" ")[1];
+  const token = cookieToken || headerToken;
+  
   if (!token) return res.status(401).json("Not logged in!");
 
   jwt.verify(token, "secretkey", (err, userInfo) => {
@@ -217,10 +221,11 @@ export const deletePost = (req, res) => {
       if (err) return res.status(500).json(err);
       if (data.affectedRows > 0)
         return res.status(200).json("Post has been deleted!");
-        return res.status(403).json("You can only delete your own post")
+      return res.status(403).json("You can only delete your own post");
     });
   });
 };
+
 
 
 
