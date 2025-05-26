@@ -20,24 +20,32 @@ const Posts = ({ userId = null }) => {
   const [category, setCategory] = useState("");
   
   // Fetch user interests
-  useEffect(() => {
-    const fetchUserInterests = async () => {
-      if (currentUser?.id || currentUser?.user_id) {
-        try {
-          const token = localStorage.getItem("token");
-          const res = await makeRequest.get("/users/interests", {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          setUserInterests(res.data || []);
-        } catch (err) {
-          console.error("Failed to fetch user interests", err);
+useEffect(() => {
+  const fetchUserInterests = async () => {
+    if (currentUser?.id || currentUser?.user_id) {
+      try {
+        const token = localStorage.getItem("token");
+        // Check if token exists before making the request
+        if (!token) {
+          console.warn("No authentication token found");
           setUserInterests([]);
+          return;
         }
+        
+        const res = await makeRequest.get("/users/interests", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setUserInterests(res.data || []);
+      } catch (err) {
+        console.error("Failed to fetch user interests", err);
+        // Handle 401/404 errors gracefully
+        setUserInterests([]);
       }
-    };
-    
-    fetchUserInterests();
-  }, [currentUser]);
+    }
+  };
+  
+  fetchUserInterests();
+}, [currentUser]);
 
   const { isPending, error, data } = useQuery({
     queryKey: userId ? ["posts", userId, category] : ["posts", category],
