@@ -21,7 +21,11 @@ export const getRelationships = (req, res) => {
 };
 
 export const addRelationships = (req, res) => {
-  const token = req.cookies.accessToken;
+  // Check for token in cookies or Authorization header
+  const cookieToken = req.cookies.accessToken;
+  const headerToken = req.headers.authorization?.split(" ")[1];
+  const token = cookieToken || headerToken;
+  
   if (!token) return res.status(401).json({ error: "Not logged in!" });
 
   jwt.verify(token, "secretkey", (err, userInfo) => {
@@ -40,7 +44,11 @@ export const addRelationships = (req, res) => {
 export const deleteRelationships = (req, res) => {
   console.log("📥 Received request to unfollow:", req.query);
 
-  const token = req.cookies.accessToken;
+  // Check for token in cookies or Authorization header
+  const cookieToken = req.cookies.accessToken;
+  const headerToken = req.headers.authorization?.split(" ")[1];
+  const token = cookieToken || headerToken;
+  
   if (!token) return res.status(401).json({ error: "Not logged in!" });
 
   jwt.verify(token, "secretkey", (err, userInfo) => {

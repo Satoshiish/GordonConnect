@@ -6,8 +6,8 @@ const router = express.Router()
 router.get("/find/:userId", getUser)
 router.put("/", updateUser)
 router.get("/suggestions", getSuggestions);
-router.get("/friends", getFriends);
-router.get("/followers/:userId", getFollowers);
-router.get("/following/:userId", getFollowing);
+router.get("/friends", verifyToken, getFriends);
+router.get("/followers/:userId", verifyToken, getFollowers);
+router.get("/following/:userId", verifyToken, getFollowing);
 
 export default router

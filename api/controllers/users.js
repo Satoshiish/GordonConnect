@@ -172,7 +172,11 @@ export const getSuggestions = (req, res) => {
 
 // Friends
 export const getFriends = (req, res) => {
-  const token = req.cookies.accessToken;
+  // Check for token in cookies or Authorization header
+  const cookieToken = req.cookies.accessToken;
+  const headerToken = req.headers.authorization?.split(" ")[1];
+  const token = cookieToken || headerToken;
+  
   if (!token) return res.status(401).json({ error: "Not logged in!" });
 
   jwt.verify(token, "secretkey", (err, userInfo) => {
@@ -209,7 +213,12 @@ export const getFriends = (req, res) => {
 // Get followers list with user details
 export const getFollowers = (req, res) => {
   const userId = req.params.userId;
-  const token = req.cookies.accessToken;
+  
+  // Check for token in cookies or Authorization header
+  const cookieToken = req.cookies.accessToken;
+  const headerToken = req.headers.authorization?.split(" ")[1];
+  const token = cookieToken || headerToken;
+  
   if (!token) return res.status(401).json({ error: "Not logged in!" });
 
   jwt.verify(token, "secretkey", (err, userInfo) => {
@@ -232,7 +241,12 @@ export const getFollowers = (req, res) => {
 // Get following list with user details
 export const getFollowing = (req, res) => {
   const userId = req.params.userId;
-  const token = req.cookies.accessToken;
+  
+  // Check for token in cookies or Authorization header
+  const cookieToken = req.cookies.accessToken;
+  const headerToken = req.headers.authorization?.split(" ")[1];
+  const token = cookieToken || headerToken;
+  
   if (!token) return res.status(401).json({ error: "Not logged in!" });
 
   jwt.verify(token, "secretkey", (err, userInfo) => {
