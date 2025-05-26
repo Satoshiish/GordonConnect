@@ -7,41 +7,41 @@ export const AuthContextProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
- // Check if user is authenticated on initial load
-useEffect(() => {
-  const checkAuth = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const storedUser = localStorage.getItem("user");
-      
-      if (!token || !storedUser) {
+  // Check if user is authenticated on initial load
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const storedUser = localStorage.getItem("user");
+        
+        if (!token || !storedUser) {
+          logout();
+          return;
+        }
+
+        // Verify token with backend
+        const res = await makeRequest.get("/auth/verify", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        // Only set user if response contains expected user fields
+        if (res.data && !res.data.error && res.data.id) {
+          const userData = { ...res.data, token };
+          setCurrentUser(userData);
+          localStorage.setItem("user", JSON.stringify(userData));
+        } else {
+          logout();
+        }
+      } catch (error) {
+        console.error("Auth verification failed:", error);
         logout();
-        return;
+      } finally {
+        setLoading(false);
       }
+    };
 
-      // Verify token with backend
-      const res = await makeRequest.get("/auth/verify", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      // Only set user if response contains expected user fields
-      if (res.data && !res.data.error && res.data.id) {
-        const userData = { ...res.data, token };
-        setCurrentUser(userData);
-        localStorage.setItem("user", JSON.stringify(userData));
-      } else {
-        logout();
-      }
-    } catch (error) {
-      console.error("Auth verification failed:", error);
-      logout();
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  checkAuth();
-}, []);
+    checkAuth();
+  }, []);
 
   const login = async (inputs) => {
     try {
@@ -121,6 +121,32 @@ useEffect(() => {
     document.cookie = "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
   };
 
+  // Add this function to check and refresh token if needed
+  const refreshToken = async () => {
+    try {
+      // Get current token
+      const token = localStorage.getItem("token");
+      if (!token) return false;
+      
+      // Verify token with backend
+      const res = await makeRequest.get("/auth/verify", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (res.data && !res.data.error) {
+        return true;
+      } else {
+        // Token is invalid, try to log in again
+        logout();
+        return false;
+      }
+    } catch (error) {
+      console.error("Token refresh failed:", error);
+      logout();
+      return false;
+    }
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -143,6 +169,7 @@ useEffect(() => {
         canPost,
         canEdit,
         canDelete,
+        refreshToken,
       }}
     >
       {children}
