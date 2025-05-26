@@ -42,7 +42,7 @@ export const getForums = (req, res) => {
   const q = `
     SELECT 
       f.forum_id, f.title, f.description, f.createdAt, f.image,
-      u.name AS username, 
+      u.name AS username, u.user_id,
       c.comment_id, c.comment, c.user_id AS comment_user_id, c.createdAt AS comment_createdAt, 
       u2.name AS comment_username,
       COALESCE(SUM(fv.vote_value), 0) AS vote_count
@@ -56,7 +56,10 @@ export const getForums = (req, res) => {
   `;
 
   db.query(q, (err, data) => {
-    if (err) return res.status(500).json(err);
+    if (err) {
+      console.error("Database error in getForums:", err);
+      return res.status(500).json(err);
+    }
 
     // Group comments by forum_id
     const forums = data.reduce((acc, row) => {
@@ -66,6 +69,7 @@ export const getForums = (req, res) => {
         description,
         createdAt,
         username,
+        user_id,
         comment_id,
         comment,
         comment_user_id,
@@ -80,6 +84,7 @@ export const getForums = (req, res) => {
           description,
           createdAt,
           username,
+          user_id, // Include user_id to check ownership
           image: row.image,
           comments: [],
         };
@@ -98,8 +103,10 @@ export const getForums = (req, res) => {
       return acc;
     }, {});
 
-    // Convert forums object to an array
+    // Convert forums object to an array and sort by createdAt (newest first)
     const forumList = Object.values(forums);
+    forumList.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    
     return res.status(200).json(forumList);
   });
 };
