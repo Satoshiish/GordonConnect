@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { useTheme } from "../ThemeContext";
+import { makeRequest } from "../axios";
 
 function ResetPassword() {
   const [username, setUsername] = useState("");
@@ -35,7 +36,7 @@ function ResetPassword() {
     }
 
     try {
-      const response = await fetch("http://localhost:8800/api/auth/reset-password", {
+      const response = await makeRequest.fetch("/auth/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, newPassword }),

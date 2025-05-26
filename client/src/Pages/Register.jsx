@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { User, Mail, Lock, UserPlus } from "lucide-react";
 import { AuthContext } from "../authContext";
+import { makeRequest } from "../axios";
 
 function Register({ setIsActive }) {
   const [inputs, setInputs] = useState({
@@ -43,7 +44,7 @@ function Register({ setIsActive }) {
     }
 
     try {
-      await axios.post("http://localhost:8800/api/auth/register", inputs);
+      await makeRequest.post("/auth/register", inputs);
       setSuccess("Registration successful! Redirecting to login...");
       setTimeout(() => {
         navigate("/auth");

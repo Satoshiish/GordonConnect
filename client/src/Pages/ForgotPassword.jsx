@@ -5,6 +5,7 @@ import { Mail, ArrowLeft } from "lucide-react";
 import emailjs from "@emailjs/browser";
 import axios from "axios";
 import { useTheme } from "../ThemeContext";
+import { makeRequest } from "../axios";
 
 function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -23,7 +24,7 @@ function ForgotPassword() {
 
     try {
       // First check if email exists in database
-      const checkResponse = await axios.post("http://localhost:8800/api/auth/check-email", { email });
+      const checkResponse = await makeRequest.post("/auth/check-email", { email });
 
       if (!checkResponse.data.exists) {
         setErr("No account found with this email address.");

@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from 'react-hot-toast';
 
-const BASE_URL = "http://localhost:5173";
+const BASE_URL = "https://gordon-connect.vercel.app";
 
 const Forum = () => {
   const { theme } = useTheme();
