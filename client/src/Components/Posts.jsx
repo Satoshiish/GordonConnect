@@ -18,26 +18,6 @@ const Posts = ({ userId = null }) => {
     { label: "Campus Services", value: "Campus Services" },
   ];
   const [category, setCategory] = useState("");
-  
-  // Fetch user interests
-  useEffect(() => {
-    const fetchUserInterests = async () => {
-      if (currentUser?.id || currentUser?.user_id) {
-        try {
-          const token = localStorage.getItem("token");
-          const res = await makeRequest.get("/users/interests", {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          setUserInterests(res.data || []);
-        } catch (err) {
-          console.error("Failed to fetch user interests", err);
-          setUserInterests([]);
-        }
-      }
-    };
-    
-    fetchUserInterests();
-  }, [currentUser]);
 
   const { isPending, error, data } = useQuery({
     queryKey: userId ? ["posts", userId, category] : ["posts", category],
