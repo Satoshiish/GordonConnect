@@ -102,12 +102,25 @@ const Events = () => {
   const fetchEvents = async () => {
     setIsLoading(true);
     try {
-      const res = await makeRequest.get("events");
+      console.log("Fetching events...");
+      const res = await makeRequest.get("/events");
+      console.log("Events response:", res.data);
+      
+      // Handle empty response
+      if (!res.data || !Array.isArray(res.data)) {
+        console.warn("Events response is not an array:", res.data);
+        setEvents([]);
+        return;
+      }
+      
       setEvents(filterPastEvents(res.data));
     } catch (err) {
       console.error("Failed to fetch events", err);
       // Set empty array instead of showing error
       setEvents([]);
+      
+      // Show toast notification
+      toast.error("Failed to load events. Please try again later.");
     } finally {
       setIsLoading(false);
     }
@@ -1448,6 +1461,8 @@ const Events = () => {
 };
 
 export default Events;
+
+
 
 
 

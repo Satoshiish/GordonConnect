@@ -9,7 +9,6 @@ import {
   availEvent
 } from "../controllers/events.js";
 import { verifyToken } from "../middleware/auth.js";
-import { db } from "../connect.js";
 
 const router = express.Router();
 
@@ -45,5 +44,6 @@ router.get('/:id/emails', verifyToken, (req, res) => {
 });
 
 export default router;
+
 
 
