@@ -20,7 +20,7 @@ export const getRelationships = (req, res) => {
   });
 };
 
-export const addRelationships = (req, res) => {
+export const addRelationship = (req, res) => {
   // Check for token in cookies or Authorization header
   const cookieToken = req.cookies.accessToken;
   const headerToken = req.headers.authorization?.split(" ")[1];
@@ -32,18 +32,29 @@ export const addRelationships = (req, res) => {
     if (err) return res.status(403).json({ error: "Token is not valid!" });
 
     const { followedUserId } = req.body;
-    const insertQuery =
-      "INSERT INTO relationships (followerUser_id, followedUser_id) VALUES (?, ?)";
-    db.query(insertQuery, [userInfo.id, followedUserId], (err) => {
+    
+    // First check if relationship already exists
+    const checkQuery = "SELECT * FROM relationships WHERE followerUser_id = ? AND followedUser_id = ?";
+    
+    db.query(checkQuery, [userInfo.id, followedUserId], (err, data) => {
       if (err) return res.status(500).json({ error: "Database error" });
-      return res.status(200).json({ message: "Followed successfully!" });
+      
+      if (data.length > 0) {
+        return res.status(200).json({ message: "Already following this user!" });
+      }
+      
+      // If not already following, insert the relationship
+      const insertQuery = "INSERT INTO relationships (followerUser_id, followedUser_id) VALUES (?, ?)";
+      
+      db.query(insertQuery, [userInfo.id, followedUserId], (err) => {
+        if (err) return res.status(500).json({ error: "Database error" });
+        return res.status(200).json({ message: "Followed successfully!" });
+      });
     });
   });
 };
 
-export const deleteRelationships = (req, res) => {
-  console.log("📥 Received request to unfollow:", req.query);
-
+export const deleteRelationship = (req, res) => {
   // Check for token in cookies or Authorization header
   const cookieToken = req.cookies.accessToken;
   const headerToken = req.headers.authorization?.split(" ")[1];
@@ -54,21 +65,18 @@ export const deleteRelationships = (req, res) => {
   jwt.verify(token, "secretkey", (err, userInfo) => {
     if (err) return res.status(403).json({ error: "Token is not valid!" });
 
-    const { followedUserId } = req.query;
-    if (!followedUserId)
-      return res.status(400).json({ error: "followedUserId is required!" });
-
-    const deleteQuery =
-      "DELETE FROM relationships WHERE followerUser_id = ? AND followedUser_id = ?";
-    db.query(deleteQuery, [userInfo.id, followedUserId], (err, result) => {
-      if (err)
-        return res.status(500).json({ error: "Database error", details: err });
-
-      if (result.affectedRows === 0)
-        return res.status(404).json({ error: "Follow relationship not found" });
-
-      console.log("✅ Successfully unfollowed user!");
-      return res.status(200).json({ message: "Successfully unfollowed user." });
+    const followedUserId = req.query.followedUserId;
+    
+    const deleteQuery = "DELETE FROM relationships WHERE followerUser_id = ? AND followedUser_id = ?";
+    
+    db.query(deleteQuery, [userInfo.id, followedUserId], (err, data) => {
+      if (err) return res.status(500).json({ error: "Database error" });
+      
+      if (data.affectedRows === 0) {
+        return res.status(404).json({ error: "Relationship not found" });
+      }
+      
+      return res.status(200).json({ message: "Unfollowed successfully!" });
     });
   });
 };

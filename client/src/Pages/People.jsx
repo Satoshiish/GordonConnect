@@ -51,9 +51,25 @@ function People() {
             } else {
                 await makeRequest.post("/relationships", { followedUserId: userId });
             }
+            return userId; // Return the userId for use in onSuccess
         },
-        onSuccess: () => {
+        onSuccess: (userId) => {
+            // Update the local state immediately
+            queryClient.setQueryData(["suggestions"], (old) => {
+                if (!old) return old;
+                return old.map(user => 
+                    user.id === userId 
+                        ? { ...user, isFollowing: !user.isFollowing }
+                        : user
+                );
+            });
+            
+            // Also invalidate other related queries
             queryClient.invalidateQueries(["suggestions"]);
+            queryClient.invalidateQueries(["friends"]);
+            queryClient.invalidateQueries(["relationship"]);
+            queryClient.invalidateQueries(["followers"]);
+            queryClient.invalidateQueries(["following"]);
         },
     });
 

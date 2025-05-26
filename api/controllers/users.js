@@ -62,16 +62,23 @@ export const getSuggestions = (req, res) => {
     
     console.log("Getting suggestions for user:", userInfo.id);
     
-    // Simplified query to just get basic user suggestions without complex logic
+    // Query that includes isFollowing flag
     const suggestionsQuery = `
-      SELECT u.user_id, u.username, u.name, u.profilePic, u.city
+      SELECT 
+        u.user_id, 
+        u.username, 
+        u.name, 
+        u.profilePic, 
+        u.city,
+        CASE WHEN r.followerUser_id IS NOT NULL THEN 1 ELSE 0 END AS isFollowing
       FROM users u
+      LEFT JOIN relationships r ON u.user_id = r.followedUser_id AND r.followerUser_id = ?
       WHERE u.user_id != ? AND u.role != 'guest'
       ORDER BY RAND()
       LIMIT 10
     `;
     
-    db.query(suggestionsQuery, [userInfo.id], (err, data) => {
+    db.query(suggestionsQuery, [userInfo.id, userInfo.id], (err, data) => {
       if (err) {
         console.error("Error fetching suggestions:", err);
         return res.status(500).json(err);
@@ -79,11 +86,12 @@ export const getSuggestions = (req, res) => {
       
       console.log("Found suggestions:", data.length);
       
-      // Map the data to include the id property
+      // Map the data to include the id property and convert isFollowing to boolean
       const enhancedSuggestions = data.map(user => ({
         ...user,
         id: user.user_id,
-        reason: "Popular in the community"
+        isFollowing: user.isFollowing === 1,
+        reason: user.city ? "From your city" : "Popular in the community"
       }));
       
       return res.status(200).json(enhancedSuggestions);
