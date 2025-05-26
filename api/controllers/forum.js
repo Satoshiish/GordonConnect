@@ -37,77 +37,60 @@ export const createForum = (req, res) => {
   });
 };
 
-// Get all forums with their comments - allow guest access
+// Get all forums with comments - no authentication required
 export const getForums = (req, res) => {
   const q = `
-    SELECT 
-      f.forum_id, f.title, f.description, f.createdAt, f.image,
-      u.name AS username, u.user_id,
-      c.comment_id, c.comment, c.user_id AS comment_user_id, c.createdAt AS comment_createdAt, 
-      u2.name AS comment_username,
-      COALESCE(SUM(fv.vote_value), 0) AS vote_count
+    SELECT f.*, u.name AS username, u.user_id
     FROM forums f
-    LEFT JOIN users u ON f.user_id = u.user_id
-    LEFT JOIN forum_comments c ON f.forum_id = c.forum_id
-    LEFT JOIN users u2 ON c.user_id = u2.user_id
-    LEFT JOIN forum_votes fv ON f.forum_id = fv.forum_id
-    GROUP BY f.forum_id, c.comment_id
-    ORDER BY f.createdAt DESC, c.createdAt ASC;
+    JOIN users u ON f.user_id = u.user_id
+    ORDER BY f.createdAt DESC
   `;
 
-  db.query(q, (err, data) => {
+  db.query(q, [], (err, forums) => {
     if (err) {
       console.error("Database error in getForums:", err);
       return res.status(500).json(err);
     }
 
-    // Group comments by forum_id
-    const forums = data.reduce((acc, row) => {
-      const {
-        forum_id,
-        title,
-        description,
-        createdAt,
-        username,
-        user_id,
-        comment_id,
-        comment,
-        comment_user_id,
-        comment_createdAt,
-        comment_username,
-      } = row;
+    // If no forums found, return empty array
+    if (forums.length === 0) {
+      return res.status(200).json([]);
+    }
 
-      if (!acc[forum_id]) {
-        acc[forum_id] = {
-          forum_id,
-          title,
-          description,
-          createdAt,
-          username,
-          user_id, // Include user_id to check ownership
-          image: row.image,
-          comments: [],
-        };
+    // Get comments for each forum
+    const forumIds = forums.map(forum => forum.forum_id);
+    const commentsQuery = `
+      SELECT c.*, u.name AS username
+      FROM forum_comments c
+      JOIN users u ON c.user_id = u.user_id
+      WHERE c.forum_id IN (?)
+      ORDER BY c.createdAt ASC
+    `;
+
+    db.query(commentsQuery, [forumIds], (err, comments) => {
+      if (err) {
+        console.error("Error fetching comments:", err);
+        // Return forums without comments
+        return res.status(200).json(forums.map(forum => ({...forum, comments: []})));
       }
 
-      if (comment_id) {
-        acc[forum_id].comments.push({
-          comment_id,
-          comment,
-          user_id: comment_user_id,
-          createdAt: comment_createdAt,
-          username: comment_username,
-        });
-      }
+      // Group comments by forum_id
+      const commentsByForum = comments.reduce((acc, comment) => {
+        if (!acc[comment.forum_id]) {
+          acc[comment.forum_id] = [];
+        }
+        acc[comment.forum_id].push(comment);
+        return acc;
+      }, {});
 
-      return acc;
-    }, {});
+      // Add comments to each forum
+      const forumsWithComments = forums.map(forum => ({
+        ...forum,
+        comments: commentsByForum[forum.forum_id] || []
+      }));
 
-    // Convert forums object to an array and sort by createdAt (newest first)
-    const forumList = Object.values(forums);
-    forumList.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    
-    return res.status(200).json(forumList);
+      return res.status(200).json(forumsWithComments);
+    });
   });
 };
 

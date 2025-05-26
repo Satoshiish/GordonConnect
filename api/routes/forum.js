@@ -4,11 +4,6 @@ import { verifyToken } from "../middleware/auth.js";
 
 const router = express.Router();
 
-// Test endpoint to check if the API is working
-router.get("/test", (req, res) => {
-  res.status(200).json({ message: "Forum API is working" });
-});
-
 // GET all forums with comments - allow guest access
 router.get("/", getForums);
 
