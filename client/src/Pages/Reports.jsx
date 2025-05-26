@@ -161,30 +161,30 @@ const Reports = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className={`mb-8 rounded-xl shadow-lg overflow-hidden relative ${
-                theme === "dark" ? "bg-gray-800 border border-gray-700" : "bg-white"
+            className={`mb-8 rounded-3xl shadow-xl overflow-hidden relative ${
+                theme === "dark" ? "bg-gray-850 border border-gray-700" : "bg-white"
             }`}
         >
             {/* Background Pattern */}
-            <div className="absolute inset-0 overflow-hidden opacity-10">
+            <div className="absolute inset-0 overflow-hidden opacity-15">
                 <div className="absolute -inset-[10px] bg-[radial-gradient(#4ade80_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)]"></div>
             </div>
             
-            <div className="relative p-6">
+            <div className="relative p-6 sm:p-8 md:p-10">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div className="flex items-start gap-4">
-                        <div className={`p-3 rounded-lg ${
+                        <div className={`p-3 rounded-2xl ${
                             theme === "dark" ? "bg-emerald-500/20" : "bg-emerald-100"
                         }`}>
-                            <Flag size={24} className={
+                            <Flag size={28} className={
                                 theme === "dark" ? "text-emerald-400" : "text-emerald-600"
                             } />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold mb-1 text-emerald-400">
+                            <h1 className="text-3xl sm:text-4xl font-bold mb-2 bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">
                                 Content Reports
                             </h1>
-                            <p className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}>
+                            <p className={`text-base ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>
                                 Review and manage reported content
                             </p>
                         </div>
@@ -192,28 +192,24 @@ const Reports = () => {
                     
                     <div className="flex flex-col sm:flex-row gap-3">
                         <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
                             onClick={exportAllReports}
+                            className="px-5 py-2.5 rounded-full flex items-center gap-2 shadow-md transition-all bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white"
                             disabled={reports.length === 0}
-                            className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all duration-200 ${
-                                theme === "dark" 
-                                    ? "bg-gray-700 hover:bg-gray-600 text-white" 
-                                    : "bg-gray-100 hover:bg-gray-200 text-gray-700"
-                            } disabled:opacity-50 disabled:cursor-not-allowed`}
                         >
-                            <FileSpreadsheet size={16} />
+                            <FileSpreadsheet size={18} />
                             Export All
                         </motion.button>
                         
                         <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
                             onClick={handleRefresh}
-                            className="px-4 py-2 rounded-full flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white transition-all duration-200"
+                            className="px-5 py-2.5 rounded-full flex items-center gap-2 shadow-md transition-all bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white"
                         >
                             <RefreshCw 
-                                size={16} 
+                                size={18} 
                                 className={`${isRefreshing ? "animate-spin" : ""}`} 
                             />
                             Refresh Reports
@@ -222,12 +218,12 @@ const Reports = () => {
                 </div>
                 
                 {/* Reports Info */}
-                <div className={`mt-4 p-3 rounded-lg text-sm ${
-                    theme === "dark" ? "bg-gray-700/50 text-gray-300" : "bg-gray-100 text-gray-700"
+                <div className={`mt-6 p-4 rounded-xl text-sm ${
+                    theme === "dark" ? "bg-gray-800/70 text-gray-200" : "bg-gray-50 text-gray-700"
                 }`}>
                     <p className="flex items-center gap-2">
-                        <span className="text-yellow-400">✦</span>
-                        <span>Our algorithm identifies potentially inappropriate content for review.</span>
+                        <AlertCircle size={16} className={theme === "dark" ? "text-amber-400" : "text-amber-500"} />
+                        <span>Review reported content to maintain community standards and safety.</span>
                     </p>
                 </div>
             </div>
@@ -289,7 +285,7 @@ const Reports = () => {
                 <div>
                   <button 
                     onClick={() => handleViewPost(report.post_id)}
-                    className="w-full py-2 mt-2 rounded-lg bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white transition-all duration-200 font-medium text-sm flex items-center justify-center gap-2"
+                    className="w-full py-2 mt-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-800/50 transition-colors font-medium text-sm flex items-center justify-center gap-2"
                   >
                     <Eye size={16} />
                     View Reported Post
@@ -305,8 +301,8 @@ const Reports = () => {
                   disabled={report.reviewed === 1}
                   className={`p-2 rounded-full ${
                     report.reviewed === 0 || report.reviewed === null
-                      ? 'bg-green-500 text-white hover:bg-green-600'
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
+                      ? 'bg-green-100 text-green-600 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-800/50 shadow-sm'
+                      : 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-500'
                   }`}
                   title="Mark as Resolved"
                 >
@@ -319,8 +315,8 @@ const Reports = () => {
                   disabled={report.reviewed === 2}
                   className={`p-2 rounded-full ${
                     report.reviewed === 0 || report.reviewed === null
-                      ? 'bg-red-500 text-white hover:bg-red-600'
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
+                      ? 'bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-800/50 shadow-sm'
+                      : 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-500'
                   }`}
                   title="Reject Report"
                 >
@@ -330,7 +326,7 @@ const Reports = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => handleExport(report)}
-                  className="p-2 rounded-full bg-blue-500 text-white hover:bg-blue-600"
+                  className="p-2 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-800/50 shadow-sm"
                   title="Export Report"
                 >
                   <Download className="w-5 h-5" />
@@ -345,13 +341,13 @@ const Reports = () => {
           <table className={`w-full min-w-full divide-y ${theme === "dark" ? "bg-gray-850 border-gray-700 divide-gray-700" : "bg-white border-gray-200 divide-gray-200"}`}>
             <thead className={`${theme === "dark" ? "bg-gray-900/90" : "bg-emerald-50"}`}>
               <tr>
-                <th className="px-4 md:px-6 py-3 text-left text-xs sm:text-sm font-bold uppercase tracking-wider text-gray-400">Report ID</th>
-                <th className="px-4 md:px-6 py-3 text-left text-xs sm:text-sm font-bold uppercase tracking-wider text-gray-400">User</th>
-                <th className="px-4 md:px-6 py-3 text-left text-xs sm:text-sm font-bold uppercase tracking-wider text-gray-400">Post</th>
-                <th className="px-4 md:px-6 py-3 text-left text-xs sm:text-sm font-bold uppercase tracking-wider text-gray-400">Reason</th>
-                <th className="px-4 md:px-6 py-3 text-left text-xs sm:text-sm font-bold uppercase tracking-wider text-gray-400">Date</th>
-                <th className="px-4 md:px-6 py-3 text-left text-xs sm:text-sm font-bold uppercase tracking-wider text-gray-400">Status</th>
-                <th className="px-4 md:px-6 py-3 text-left text-xs sm:text-sm font-bold uppercase tracking-wider text-gray-400">Actions</th>
+                <th className="px-4 md:px-6 py-3 text-left text-xs sm:text-sm font-bold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">Report ID</th>
+                <th className="px-4 md:px-6 py-3 text-left text-xs sm:text-sm font-bold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">User</th>
+                <th className="px-4 md:px-6 py-3 text-left text-xs sm:text-sm font-bold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">Post</th>
+                <th className="px-4 md:px-6 py-3 text-left text-xs sm:text-sm font-bold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">Reason</th>
+                <th className="px-4 md:px-6 py-3 text-left text-xs sm:text-sm font-bold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">Date</th>
+                <th className="px-4 md:px-6 py-3 text-left text-xs sm:text-sm font-bold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">Status</th>
+                <th className="px-4 md:px-6 py-3 text-left text-xs sm:text-sm font-bold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">Actions</th>
               </tr>
             </thead>
             <tbody className={`divide-y ${theme === "dark" ? "divide-gray-800" : "divide-gray-200"}`}>
@@ -373,7 +369,7 @@ const Reports = () => {
                   <td className="px-4 md:px-6 py-4 text-sm">
                     <button 
                       onClick={() => handleViewPost(report.post_id)}
-                      className="px-3 py-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white transition-colors font-medium text-xs flex items-center gap-1.5"
+                      className="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-800/50 transition-colors font-medium text-xs flex items-center gap-1.5"
                     >
                       <Eye size={14} />
                       View Post
@@ -408,8 +404,8 @@ const Reports = () => {
                         disabled={report.reviewed === 1}
                         className={`p-2 rounded-full ${
                           report.reviewed === 0 || report.reviewed === null
-                            ? 'bg-green-500 text-white hover:bg-green-600'
-                            : 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
+                            ? 'bg-green-100 text-green-600 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-800/50 shadow-sm'
+                            : 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-500'
                         }`}
                         title="Mark as Resolved"
                       >
@@ -422,8 +418,8 @@ const Reports = () => {
                         disabled={report.reviewed === 2}
                         className={`p-2 rounded-full ${
                           report.reviewed === 0 || report.reviewed === null
-                            ? 'bg-red-500 text-white hover:bg-red-600'
-                            : 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
+                            ? 'bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-800/50 shadow-sm'
+                            : 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-500'
                         }`}
                         title="Reject Report"
                       >
@@ -433,7 +429,7 @@ const Reports = () => {
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
                         onClick={() => handleExport(report)}
-                        className="p-2 rounded-full bg-blue-500 text-white hover:bg-blue-600"
+                        className="p-2 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-800/50 shadow-sm"
                         title="Export Report"
                       >
                         <Download className="w-5 h-5" />
@@ -569,5 +565,3 @@ const Reports = () => {
 };
 
 export default Reports; 
-
-
