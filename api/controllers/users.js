@@ -56,59 +56,22 @@ export const updateUser = (req, res) => {
 };
 
 export const getSuggestions = (req, res) => {
-  // Use userInfo from middleware
-  const userInfo = req.userInfo;
-  
-  console.log("Getting suggestions for user:", userInfo.id);
-  
-  // Get current user's info for better suggestions
-  const q = "SELECT city, interests FROM users WHERE user_id = ?";
-  
-  db.query(q, [userInfo.id], (err, userData) => {
-    if (err) {
-      console.error("Error fetching user data:", err);
-      return res.status(500).json(err);
-    }
+  try {
+    // Use userInfo from middleware
+    const userInfo = req.userInfo;
     
-    if (!userData || userData.length === 0) {
-      console.log("User not found:", userInfo.id);
-      return res.status(404).json("User not found");
-    }
+    console.log("Getting suggestions for user:", userInfo.id);
     
-    const userCity = userData[0].city || "";
-    let userInterests = [];
-    
-    try {
-      // Safely parse interests, handling null or invalid JSON
-      if (userData[0].interests) {
-        userInterests = typeof userData[0].interests === 'string' 
-          ? JSON.parse(userData[0].interests) 
-          : userData[0].interests;
-      }
-    } catch (e) {
-      console.error("Error parsing interests:", e);
-      userInterests = [];
-    }
-    
-    // Extract primary and secondary interests if available
-    const primaryInterest = userInterests[0] || "";
-    const secondaryInterest = userInterests[1] || "";
-    
-    console.log("User city:", userCity);
-    console.log("User interests:", primaryInterest, secondaryInterest);
-    
-    // Find users not followed by current user
+    // Simplified query to just get basic user suggestions without complex logic
     const suggestionsQuery = `
-      SELECT u.user_id, u.username, u.name, u.profilePic, u.city,
-             CASE WHEN r.followerUser_id IS NOT NULL THEN 1 ELSE 0 END AS isFollowing
+      SELECT u.user_id, u.username, u.name, u.profilePic, u.city
       FROM users u
-      LEFT JOIN relationships r ON u.user_id = r.followedUser_id AND r.followerUser_id = ?
       WHERE u.user_id != ? AND u.role != 'guest'
       ORDER BY RAND()
-      LIMIT 20
+      LIMIT 10
     `;
     
-    db.query(suggestionsQuery, [userInfo.id, userInfo.id], (err, data) => {
+    db.query(suggestionsQuery, [userInfo.id], (err, data) => {
       if (err) {
         console.error("Error fetching suggestions:", err);
         return res.status(500).json(err);
@@ -116,25 +79,19 @@ export const getSuggestions = (req, res) => {
       
       console.log("Found suggestions:", data.length);
       
-      // Add a reason to each suggestion without async operations
-      const enhancedSuggestions = data.map(user => {
-        let reason = "";
-        
-        if (user.city && user.city === userCity) {
-          reason = "From your city";
-        } else {
-          reason = "Popular in the community";
-        }
-        
-        return {
-          ...user,
-          reason
-        };
-      });
+      // Map the data to include the id property
+      const enhancedSuggestions = data.map(user => ({
+        ...user,
+        id: user.user_id,
+        reason: "Popular in the community"
+      }));
       
       return res.status(200).json(enhancedSuggestions);
     });
-  });
+  } catch (error) {
+    console.error("Unexpected error in getSuggestions:", error);
+    return res.status(500).json("Internal server error");
+  }
 };
 
 // Friends

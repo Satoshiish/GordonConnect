@@ -21,15 +21,19 @@ function People() {
             console.log("Token being sent:", localStorage.getItem("token"));
             try {
                 const res = await makeRequest.get("/users/suggestions");
+                console.log("Suggestions response:", res.data);
                 return res.data.map((user) => ({
                     ...user,
-                    id: user.user_id,
+                    id: user.user_id || user.id,
                 }));
             } catch (error) {
                 console.error("Error fetching suggestions:", error);
-                throw error;
+                // Return empty array instead of throwing to prevent error state
+                return [];
             }
         },
+        retry: 1,
+        retryDelay: 1000,
     });
 
     // Add error handling in the component
