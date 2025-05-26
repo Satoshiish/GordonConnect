@@ -7,42 +7,41 @@ export const AuthContextProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Check if user is authenticated on initial load
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const storedUser = localStorage.getItem("user");
-        
-        if (!token || !storedUser) {
-          logout();
-          return;
-        }
-
-        // Verify token with backend
-        const res = await makeRequest.get("/auth/verify", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        // Only set user if response contains expected user fields
-        if (res.data && !res.data.error && res.data.id) {
-          const userData = { ...res.data, token };
-          setCurrentUser(userData);
-          localStorage.setItem("user", JSON.stringify(userData));
-        } else {
-          logout();
-        }
-      } catch (error) {
-        console.error("Auth verification failed:", error);
+ // Check if user is authenticated on initial load
+useEffect(() => {
+  const checkAuth = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const storedUser = localStorage.getItem("user");
+      
+      if (!token || !storedUser) {
         logout();
-      } finally {
-        setLoading(false);
+        return;
       }
-    };
 
-    checkAuth();
-    // eslint-disable-next-line
-  }, []);
+      // Verify token with backend
+      const res = await makeRequest.get("/auth/verify", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      // Only set user if response contains expected user fields
+      if (res.data && !res.data.error && res.data.id) {
+        const userData = { ...res.data, token };
+        setCurrentUser(userData);
+        localStorage.setItem("user", JSON.stringify(userData));
+      } else {
+        logout();
+      }
+    } catch (error) {
+      console.error("Auth verification failed:", error);
+      logout();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  checkAuth();
+}, []);
 
   const login = async (inputs) => {
     try {

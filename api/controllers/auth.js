@@ -137,3 +137,4 @@ export const checkEmail = (req, res) => {
     return res.json({ exists: data.length > 0 });
   });
 };
+
