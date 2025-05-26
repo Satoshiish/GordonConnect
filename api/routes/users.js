@@ -5,8 +5,8 @@ import { verifyToken } from "../middleware/auth.js";
 const router = express.Router()
 
 router.get("/find/:userId", getUser)
-router.put("/", updateUser)
-router.get("/suggestions", getSuggestions);
+router.put("/", verifyToken, updateUser)
+router.get("/suggestions", verifyToken, getSuggestions);
 router.get("/friends", verifyToken, getFriends);
 router.get("/followers/:userId", verifyToken, getFollowers);
 router.get("/following/:userId", verifyToken, getFollowing);

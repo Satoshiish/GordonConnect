@@ -56,116 +56,70 @@ export const updateUser = (req, res) => {
 };
 
 export const getSuggestions = (req, res) => {
-  const token = req.cookies.accessToken;
-  if (!token) return res.status(401).json({ error: "Not logged in!" });
-
-  jwt.verify(token, "secretkey", (err, userInfo) => {
-    if (err) return res.status(403).json({ error: "Token is not valid!" });
-
-    // First, get user's interests and activity data
-    const getUserInterestsQuery = `
-      SELECT 
-        COALESCE(
-          (SELECT category FROM posts WHERE user_id = ? ORDER BY createdAt DESC LIMIT 1),
-          'general'
-        ) as primary_interest,
-        (
-          SELECT p.category 
-          FROM likes l 
-          JOIN posts p ON l.posts_id = p.posts_id 
-          WHERE l.user_id = ? 
-          GROUP BY p.category 
-          ORDER BY COUNT(*) DESC 
-          LIMIT 1
-        ) as secondary_interest
+  // Use userInfo from middleware
+  const userInfo = req.userInfo;
+  
+  // Get current user's info for better suggestions
+  const q = "SELECT city, interests FROM users WHERE user_id = ?";
+  
+  db.query(q, [userInfo.id], (err, userData) => {
+    if (err) return res.status(500).json(err);
+    if (!userData || userData.length === 0) return res.status(404).json("User not found");
+    
+    const userCity = userData[0].city;
+    const userInterests = userData[0].interests ? JSON.parse(userData[0].interests) : [];
+    
+    // Extract primary and secondary interests if available
+    const primaryInterest = userInterests[0] || "";
+    const secondaryInterest = userInterests[1] || "";
+    
+    // Find users not followed by current user
+    const suggestionsQuery = `
+      SELECT u.user_id, u.username, u.name, u.profilePic, u.city,
+             CASE WHEN r.followerUser_id IS NOT NULL THEN 1 ELSE 0 END AS isFollowing
+      FROM users u
+      LEFT JOIN relationships r ON u.user_id = r.followedUser_id AND r.followerUser_id = ?
+      WHERE u.user_id != ? AND u.role != 'guest'
+      ORDER BY RAND()
+      LIMIT 20
     `;
-
-    db.query(getUserInterestsQuery, [userInfo.id, userInfo.id], (err, interestData) => {
+    
+    db.query(suggestionsQuery, [userInfo.id, userInfo.id], (err, data) => {
       if (err) return res.status(500).json(err);
       
-      const primaryInterest = interestData[0]?.primary_interest || 'general';
-      const secondaryInterest = interestData[0]?.secondary_interest || 'general';
-      
-      // Get user's location/city if available
-      const getUserLocationQuery = `SELECT city FROM users WHERE user_id = ?`;
-      
-      db.query(getUserLocationQuery, [userInfo.id], (err, locationData) => {
-        if (err) return res.status(500).json(err);
+      // Add relevance reason to each suggestion
+      const enhancedSuggestions = data.map(user => {
+        let reason = "";
         
-        const userCity = locationData[0]?.city || '';
-        
-        // Complex query to get suggestions based on:
-        // 1. Users with similar interests (from posts and likes)
-        // 2. Users from the same location/city if available
-        // 3. Users with high engagement (many posts or followers)
-        // 4. Excluding users already followed
-        const suggestionsQuery = `
-          SELECT u.user_id, u.name, u.username, u.profilePic, u.city,
-            CASE
-              WHEN u.city = ? THEN 20
-              ELSE 0
-            END +
-            CASE
-              WHEN EXISTS (
-                SELECT 1 FROM posts WHERE user_id = u.user_id AND category IN (?, ?)
-              ) THEN 15
-              ELSE 0
-            END +
-            CASE
-              WHEN (SELECT COUNT(*) FROM posts WHERE user_id = u.user_id) > 5 THEN 10
-              ELSE 0
-            END +
-            CASE
-              WHEN (SELECT COUNT(*) FROM relationships WHERE followedUser_id = u.user_id) > 3 THEN 5
-              ELSE 0
-            END AS relevance_score
-          FROM users u
-          WHERE u.user_id != ? 
-            AND u.user_id NOT IN (
-              SELECT followedUser_id FROM relationships WHERE followerUser_id = ?
-            )
-          ORDER BY relevance_score DESC, RAND()
-          LIMIT 8
-        `;
-        
-        db.query(suggestionsQuery, [userCity, primaryInterest, secondaryInterest, userInfo.id, userInfo.id], (err, data) => {
-          if (err) return res.status(500).json(err);
+        if (user.city && user.city === userCity) {
+          reason = "From your city";
+        } else {
+          // Check if they have posts in user's interests
+          const checkInterestsQuery = `
+            SELECT category FROM posts 
+            WHERE user_id = ? AND category IN (?, ?)
+            LIMIT 1
+          `;
           
-          // Add relevance reason to each suggestion
-          const enhancedSuggestions = data.map(user => {
-            let reason = "";
-            
-            if (user.city && user.city === userCity) {
-              reason = "From your city";
-            } else {
-              // Check if they have posts in user's interests
-              const checkInterestsQuery = `
-                SELECT category FROM posts 
-                WHERE user_id = ? AND category IN (?, ?)
-                LIMIT 1
-              `;
-              
-              db.query(checkInterestsQuery, [user.user_id, primaryInterest, secondaryInterest], (err, interestMatch) => {
-                if (!err && interestMatch.length > 0) {
-                  reason = `Interested in ${interestMatch[0].category}`;
-                }
-              });
-              
-              // If no reason set yet, use a generic one
-              if (!reason) {
-                reason = "Popular in the community";
-              }
+          db.query(checkInterestsQuery, [user.user_id, primaryInterest, secondaryInterest], (err, interestMatch) => {
+            if (!err && interestMatch.length > 0) {
+              reason = `Interested in ${interestMatch[0].category}`;
             }
-            
-            return {
-              ...user,
-              reason
-            };
           });
           
-          return res.status(200).json(enhancedSuggestions);
-        });
+          // If no reason set yet, use a generic one
+          if (!reason) {
+            reason = "Popular in the community";
+          }
+        }
+        
+        return {
+          ...user,
+          reason
+        };
       });
+      
+      return res.status(200).json(enhancedSuggestions);
     });
   });
 };

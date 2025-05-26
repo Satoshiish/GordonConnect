@@ -3,44 +3,36 @@ import jwt from "jsonwebtoken";
 
 // Create a forum - allow both admins and regular users
 export const createForum = (req, res) => {
-  // Check for token in cookies or Authorization header
-  const cookieToken = req.cookies.accessToken;
-  const headerToken = req.headers.authorization?.split(" ")[1];
-  const token = cookieToken || headerToken;
-  
-  if (!token) return res.status(401).json("Not authenticated");
+  // Use userInfo from middleware
+  const userInfo = req.userInfo;
 
-  jwt.verify(token, "secretkey", (err, userInfo) => {
-    if (err) return res.status(403).json("Token is not valid");
+  // Check if user is a guest
+  const q = "SELECT role FROM users WHERE user_id = ?";
+  db.query(q, [userInfo.id], (err, data) => {
+    if (err) return res.status(500).json(err);
+    
+    if (data.length === 0) return res.status(404).json("User not found");
+    
+    if (data[0].role === "guest") {
+      return res.status(403).json("Guests cannot create forums");
+    }
 
-    // Check if user is a guest
-    const q = "SELECT role FROM users WHERE user_id = ?";
-    db.query(q, [userInfo.id], (err, data) => {
+    // If not a guest, proceed with forum creation
+    const insertQuery = `
+      INSERT INTO forums (title, description, image, createdAt, user_id)
+      VALUES (?, ?, ?, NOW(), ?)
+    `;
+
+    const values = [
+      req.body.title,
+      req.body.description,
+      req.body.image || null,
+      userInfo.id
+    ];
+
+    db.query(insertQuery, values, (err, result) => {
       if (err) return res.status(500).json(err);
-      
-      if (data.length === 0) return res.status(404).json("User not found");
-      
-      if (data[0].role === "guest") {
-        return res.status(403).json("Guests cannot create forums");
-      }
-
-      // If not a guest, proceed with forum creation
-      const insertQuery = `
-        INSERT INTO forums (title, description, image, createdAt, user_id)
-        VALUES (?, ?, ?, NOW(), ?)
-      `;
-
-      const values = [
-        req.body.title,
-        req.body.description,
-        req.body.image || null,
-        userInfo.id
-      ];
-
-      db.query(insertQuery, values, (err, result) => {
-        if (err) return res.status(500).json(err);
-        return res.status(201).json("Forum created successfully");
-      });
+      return res.status(201).json("Forum created successfully");
     });
   });
 };
@@ -114,26 +106,22 @@ export const getForums = (req, res) => {
 
 // Post a comment on a forum
 export const postComment = (req, res) => {
-  const token = req.cookies.accessToken;
-  if (!token) return res.status(401).json("Not Authenticated");
+  // Use userInfo from middleware
+  const userInfo = req.userInfo;
+  
+  const { comment } = req.body;
+  const { forum_id } = req.params;
 
-  jwt.verify(token, "secretkey", (err, userInfo) => {
-    if (err) return res.status(403).json("Token is not valid");
+  if (!comment) return res.status(400).json("Comment cannot be empty");
 
-    const { comment } = req.body;
-    const { forum_id } = req.params;
+  const insertQuery = `
+    INSERT INTO forum_comments (forum_id, user_id, comment)
+    VALUES (?, ?, ?)
+  `;
 
-    if (!comment) return res.status(400).json("Comment cannot be empty");
-
-    const insertQuery = `
-      INSERT INTO forum_comments (forum_id, user_id, comment)
-      VALUES (?, ?, ?)
-    `;
-
-    db.query(insertQuery, [forum_id, userInfo.id, comment], (err, data) => {
-      if (err) return res.status(500).json(err);
-      return res.status(201).json("Comment posted successfully");
-    });
+  db.query(insertQuery, [forum_id, userInfo.id, comment], (err, data) => {
+    if (err) return res.status(500).json(err);
+    return res.status(201).json("Comment posted successfully");
   });
 };
 

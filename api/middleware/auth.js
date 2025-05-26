@@ -6,10 +6,16 @@ export const verifyToken = (req, res, next) => {
   const headerToken = req.headers.authorization?.split(" ")[1];
   const token = cookieToken || headerToken;
   
-  if (!token) return res.status(401).json("Not logged in!");
+  if (!token) {
+    console.log("No token found in request");
+    return res.status(401).json("Not authenticated!");
+  }
 
   jwt.verify(token, "secretkey", (err, userInfo) => {
-    if (err) return res.status(403).json("Token is not valid!");
+    if (err) {
+      console.log("Token verification failed:", err.message);
+      return res.status(403).json("Token is not valid!");
+    }
     
     req.userInfo = userInfo;
     next();

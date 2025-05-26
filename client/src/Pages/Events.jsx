@@ -146,6 +146,7 @@ const Events = () => {
         const uploadRes = await makeRequest.post("upload", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
           },
         });
         imageUrl = "/upload/" + uploadRes.data; // Use the filename directly as in posts
@@ -161,7 +162,11 @@ const Events = () => {
         image: imageUrl
       };
 
-      await makeRequest.post("events", eventData);
+      await makeRequest.post("events", eventData, {
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+        }
+      });
       
       fetchEvents();
       setNewEvent({ title: "", date: "", time: "", location: "", description: "" });
@@ -172,7 +177,7 @@ const Events = () => {
       console.error("Failed to create event:", err);
       if (err.response) {
         console.error("Server response:", err.response.data);
-        alert(`Failed to create event: ${err.response.data.message || 'Server error'}`);
+        alert(`Failed to create event: ${err.response.data.message || err.response.data}`);
       } else {
         alert("Failed to create event. Please try again.");
       }
@@ -294,27 +299,38 @@ const Events = () => {
   const handleUpdate = async () => {
     try {
       let imageUrl = editEvent.image;
-  
+
       if (editImage) {
         const formData = new FormData();
         formData.append("file", editImage);
         const uploadRes = await makeRequest.post("upload", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
+          headers: { 
+            "Content-Type": "multipart/form-data",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
+          },
         });
         imageUrl = "/upload/" + uploadRes.data;
       }
-  
+
       const updatedEvent = {
         ...editEvent,
         image: imageUrl,
       };
-  
-      await makeRequest.put(`events/${editEvent.id}`, updatedEvent);
-  
+
+      await makeRequest.put(`events/${editEvent.id}`, updatedEvent, {
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+        }
+      });
+
       // Fetch all emails who joined this event
-      const emailRes = await makeRequest.get(`events/${editEvent.id}/emails`);
+      const emailRes = await makeRequest.get(`events/${editEvent.id}/emails`, {
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+        }
+      });
       const emailList = emailRes.data;
-  
+
       // Send email to each user
       const sendEmails = emailList.map((email) => {
         const templateParams = {
@@ -325,7 +341,7 @@ const Events = () => {
           event_location: updatedEvent.location,
           event_description: updatedEvent.description,
         };
-  
+
         return emailjs.send(
           "service_2gykz5c", // your EmailJS service ID
           "template_nsf502r", // your EmailJS template ID
@@ -333,16 +349,16 @@ const Events = () => {
           "i_iqDN7LX-XhcK9R6" // your EmailJS public key
         );
       });
-  
+
       await Promise.allSettled(sendEmails);
-  
+
       toast.success("Event updated and notifications sent.");
       setShowEditForm(false);
       setEditEvent(null);
       setEditImage(null);
       setEditImagePreview(null);
       fetchEvents();
-  
+
     } catch (err) {
       console.error("Failed to update event or send emails:", err);
       alert("Failed to update event or send notifications.");
@@ -1400,6 +1416,8 @@ const Events = () => {
 };
 
 export default Events;
+
+
 
 
 

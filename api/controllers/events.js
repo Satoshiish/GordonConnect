@@ -24,37 +24,33 @@ export const getEvents = (req, res) => {
 };
 
 export const addEvent = (req, res) => {
-  const token = req.cookies.accessToken;
-  if (!token) return res.status(401).json("Not authenticated!");
+  // Use userInfo from middleware
+  const userInfo = req.userInfo;
+  
+  // Check if user is admin
+  const checkAdminQ = "SELECT role FROM users WHERE user_id = ?";
+  db.query(checkAdminQ, [userInfo.id], (err, data) => {
+    if (err) return res.status(500).json(err);
+    if (data[0].role !== "admin")
+      return res.status(403).json("Only admins can create events!");
 
-  jwt.verify(token, "secretkey", (err, userInfo) => {
-    if (err) return res.status(403).json("Token is not valid!");
+    const q = `
+      INSERT INTO events (title, date, time, location, description, image, user_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `;
+    const values = [
+      req.body.title,
+      req.body.date,
+      req.body.time,
+      req.body.location,
+      req.body.description,
+      req.body.image || null,
+      userInfo.id,
+    ];
 
-    // Check if user is admin
-    const checkAdminQ = "SELECT role FROM users WHERE user_id = ?";
-    db.query(checkAdminQ, [userInfo.id], (err, data) => {
+    db.query(q, values, (err, data) => {
       if (err) return res.status(500).json(err);
-      if (data[0].role !== "admin")
-        return res.status(403).json("Only admins can create events!");
-
-      const q = `
-        INSERT INTO events (title, date, time, location, description, image, user_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-      `;
-      const values = [
-        req.body.title,
-        req.body.date,
-        req.body.time,
-        req.body.location,
-        req.body.description,
-        req.body.image || null,
-        userInfo.id,
-      ];
-
-      db.query(q, values, (err, data) => {
-        if (err) return res.status(500).json(err);
-        return res.status(201).json("Event has been created!");
-      });
+      return res.status(201).json("Event has been created!");
     });
   });
 };
@@ -176,4 +172,5 @@ export const getEventJoins = (req, res) => {
     }
   );
 };
+
 

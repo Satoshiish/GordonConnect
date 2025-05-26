@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { AuthContext } from "../authContext";
 import { makeRequest } from "../axios";
 import { useTheme } from "../ThemeContext";
@@ -15,16 +15,29 @@ function People() {
     const isGuest = currentUser?.role === "guest";
 
     // Fetch suggestions with algorithm
-    const { data: suggestions = [], isLoading, refetch } = useQuery({
+    const { data: suggestions = [], isLoading, refetch, error } = useQuery({
         queryKey: ["suggestions"],
         queryFn: async () => {
-            const res = await makeRequest.get("/users/suggestions");
-            return res.data.map((user) => ({
-                ...user,
-                id: user.user_id,
-            }));
+            console.log("Token being sent:", localStorage.getItem("token"));
+            try {
+                const res = await makeRequest.get("/users/suggestions");
+                return res.data.map((user) => ({
+                    ...user,
+                    id: user.user_id,
+                }));
+            } catch (error) {
+                console.error("Error fetching suggestions:", error);
+                throw error;
+            }
         },
     });
+
+    // Add error handling in the component
+    useEffect(() => {
+        if (error) {
+            console.error("Suggestions query error:", error);
+        }
+    }, [error]);
 
     const followMutation = useMutation({
         mutationFn: async (userId) => {

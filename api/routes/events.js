@@ -8,6 +8,7 @@ import {
   getEventJoins,
   availEvent
 } from "../controllers/events.js";
+import { verifyToken } from "../middleware/auth.js";
 import { db } from "../connect.js";
 
 const router = express.Router();
@@ -16,13 +17,13 @@ const router = express.Router();
 router.get("/", getEvents);
 
 // Create new event (admin only)
-router.post("/", addEvent);
+router.post("/", verifyToken, addEvent);
 
 // Update event (admin only)
-router.put("/:id", updateEvent);
+router.put("/:id", verifyToken, updateEvent);
 
 // Delete event (admin only)
-router.delete("/:id", deleteEvent);
+router.delete("/:id", verifyToken, deleteEvent);
 
 // Get who joined an event
 router.get("/:id/joins", getEventJoins);
@@ -31,7 +32,7 @@ router.get("/:id/joins", getEventJoins);
 router.post("/:id/avail", availEvent);
 
 // Get all emails who joined a specific event
-router.get('/:id/emails', (req, res) => {
+router.get('/:id/emails', verifyToken, (req, res) => {
   const eventId = req.params.id;
   db.query(
     "SELECT email FROM event_avails WHERE event_id = ?",
