@@ -1,29 +1,26 @@
 import { db } from "../connect.js";
 import jwt from "jsonwebtoken";
+import nodemailer from "nodemailer";
 
-export const getEvents = (req, res) => {
-  // Simple query to get all events
-  const q = `
-    SELECT e.*, u.name as creator_name, u.profilePic as creator_pic,
-           (SELECT COUNT(*) FROM event_avails WHERE event_id = e.id) as join_count
-    FROM events e
-    LEFT JOIN users u ON e.creator_id = u.user_id
-    ORDER BY e.date ASC, e.time ASC
-  `;
-  
-  db.query(q, [], (err, data) => {
-    if (err) {
-      console.error("Database error in getEvents:", err);
-      return res.status(500).json({ error: "Database error", details: err.message });
-    }
+export const getEvents = async (req, res) => {
+  try {
+    // Simple query to get all events
+    const q = `
+      SELECT e.*, u.name as creator_name, u.profilePic as creator_pic,
+             (SELECT COUNT(*) FROM event_avails WHERE event_id = e.id) as join_count
+      FROM events e
+      LEFT JOIN users u ON e.creator_id = u.user_id
+      ORDER BY e.date ASC, e.time ASC
+    `;
     
-    // Return empty array if no events found
-    if (!data || data.length === 0) {
-      return res.status(200).json([]);
-    }
-    
-    return res.status(200).json(data);
-  });
+    db.query(q, (err, data) => {
+      if (err) return res.status(500).json(err);
+      return res.status(200).json(data);
+    });
+  } catch (error) {
+    console.error("Error in getEvents:", error);
+    return res.status(500).json("Server error");
+  }
 };
 
 export const addEvent = (req, res) => {
@@ -205,16 +202,16 @@ export const getEventJoins = (req, res) => {
     "SELECT email FROM event_avails WHERE event_id = ?",
     [eventId],
     (err, results) => {
-      if (err) {
-        console.error("Database error in getEventJoins:", err);
-        return res.status(500).json({ error: "Failed to fetch joins", details: err.message });
-      }
-      return res.status(200).json({ count: results.length, emails: results.map((r) => r.email) });
+      if (err)
+        return res
+          .status(500)
+          .json({ error: "Failed to fetch joins", details: err });
+      return res
+        .status(200)
+        .json({ count: results.length, emails: results.map((r) => r.email) });
     }
   );
 };
-
-
 
 
 
