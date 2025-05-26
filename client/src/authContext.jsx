@@ -103,16 +103,22 @@ export const AuthContextProvider = ({ children }) => {
   const canEdit = (ownerId) => !isGuest() && (isAdmin() || currentUser?.id === ownerId);
   const canDelete = (ownerId) => !isGuest() && (isAdmin() || currentUser?.id === ownerId);
 
+  // Add this function to generate a guest token
+  const generateGuestToken = () => {
+    return `guest_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+  };
+
   const loginAsGuest = () => {
+    const guestToken = generateGuestToken();
     const guestUser = {
       username: "Guest",
       email: "",
       role: "guest",
-      id: "guest_" + Date.now(),
+      id: guestToken,
     };
     setCurrentUser(guestUser);
     localStorage.setItem("user", JSON.stringify(guestUser));
-    localStorage.removeItem("token");
+    localStorage.setItem("token", guestToken); // Store the guest token
   };
 
   const logout = () => {

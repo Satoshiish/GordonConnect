@@ -2,25 +2,25 @@ import { db } from "../connect.js";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
 
-export const getEvents = (req, res) => {
-  const q = `
-    SELECT e.*, COUNT(ev.id) as join_count
-    FROM events e
-    LEFT JOIN event_avails ev ON e.id = ev.event_id
-    GROUP BY e.id
-    ORDER BY e.date ASC
-  `;
-
-  db.query(q, (err, data) => {
-    if (err) return res.status(500).json(err);
-    // Log the image field of each event for debugging
-    if (Array.isArray(data)) {
-      data.forEach((event) => {
-        console.log(`Event ID: ${event.id}, Image: ${event.image}`);
-      });
-    }
-    return res.status(200).json(data);
-  });
+export const getEvents = async (req, res) => {
+  try {
+    // Simple query to get all events
+    const q = `
+      SELECT e.*, u.name as creator_name, u.profilePic as creator_pic,
+             (SELECT COUNT(*) FROM event_avails WHERE event_id = e.id) as join_count
+      FROM events e
+      LEFT JOIN users u ON e.creator_id = u.user_id
+      ORDER BY e.date ASC, e.time ASC
+    `;
+    
+    db.query(q, (err, data) => {
+      if (err) return res.status(500).json(err);
+      return res.status(200).json(data);
+    });
+  } catch (error) {
+    console.error("Error in getEvents:", error);
+    return res.status(500).json("Server error");
+  }
 };
 
 export const addEvent = (req, res) => {
@@ -212,6 +212,7 @@ export const getEventJoins = (req, res) => {
     }
   );
 };
+
 
 
 

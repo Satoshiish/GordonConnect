@@ -7,9 +7,29 @@ export const verifyToken = (req, res, next) => {
     const headerToken = req.headers.authorization?.split(" ")[1];
     const token = cookieToken || headerToken;
     
+    // If no token, check if it's a guest request
     if (!token) {
+      // For public routes that should work for guests
+      if (req.method === 'GET' && (
+        req.path === '/' || 
+        req.path.startsWith('/posts') ||
+        req.path.startsWith('/events') ||
+        req.path.startsWith('/forums') ||
+        req.path.startsWith('/users/find/')
+      )) {
+        // Set a guest user info
+        req.userInfo = { id: 'guest', role: 'guest' };
+        return next();
+      }
+      
       console.log("No token found in request");
       return res.status(401).json("Not authenticated!");
+    }
+
+    // If token starts with "guest_", it's a guest token
+    if (token.startsWith('guest_')) {
+      req.userInfo = { id: token, role: 'guest' };
+      return next();
     }
 
     jwt.verify(token, "secretkey", (err, userInfo) => {
@@ -26,4 +46,5 @@ export const verifyToken = (req, res, next) => {
     return res.status(500).json("Authentication error");
   }
 };
+
 

@@ -13,7 +13,7 @@ import { db } from "../connect.js";
 
 const router = express.Router();
 
-// Get all events
+// Get all events - allow guest access
 router.get("/", getEvents);
 
 // Create new event (admin only)
@@ -25,11 +25,11 @@ router.put("/:id", verifyToken, updateEvent);
 // Delete event (admin only)
 router.delete("/:id", verifyToken, deleteEvent);
 
-// Get who joined an event
+// Get who joined an event - allow guest access
 router.get("/:id/joins", getEventJoins);
 
 // Add this route for joining an event
-router.post("/:id/avail", availEvent);
+router.post("/:id/avail", verifyToken, availEvent);
 
 // Get all emails who joined a specific event
 router.get('/:id/emails', verifyToken, (req, res) => {
@@ -45,4 +45,5 @@ router.get('/:id/emails', verifyToken, (req, res) => {
 });
 
 export default router;
+
 

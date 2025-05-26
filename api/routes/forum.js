@@ -4,7 +4,7 @@ import { verifyToken } from "../middleware/auth.js";
 
 const router = express.Router();
 
-// GET all forums with comments
+// GET all forums with comments - allow guest access
 router.get("/", getForums);
 
 // POST create a new forum (admin only)

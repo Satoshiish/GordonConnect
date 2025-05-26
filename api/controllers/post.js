@@ -4,19 +4,32 @@ import jwt from "jsonwebtoken";
 import util from 'util';
 
 export const getPosts = async (req, res) => {
-  // Check for token in cookies or Authorization header
-  const cookieToken = req.cookies.accessToken;
-  const headerToken = req.headers.authorization?.split(" ")[1];
-  const token = cookieToken || headerToken;
-  
-  if (!token) return res.status(401).json("Not logged in!");
-
-  jwt.verify(token, "secretkey", async (err, userInfo) => {
-    if (err) return res.status(403).json("Token is not valid!");
-
+  try {
+    // Check for token in cookies or Authorization header
+    const cookieToken = req.cookies.accessToken;
+    const headerToken = req.headers.authorization?.split(" ")[1];
+    const token = cookieToken || headerToken;
+    
+    // Get query parameters
     const userId = req.query.userId; 
     const category = req.query.category;
     const anyCategory = req.query.anyCategory;
+    const postId = req.query.postId;
+    
+    // Handle guest users or users with valid tokens
+    let userInfo;
+    
+    if (!token || token.startsWith('guest_')) {
+      // Guest user
+      userInfo = { id: 'guest', role: 'guest' };
+    } else {
+      // Verify token for logged-in users
+      try {
+        userInfo = jwt.verify(token, "secretkey");
+      } catch (err) {
+        return res.status(403).json("Token is not valid!");
+      }
+    }
 
     // Get user's interests and activity data (similar to getSuggestions algorithm)
     let userInterests = [];
@@ -60,55 +73,39 @@ export const getPosts = async (req, res) => {
     let q;
     let values;
 
-    if (userId && category) {
+    // If a specific post ID is requested
+    if (postId) {
       q = `
-        SELECT p.*, u.user_id AS userId, u.name, u.profilePic 
-        FROM posts AS p 
-        JOIN users AS u ON (u.user_id = p.user_id) 
-        WHERE p.user_id = ? AND p.category = ?
-        ORDER BY p.createdAt DESC;
-      `;
-      values = [userId, category];
-    } else if (anyCategory) {
-      q = `
-        SELECT p.*, u.user_id AS userId, u.name, u.profilePic,
-        CASE 
-          WHEN r.followerUser_id IS NOT NULL THEN 'following'
-          WHEN p.category IN (?) OR p.category2 IN (?) OR p.category3 IN (?) OR p.category4 IN (?) THEN 'recommended'
-          ELSE 'other'
-        END as post_type
+        SELECT p.*, u.user_id AS userId, u.name, u.profilePic
         FROM posts AS p 
         JOIN users AS u ON (u.user_id = p.user_id)
-        LEFT JOIN relationships AS r ON (p.user_id = r.followedUser_id AND r.followerUser_id = ?)
-        WHERE p.category = ? OR p.category2 = ? OR p.category3 = ? OR p.category4 = ?
-        ORDER BY 
-          CASE 
-            WHEN r.followerUser_id IS NOT NULL THEN 0
-            WHEN p.category IN (?) OR p.category2 IN (?) OR p.category3 IN (?) OR p.category4 IN (?) THEN 1
-            ELSE 2
-          END,
-          p.createdAt DESC;
+        WHERE p.posts_id = ?
       `;
-      values = [anyCategory, anyCategory, anyCategory, anyCategory, userInfo.id, anyCategory, anyCategory, anyCategory, anyCategory, anyCategory, anyCategory, anyCategory, anyCategory];
-    } else if (userId) {
+      values = [postId];
+    } 
+    // If a specific user's posts are requested
+    else if (userId) {
       q = `
-        SELECT p.*, u.user_id AS userId, u.name, u.profilePic 
+        SELECT p.*, u.user_id AS userId, u.name, u.profilePic
         FROM posts AS p 
-        JOIN users AS u ON (u.user_id = p.user_id) 
-        WHERE p.user_id = ? 
-        ORDER BY p.createdAt DESC;
+        JOIN users AS u ON (u.user_id = p.user_id)
+        WHERE p.user_id = ?
+        ${category ? "AND p.category = ?" : ""}
+        ORDER BY p.createdAt DESC
       `;
-      values = [userId];
-    } else if (category) {
+      values = category ? [userId, category] : [userId];
+    } 
+    // All posts (with optional category filter)
+    else {
       if (userInfo.role === 'guest') {
         q = `
           SELECT p.*, u.user_id AS userId, u.name, u.profilePic, 'recommended' as post_type
           FROM posts AS p 
           JOIN users AS u ON (u.user_id = p.user_id)
-          WHERE p.category = ?
+          ${anyCategory ? "WHERE p.category = ?" : ""}
           ORDER BY p.createdAt DESC;
         `;
-        values = [category];
+        values = anyCategory ? [anyCategory] : [];
       } else {
         // Enhanced algorithm for category posts
         q = `
@@ -131,46 +128,15 @@ export const getPosts = async (req, res) => {
         `;
         values = [userCity, userInterests, userInfo.id, category];
       }
-    } else {
-      if (userInfo.role === 'guest') {
-        q = `
-          SELECT p.*, u.user_id AS userId, u.name, u.profilePic, 'recommended' as post_type
-          FROM posts AS p 
-          JOIN users AS u ON (u.user_id = p.user_id)
-          ORDER BY p.createdAt DESC;
-        `;
-        values = [];
-      } else {
-        // Enhanced algorithm for all posts
-        q = `
-          SELECT p.*, u.user_id AS userId, u.name, u.profilePic, u.city,
-          CASE 
-            WHEN r.followerUser_id IS NOT NULL THEN 'following'
-            ELSE 'recommended'
-          END as post_type,
-          CASE
-            WHEN r.followerUser_id IS NOT NULL THEN 0
-            WHEN u.city = ? AND u.city != '' THEN 1
-            WHEN p.category IN (?) THEN 2
-            ELSE 3
-          END as relevance_score
-          FROM posts AS p 
-          JOIN users AS u ON (u.user_id = p.user_id)
-          LEFT JOIN relationships AS r ON (p.user_id = r.followedUser_id AND r.followerUser_id = ?)
-          ORDER BY relevance_score, p.createdAt DESC;
-        `;
-        values = [userCity, userInterests, userInfo.id];
-      }
     }
 
-    db.query(q, values, (err, data) => {
-      if (err) {
-        console.error("Database Error:", err);
-        return res.status(500).json(err);
-      }
-      return res.status(200).json(data);
-    });
-  });
+    // Execute the query
+    const [rows] = await db.query(q, values);
+    return res.status(200).json(rows);
+  } catch (error) {
+    console.error("Error in getPosts:", error);
+    return res.status(500).json("Server error");
+  }
 };
 
 export const addPost = (req, res) => {
@@ -218,6 +184,7 @@ export const deletePost = (req, res) => {
     });
   });
 };
+
 
 
 

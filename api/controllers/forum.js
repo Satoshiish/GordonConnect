@@ -37,7 +37,7 @@ export const createForum = (req, res) => {
   });
 };
 
-// Get all forums with their comments
+// Get all forums with their comments - allow guest access
 export const getForums = (req, res) => {
   const q = `
     SELECT 

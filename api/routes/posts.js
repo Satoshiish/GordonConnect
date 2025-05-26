@@ -4,8 +4,10 @@ import { verifyToken } from "../middleware/auth.js";
 
 const router = express.Router();
 
-router.get("/", verifyToken, getPosts);
+// Allow GET requests without token verification
+router.get("/", getPosts);
 router.post("/", verifyToken, addPost);
 router.delete("/:id", verifyToken, deletePost);
 
 export default router;
+
