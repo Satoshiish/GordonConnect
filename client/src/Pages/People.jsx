@@ -45,27 +45,17 @@ function People() {
 
     const followMutation = useMutation({
         mutationFn: async (userId) => {
-            const user = suggestions.find((u) => u.id === userId);
-            if (user?.isFollowing) {
-                await makeRequest.delete(`/relationships?followedUserId=${userId}`);
-            } else {
-                await makeRequest.post("/relationships", { followedUserId: userId });
-            }
+            await makeRequest.post("/relationships", { followedUserId: userId });
             return userId; // Return the userId for use in onSuccess
         },
         onSuccess: (userId) => {
-            // Update the local state immediately
+            // Remove the followed user from suggestions
             queryClient.setQueryData(["suggestions"], (old) => {
                 if (!old) return old;
-                return old.map(user => 
-                    user.id === userId 
-                        ? { ...user, isFollowing: !user.isFollowing }
-                        : user
-                );
+                return old.filter(user => user.id !== userId);
             });
             
             // Also invalidate other related queries
-            queryClient.invalidateQueries(["suggestions"]);
             queryClient.invalidateQueries(["friends"]);
             queryClient.invalidateQueries(["relationship"]);
             queryClient.invalidateQueries(["followers"]);

@@ -62,20 +62,21 @@ export const getSuggestions = (req, res) => {
     
     console.log("Getting suggestions for user:", userInfo.id);
     
-    // Query that includes isFollowing flag
+    // Modified query to exclude users that are already being followed
     const suggestionsQuery = `
       SELECT 
         u.user_id, 
         u.username, 
         u.name, 
         u.profilePic, 
-        u.city,
-        CASE WHEN r.followerUser_id IS NOT NULL THEN 1 ELSE 0 END AS isFollowing
+        u.city
       FROM users u
       LEFT JOIN relationships r ON u.user_id = r.followedUser_id AND r.followerUser_id = ?
-      WHERE u.user_id != ? AND u.role != 'guest'
+      WHERE u.user_id != ? 
+        AND u.role != 'guest'
+        AND r.followerUser_id IS NULL
       ORDER BY RAND()
-      LIMIT 10
+      LIMIT 15
     `;
     
     db.query(suggestionsQuery, [userInfo.id, userInfo.id], (err, data) => {
@@ -86,11 +87,11 @@ export const getSuggestions = (req, res) => {
       
       console.log("Found suggestions:", data.length);
       
-      // Map the data to include the id property and convert isFollowing to boolean
+      // Map the data to include the id property
       const enhancedSuggestions = data.map(user => ({
         ...user,
         id: user.user_id,
-        isFollowing: user.isFollowing === 1,
+        isFollowing: false, // All suggestions are not being followed
         reason: user.city ? "From your city" : "Popular in the community"
       }));
       
