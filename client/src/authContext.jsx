@@ -24,7 +24,8 @@ export const AuthContextProvider = ({ children }) => {
           headers: { Authorization: `Bearer ${token}` }
         });
 
-        if (res.data) {
+        // Only set user if response contains expected user fields
+        if (res.data && !res.data.error && res.data.id) {
           const userData = { ...res.data, token };
           setCurrentUser(userData);
           localStorage.setItem("user", JSON.stringify(userData));
