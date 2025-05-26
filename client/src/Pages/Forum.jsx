@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { useTheme } from "../ThemeContext";
 import { AuthContext } from "../authContext";
 import { makeRequest } from "../axios";
-import { XCircle, Trash2, Image as ImageIcon, Maximize2, Edit2, Plus, MessageCircle, Clock, User, ChevronDown, ChevronUp } from "lucide-react";
+import { XCircle, Trash2, Image as ImageIcon, Maximize2, Edit2, Plus, MessageCircle, Clock, User, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from 'react-hot-toast';
@@ -26,17 +26,20 @@ const Forum = () => {
   const [pendingDeleteForum, setPendingDeleteForum] = useState(null);
   const [showImagePreview, setShowImagePreview] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const queryClient = useQueryClient();
 
   const fetchForums = async () => {
+    setIsLoading(true);
     try {
       const res = await makeRequest.get("/forums");
-      const sortedForums = res.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      setForums(sortedForums);
+      setForums(res.data);
     } catch (err) {
       console.error("Failed to fetch forums", err);
-      setError("Failed to fetch forums. Please try again.");
+      toast.error("Failed to load discussions");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -380,7 +383,12 @@ const Forum = () => {
         {/* Forum Posts */}
         <div className="space-y-8">
           <AnimatePresence>
-            {forums.length ? forums.map((forum) => (
+            {isLoading ? (
+              <div className="text-center py-16">
+                <Loader2 size={40} className="animate-spin mx-auto mb-4 text-emerald-500" />
+                <p className="text-gray-500">Loading discussions...</p>
+              </div>
+            ) : forums.length ? forums.map((forum) => (
               <motion.div
                 key={forum.forum_id}
                 initial={{ opacity: 0, y: 20, scale: 0.95 }}
@@ -742,6 +750,7 @@ const Forum = () => {
 };
 
 export default Forum;
+
 
 
 

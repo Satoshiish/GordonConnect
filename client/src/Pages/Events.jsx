@@ -20,7 +20,8 @@ import {
   CalendarDays,
   ArrowRight,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Loader2
 } from "lucide-react";
 import { toast } from 'react-hot-toast';
 
@@ -96,12 +97,17 @@ const Events = () => {
 
   const filterPastEvents = (list) => list.filter((e) => !isPastEvent(e.date, e.time));
 
+  const [isLoading, setIsLoading] = useState(true);
+
   const fetchEvents = async () => {
+    setIsLoading(true);
     try {
       const res = await makeRequest.get("events");
       setEvents(filterPastEvents(res.data));
     } catch (err) {
       console.error("Failed to fetch events", err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -450,175 +456,182 @@ const Events = () => {
         </motion.div>
         
         {/* Events Grid with Enhanced Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
-          {upcomingEvents.map((event, index) => (
-            <motion.div
-              key={event.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ delay: index * 0.1, duration: 0.4 }}
-              className={`group rounded-2xl overflow-hidden transition-all duration-300 ${
-                theme === "dark" 
-                  ? "bg-gray-800/40 hover:bg-gray-800/60 backdrop-blur-md border border-gray-700/50" 
-                  : "bg-white hover:bg-gray-50/80 shadow-lg border border-gray-100"
-              } ${deletingEventId === event.id ? 'pointer-events-none opacity-60 scale-95 transition-all duration-400' : ''}`}
-              style={deletingEventId === event.id ? { opacity: 0, scale: 0.95, transition: 'opacity 0.4s, transform 0.4s' } : {}}
-            >
-              {event.image && (
-                <div 
-                  className="relative h-56 sm:h-64 group cursor-pointer" 
-                  onClick={() => handleImageClick(event.image)}
-                >
-                  <img
-                    src={event.image}
-                    alt={event.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center p-6">
-                    <div className="flex items-center gap-2 text-white">
-                      <Maximize2 size={20} />
-                      <span className="text-sm font-medium">Click to enlarge</span>
+        {isLoading ? (
+          <div className="text-center py-16">
+            <Loader2 size={40} className="animate-spin mx-auto mb-4 text-emerald-500" />
+            <p className="text-gray-500">Loading events...</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
+            {upcomingEvents.map((event, index) => (
+              <motion.div
+                key={event.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ delay: index * 0.1, duration: 0.4 }}
+                className={`group rounded-2xl overflow-hidden transition-all duration-300 ${
+                  theme === "dark" 
+                    ? "bg-gray-800/40 hover:bg-gray-800/60 backdrop-blur-md border border-gray-700/50" 
+                    : "bg-white hover:bg-gray-50/80 shadow-lg border border-gray-100"
+                } ${deletingEventId === event.id ? 'pointer-events-none opacity-60 scale-95 transition-all duration-400' : ''}`}
+                style={deletingEventId === event.id ? { opacity: 0, scale: 0.95, transition: 'opacity 0.4s, transform 0.4s' } : {}}
+              >
+                {event.image && (
+                  <div 
+                    className="relative h-56 sm:h-64 group cursor-pointer" 
+                    onClick={() => handleImageClick(event.image)}
+                  >
+                    <img
+                      src={event.image}
+                      alt={event.title}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center p-6">
+                      <div className="flex items-center gap-2 text-white">
+                        <Maximize2 size={20} />
+                        <span className="text-sm font-medium">Click to enlarge</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
-              <div className="p-6 sm:p-8 space-y-4">
-                <div className="flex items-start justify-between gap-4">
-                  <h3 className={`text-xl font-bold group-hover:text-emerald-500 dark:group-hover:text-teal-400 transition-colors ${
-                    theme === "dark" ? "text-white" : "text-gray-900"
-                  }`}>
-                    {event.title}
-                  </h3>
-                  {isAdmin && (
-                    <div className="flex items-center gap-2">
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => handleEditClick(event)}
-                        className={`p-2 rounded-lg transition-colors duration-200 ${
-                          theme === "dark"
-                            ? "text-gray-400 hover:text-emerald-400 hover:bg-gray-700/50"
-                            : "text-gray-600 hover:text-teal-600 hover:bg-gray-100"
-                        }`}
-                      >
-                        <Edit2 size={18} />
-                      </motion.button>
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => {
-                          setEventToDelete(event);
-                          setShowDeleteModal(true);
-                        }}
-                        className={`p-2 rounded-lg transition-colors duration-200 ${
-                          theme === "dark"
-                            ? "text-gray-400 hover:text-red-400 hover:bg-gray-700/50"
-                            : "text-gray-600 hover:text-red-600 hover:bg-gray-100"
-                        }`}
-                      >
-                        <Trash2 size={18} />
-                      </motion.button>
-                    </div>
-                  )}
-                </div>
-                {/* Show join count */}
-                <div className="flex items-center gap-2 mt-2">
-                  <Users size={16} className={theme === "dark" ? "text-emerald-400" : "text-teal-500"} />
-                  <span className={theme === "dark" ? "text-gray-300" : "text-gray-600"}>
-                    {event.join_count} {event.join_count === 1 ? "person has" : "people have"} joined
-                  </span>
-                </div>
+                )}
+                <div className="p-6 sm:p-8 space-y-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <h3 className={`text-xl font-bold group-hover:text-emerald-500 dark:group-hover:text-teal-400 transition-colors ${
+                      theme === "dark" ? "text-white" : "text-gray-900"
+                    }`}>
+                      {event.title}
+                    </h3>
+                    {isAdmin && (
+                      <div className="flex items-center gap-2">
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => handleEditClick(event)}
+                          className={`p-2 rounded-lg transition-colors duration-200 ${
+                            theme === "dark"
+                              ? "text-gray-400 hover:text-emerald-400 hover:bg-gray-700/50"
+                              : "text-gray-600 hover:text-teal-600 hover:bg-gray-100"
+                          }`}
+                        >
+                          <Edit2 size={18} />
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => {
+                            setEventToDelete(event);
+                            setShowDeleteModal(true);
+                          }}
+                          className={`p-2 rounded-lg transition-colors duration-200 ${
+                            theme === "dark"
+                              ? "text-gray-400 hover:text-red-400 hover:bg-gray-700/50"
+                              : "text-gray-600 hover:text-red-600 hover:bg-gray-100"
+                          }`}
+                        >
+                          <Trash2 size={18} />
+                        </motion.button>
+                      </div>
+                    )}
+                  </div>
+                  {/* Show join count */}
+                  <div className="flex items-center gap-2 mt-2">
+                    <Users size={16} className={theme === "dark" ? "text-emerald-400" : "text-teal-500"} />
+                    <span className={theme === "dark" ? "text-gray-300" : "text-gray-600"}>
+                      {event.join_count} {event.join_count === 1 ? "person has" : "people have"} joined
+                    </span>
+                  </div>
                 
-                <div className="space-y-3">
-                  <div className={`flex items-center gap-3 p-2 rounded-lg ${
-                    theme === "dark" ? "bg-gray-700/30" : "bg-gray-50"
-                  }`}>
-                    <div className={`p-2 rounded-full ${
-                      theme === "dark" ? "bg-gray-700/50" : "bg-gray-100"
+                  <div className="space-y-3">
+                    <div className={`flex items-center gap-3 p-2 rounded-lg ${
+                      theme === "dark" ? "bg-gray-700/30" : "bg-gray-50"
                     }`}>
-                      <Calendar size={18} className={theme === "dark" ? "text-emerald-400" : "text-teal-500"} />
+                      <div className={`p-2 rounded-full ${
+                        theme === "dark" ? "bg-gray-700/50" : "bg-gray-100"
+                      }`}>
+                        <Calendar size={18} className={theme === "dark" ? "text-emerald-400" : "text-teal-500"} />
+                      </div>
+                      <span className={`text-sm ${
+                        theme === "dark" ? "text-gray-300" : "text-gray-600"
+                      }`}>
+                        {new Date(event.date).toLocaleDateString('en-US', { 
+                          weekday: 'long', 
+                          year: 'numeric', 
+                          month: 'long', 
+                          day: 'numeric' 
+                        })}
+                      </span>
                     </div>
-                    <span className={`text-sm ${
-                      theme === "dark" ? "text-gray-300" : "text-gray-600"
+                    <div className={`flex items-center gap-3 p-2 rounded-lg ${
+                      theme === "dark" ? "bg-gray-700/30" : "bg-gray-50"
                     }`}>
-                      {new Date(event.date).toLocaleDateString('en-US', { 
-                        weekday: 'long', 
-                        year: 'numeric', 
-                        month: 'long', 
-                        day: 'numeric' 
-                      })}
-                    </span>
+                      <div className={`p-2 rounded-full ${
+                        theme === "dark" ? "bg-gray-700/50" : "bg-gray-100"
+                      }`}>
+                        <Clock size={18} className={theme === "dark" ? "text-emerald-400" : "text-teal-500"} />
+                      </div>
+                      <span className={`text-sm ${
+                        theme === "dark" ? "text-gray-300" : "text-gray-600"
+                      }`}>
+                        {formatTimeToAMPM(event.time)}
+                      </span>
+                    </div>
+                    <div className={`flex items-center gap-3 p-2 rounded-lg ${
+                      theme === "dark" ? "bg-gray-700/30" : "bg-gray-50"
+                    }`}>
+                      <div className={`p-2 rounded-full ${
+                        theme === "dark" ? "bg-gray-700/50" : "bg-gray-100"
+                      }`}>
+                        <MapPin size={18} className={theme === "dark" ? "text-emerald-400" : "text-teal-500"} />
+                      </div>
+                      <span className={`text-sm ${
+                        theme === "dark" ? "text-gray-300" : "text-gray-600"
+                      }`}>
+                        {event.location}
+                      </span>
+                    </div>
                   </div>
-                  <div className={`flex items-center gap-3 p-2 rounded-lg ${
-                    theme === "dark" ? "bg-gray-700/30" : "bg-gray-50"
+
+                  <p className={`text-sm line-clamp-2 ${
+                    theme === "dark" ? "text-gray-400" : "text-gray-600"
                   }`}>
-                    <div className={`p-2 rounded-full ${
-                      theme === "dark" ? "bg-gray-700/50" : "bg-gray-100"
-                    }`}>
-                      <Clock size={18} className={theme === "dark" ? "text-emerald-400" : "text-teal-500"} />
-                    </div>
-                    <span className={`text-sm ${
-                      theme === "dark" ? "text-gray-300" : "text-gray-600"
-                    }`}>
-                      {formatTimeToAMPM(event.time)}
-                    </span>
-                  </div>
-                  <div className={`flex items-center gap-3 p-2 rounded-lg ${
-                    theme === "dark" ? "bg-gray-700/30" : "bg-gray-50"
-                  }`}>
-                    <div className={`p-2 rounded-full ${
-                      theme === "dark" ? "bg-gray-700/50" : "bg-gray-100"
-                    }`}>
-                      <MapPin size={18} className={theme === "dark" ? "text-emerald-400" : "text-teal-500"} />
-                    </div>
-                    <span className={`text-sm ${
-                      theme === "dark" ? "text-gray-300" : "text-gray-600"
-                    }`}>
-                      {event.location}
-                    </span>
+                    {event.description}
+                  </p>
+
+                  <div className="flex items-center justify-between pt-4">
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => handleEventClick(event)}
+                      className={`flex items-center gap-2 text-sm font-medium transition-colors duration-200 ${
+                        theme === "dark"
+                          ? "text-emerald-400 hover:text-emerald-300"
+                          : "text-teal-600 hover:text-teal-500"
+                      }`}
+                    >
+                      <span>View Details</span>
+                      <ArrowRight size={16} />
+                    </motion.button>
+
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => handleAvailClick(event)}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                        theme === "dark"
+                          ? "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20"
+                          : "bg-teal-500/10 text-teal-600 hover:bg-teal-500/20"
+                      }`}
+                    >
+                      <Mail size={16} />
+                      <span>Join Event</span>
+                    </motion.button>
                   </div>
                 </div>
-
-                <p className={`text-sm line-clamp-2 ${
-                  theme === "dark" ? "text-gray-400" : "text-gray-600"
-                }`}>
-                  {event.description}
-                </p>
-
-                <div className="flex items-center justify-between pt-4">
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => handleEventClick(event)}
-                    className={`flex items-center gap-2 text-sm font-medium transition-colors duration-200 ${
-                      theme === "dark"
-                        ? "text-emerald-400 hover:text-emerald-300"
-                        : "text-teal-600 hover:text-teal-500"
-                    }`}
-                  >
-                    <span>View Details</span>
-                    <ArrowRight size={16} />
-                  </motion.button>
-
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => handleAvailClick(event)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
-                      theme === "dark"
-                        ? "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20"
-                        : "bg-teal-500/10 text-teal-600 hover:bg-teal-500/20"
-                    }`}
-                  >
-                    <Mail size={16} />
-                    <span>Join Event</span>
-                  </motion.button>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
 
         {/* Enhanced Empty State */}
         {upcomingEvents.length === 0 && (
@@ -1433,6 +1446,7 @@ const Events = () => {
 };
 
 export default Events;
+
 
 
 
