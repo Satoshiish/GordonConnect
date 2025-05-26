@@ -1,5 +1,5 @@
-import axios from "axios";
 import { createContext, useEffect, useState } from "react";
+import { makeRequest } from "./axios";
 
 export const AuthContext = createContext();
 
@@ -20,7 +20,7 @@ export const AuthContextProvider = ({ children }) => {
         }
 
         // Verify token with backend
-        const res = await axios.get("http://localhost:8800/api/auth/verify", {
+        const res = await makeRequest.get("/auth/verify", {
           headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -40,12 +40,13 @@ export const AuthContextProvider = ({ children }) => {
     };
 
     checkAuth();
+    // eslint-disable-next-line
   }, []);
 
   const login = async (inputs) => {
     try {
-      const res = await axios.post(
-        "http://localhost:8800/api/auth/login",
+      const res = await makeRequest.post(
+        "/auth/login",
         inputs,
         {
           withCredentials: true,
@@ -64,8 +65,8 @@ export const AuthContextProvider = ({ children }) => {
 
   const register = async (inputs) => {
     try {
-      const res = await axios.post(
-        "http://localhost:8800/api/auth/register",
+      const res = await makeRequest.post(
+        "/auth/register",
         inputs,
         {
           withCredentials: true,
@@ -98,8 +99,8 @@ export const AuthContextProvider = ({ children }) => {
   const canLike = () => !isGuest();
   const canBookmark = () => !isGuest();
   const canPost = () => !isGuest();
-  const canEdit = () => !isGuest() && (isAdmin() || currentUser?.id === currentUser?.id);
-  const canDelete = () => !isGuest() && (isAdmin() || currentUser?.id === currentUser?.id);
+  const canEdit = (ownerId) => !isGuest() && (isAdmin() || currentUser?.id === ownerId);
+  const canDelete = (ownerId) => !isGuest() && (isAdmin() || currentUser?.id === ownerId);
 
   const loginAsGuest = () => {
     const guestUser = {
@@ -132,16 +133,16 @@ export const AuthContextProvider = ({ children }) => {
         login,
         register,
         updateUser,
-        isAdmin: isAdmin(),
-        isGuest: isGuest(),
+        isAdmin,
+        isGuest,
         loginAsGuest,
         logout,
-        canComment: canComment(),
-        canLike: canLike(),
-        canBookmark: canBookmark(),
-        canPost: canPost(),
-        canEdit: canEdit(),
-        canDelete: canDelete(),
+        canComment,
+        canLike,
+        canBookmark,
+        canPost,
+        canEdit,
+        canDelete,
       }}
     >
       {children}
