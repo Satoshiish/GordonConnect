@@ -33,7 +33,10 @@ const Forum = () => {
   const fetchForums = async () => {
     setIsLoading(true);
     try {
-      const res = await makeRequest.get("/forums");
+      const token = localStorage.getItem("token");
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      
+      const res = await makeRequest.get("/forums", { headers });
       setForums(res.data);
     } catch (err) {
       console.error("Failed to fetch forums", err);
@@ -115,7 +118,12 @@ const Forum = () => {
   const handleDelete = async (forum_id) => {
     setDeletingForum(forum_id);
     try {
-      await makeRequest.delete(`/forums/${forum_id}`);
+      const token = localStorage.getItem("token");
+      await makeRequest.delete(`/forums/${forum_id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       toast.success("Forum deleted successfully");
       // Update the forums list by filtering out the deleted forum
       setForums((prev) => prev.filter((forum) => forum.forum_id !== forum_id));
@@ -129,7 +137,12 @@ const Forum = () => {
 
   const handleDeleteComment = async (forum_id, comment_id) => {
     try {
-      await makeRequest.delete(`/forums/${forum_id}/comments/${comment_id}`);
+      const token = localStorage.getItem("token");
+      await makeRequest.delete(`/forums/${forum_id}/comments/${comment_id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       fetchForums();
     } catch (error) {
       setError("Failed to delete comment. Please try again.");
@@ -750,6 +763,7 @@ const Forum = () => {
 };
 
 export default Forum;
+
 
 
 

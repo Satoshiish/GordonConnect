@@ -139,18 +139,22 @@ export const deleteForum = (req, res) => {
 
     // First check if the user is the owner of the forum or an admin
     const checkOwnershipQuery = `
-      SELECT user_id, 
-             (SELECT role FROM users WHERE user_id = ?) as user_role 
-      FROM forums 
-      WHERE forum_id = ?
+      SELECT f.user_id, u.role
+      FROM forums f
+      JOIN users u ON u.user_id = ?
+      WHERE f.forum_id = ?
     `;
     
     db.query(checkOwnershipQuery, [userInfo.id, req.params.forum_id], (err, data) => {
-      if (err) return res.status(500).json(err);
+      if (err) {
+        console.error("Database error in deleteForum:", err);
+        return res.status(500).json(err);
+      }
+      
       if (data.length === 0) return res.status(404).json("Forum not found");
       
       const isOwner = data[0].user_id === userInfo.id;
-      const isAdmin = data[0].user_role === "admin";
+      const isAdmin = data[0].role === "admin";
       
       if (!isOwner && !isAdmin) {
         return res.status(403).json("You can only delete your own forums or be an admin");
