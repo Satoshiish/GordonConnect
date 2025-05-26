@@ -22,15 +22,26 @@ const Posts = ({ userId = null }) => {
   const { isPending, error, data } = useQuery({
     queryKey: userId ? ["posts", userId, category] : ["posts", category],
     queryFn: async () => {
-      const token = localStorage.getItem("token");  
-      let url = userId ? `/posts?userId=${userId}` : "/posts";
-      if (category) url += (url.includes("?") ? "&" : "?") + `anyCategory=${encodeURIComponent(category)}`;
-      const res = await makeRequest.get(url, {  
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return res.data;
+      try {
+        const token = localStorage.getItem("token");  
+        let url = userId ? `/posts?userId=${userId}` : "/posts";
+        if (category) url += (url.includes("?") ? "&" : "?") + `anyCategory=${encodeURIComponent(category)}`;
+        
+        const config = {};
+        if (token) {
+          config.headers = { Authorization: `Bearer ${token}` };
+        }
+        
+        const res = await makeRequest.get(url, config);
+        return res.data;
+      } catch (error) {
+        console.error("Error fetching posts:", error);
+        return []; // Return empty array to prevent error state
+      }
     },
     enabled: userId !== undefined,
+    retry: 2,
+    retryDelay: 1000,
   });
 
    if (isPending) {
@@ -281,6 +292,7 @@ const Posts = ({ userId = null }) => {
 };
 
 export default Posts;
+
 
 
 

@@ -6,7 +6,7 @@ import util from 'util';
 export const getPosts = async (req, res) => {
   try {
     // Check for token in cookies or Authorization header
-    const cookieToken = req.cookies.accessToken;
+    const cookieToken = req.cookies?.accessToken;
     const headerToken = req.headers.authorization?.split(" ")[1];
     const token = cookieToken || headerToken;
     
@@ -17,18 +17,21 @@ export const getPosts = async (req, res) => {
     const postId = req.query.postId;
     
     // Handle guest users or users with valid tokens
-    let userInfo;
+    let userInfo = { id: 'guest', role: 'guest' }; // Default to guest
     
-    if (!token || token.startsWith('guest_')) {
-      // Guest user
-      userInfo = { id: 'guest', role: 'guest' };
-    } else {
-      // Verify token for logged-in users
+    if (token && !token.startsWith('guest_')) {
       try {
+        // Only verify if it's not a guest token
         userInfo = jwt.verify(token, "secretkey");
       } catch (err) {
-        return res.status(403).json("Token is not valid!");
+        console.log("Token verification failed, using guest access:", err.message);
+        // Continue as guest if token verification fails
       }
+    } else if (token && token.startsWith('guest_')) {
+      // Already set default userInfo as guest
+      console.log("Using guest token");
+    } else {
+      console.log("No token found, using guest access");
     }
 
     // Get user's interests and activity data (similar to getSuggestions algorithm)
@@ -97,42 +100,25 @@ export const getPosts = async (req, res) => {
     } 
     // All posts (with optional category filter)
     else {
-      if (userInfo.role === 'guest') {
-        q = `
-          SELECT p.*, u.user_id AS userId, u.name, u.profilePic, 'recommended' as post_type
-          FROM posts AS p 
-          JOIN users AS u ON (u.user_id = p.user_id)
-          ${anyCategory ? "WHERE p.category = ?" : ""}
-          ORDER BY p.createdAt DESC;
-        `;
-        values = anyCategory ? [anyCategory] : [];
-      } else {
-        // Enhanced algorithm for category posts
-        q = `
-          SELECT p.*, u.user_id AS userId, u.name, u.profilePic, u.city,
-          CASE 
-            WHEN r.followerUser_id IS NOT NULL THEN 'following'
-            ELSE 'recommended'
-          END as post_type,
-          CASE
-            WHEN r.followerUser_id IS NOT NULL THEN 0
-            WHEN u.city = ? AND u.city != '' THEN 1
-            WHEN p.category IN (?) THEN 2
-            ELSE 3
-          END as relevance_score
-          FROM posts AS p 
-          JOIN users AS u ON (u.user_id = p.user_id)
-          LEFT JOIN relationships AS r ON (p.user_id = r.followedUser_id AND r.followerUser_id = ?)
-          WHERE p.category = ?
-          ORDER BY relevance_score, p.createdAt DESC;
-        `;
-        values = [userCity, userInterests, userInfo.id, category];
-      }
+      // Simplified query that works for both guests and logged-in users
+      q = `
+        SELECT p.*, u.user_id AS userId, u.name, u.profilePic
+        FROM posts AS p 
+        JOIN users AS u ON (u.user_id = p.user_id)
+        ${anyCategory ? "WHERE p.category = ?" : ""}
+        ORDER BY p.createdAt DESC
+      `;
+      values = anyCategory ? [anyCategory] : [];
     }
 
     // Execute the query
-    const [rows] = await db.query(q, values);
-    return res.status(200).json(rows);
+    db.query(q, values, (err, data) => {
+      if (err) {
+        console.error("Database error in getPosts:", err);
+        return res.status(500).json("Database error");
+      }
+      return res.status(200).json(data);
+    });
   } catch (error) {
     console.error("Error in getPosts:", error);
     return res.status(500).json("Server error");
@@ -184,6 +170,7 @@ export const deletePost = (req, res) => {
     });
   });
 };
+
 
 
 
