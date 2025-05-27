@@ -254,7 +254,9 @@ const Post = ({ post }) => {
               src={post.profilePic ? 
                 (post.profilePic.startsWith('http') ? 
                   post.profilePic : 
-                  `/upload/${post.profilePic}`) 
+                  post.profilePic.startsWith('/upload/') ?
+                    post.profilePic :
+                    `/upload/${post.profilePic}`) 
                 : "/default-profile.jpg"}
               alt="Profile"
             />
@@ -517,6 +519,7 @@ const Post = ({ post }) => {
 };
 
 export default Post;
+
 
 
 

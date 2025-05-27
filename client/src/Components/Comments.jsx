@@ -101,7 +101,9 @@ const Comments = ({ postId }) => {
           src={currentUser.profilePic ? 
             (currentUser.profilePic.startsWith('http') ? 
               currentUser.profilePic : 
-              `/upload/${currentUser.profilePic}`) 
+              currentUser.profilePic.startsWith('/upload/') ?
+                currentUser.profilePic :
+                `/upload/${currentUser.profilePic}`) 
             : "/default-profile.jpg"}
           alt="User Profile"
           className="w-10 h-10 rounded-full object-cover"

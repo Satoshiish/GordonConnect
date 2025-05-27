@@ -131,7 +131,9 @@ const Share = () => {
               src={currentUser.profilePic ? 
                 (currentUser.profilePic.startsWith('http') ? 
                   currentUser.profilePic : 
-                  `/upload/${currentUser.profilePic}`) 
+                  currentUser.profilePic.startsWith('/upload/') ?
+                    currentUser.profilePic :
+                    `/upload/${currentUser.profilePic}`) 
                 : "/default-profile.jpg"}
               alt="Profile"
               className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover ring-2 ring-offset-2 transition-all duration-200 ${
@@ -294,6 +296,7 @@ const Share = () => {
 };
 
 export default Share;
+
 
 
 
