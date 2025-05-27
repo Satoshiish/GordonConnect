@@ -431,7 +431,19 @@ const Events = () => {
   
 
   const handleImageClick = (image) => {
-    setPreviewImage(image);
+    // Ensure the image URL is properly formatted
+    let imageUrl = image;
+    
+    // If it's not a full URL and doesn't start with /upload/, add the API base URL
+    if (!image.startsWith('http') && !image.startsWith('/upload/')) {
+      imageUrl = `${API_BASE_URL}/upload/${image}`;
+    } else if (image.startsWith('/upload/')) {
+      // If it starts with /upload/, add the API base URL
+      imageUrl = `${API_BASE_URL}${image}`;
+    }
+    
+    console.log("Opening image preview:", imageUrl);
+    setPreviewImage(imageUrl);
     setShowImagePreview(true);
   };
 
@@ -528,7 +540,13 @@ const Events = () => {
                     onClick={() => handleImageClick(event.image)}
                   >
                     <img
-                      src={event.image.startsWith("http") ? event.image : `${API_BASE_URL}${event.image}`}
+                      src={
+                        event.image.startsWith("http") 
+                          ? event.image 
+                          : event.image.startsWith("/upload/") 
+                            ? `${API_BASE_URL}${event.image}`
+                            : `${API_BASE_URL}/upload/${event.image}`
+                      }
                       alt={event.title}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       onError={(e) => {
@@ -968,10 +986,17 @@ const Events = () => {
                 {eventDetails.image && (
                   <div className="relative h-64 cursor-pointer group" onClick={() => handleImageClick(eventDetails.image)}>
                     <img
-                      src={eventDetails.image.startsWith("http") ? eventDetails.image : `${API_BASE_URL}${eventDetails.image}`}
+                      src={
+                        eventDetails.image.startsWith("http") 
+                          ? eventDetails.image 
+                          : eventDetails.image.startsWith("/upload/") 
+                            ? `${API_BASE_URL}${eventDetails.image}`
+                            : `${API_BASE_URL}/upload/${eventDetails.image}`
+                      }
                       alt={eventDetails.title}
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                       onError={(e) => {
+                        console.error("Image failed to load:", eventDetails.image);
                         e.target.src = "/placeholder-event.jpg"; // Fallback image
                         e.target.onerror = null;
                       }}
@@ -1167,6 +1192,11 @@ const Events = () => {
                     alt="Preview"
                     className="w-auto h-auto max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
                     style={{ display: 'block' }}
+                    onError={(e) => {
+                      console.error("Preview image failed to load:", previewImage);
+                      e.target.src = "/placeholder-event.jpg"; // Fallback image
+                      e.target.onerror = null; // Prevent infinite loop
+                    }}
                   />
                 </div>
               </motion.div>
@@ -1500,6 +1530,10 @@ const Events = () => {
 };
 
 export default Events;
+
+
+
+
 
 
 
