@@ -33,7 +33,12 @@ const Update = ({ setOpenUpdate, user }) => {
   };
 
   const mutation = useMutation({
-    mutationFn: (userData) => makeRequest.put("/users", userData),
+    mutationFn: (userData) => {
+      const token = localStorage.getItem("token");
+      return makeRequest.put("/users", userData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user"] });
     },
