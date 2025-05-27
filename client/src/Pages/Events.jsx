@@ -431,7 +431,23 @@ const Events = () => {
   
 
   const handleImageClick = (image) => {
-    setPreviewImage(image);
+    // Don't do anything if there's no image
+    if (!image) return;
+    
+    // Format the image URL correctly
+    let imageUrl = image;
+    
+    // If it's just a filename (not a full URL and doesn't start with /upload/)
+    if (!image.startsWith('http') && !image.startsWith('/upload/')) {
+      imageUrl = `${API_BASE_URL}/upload/${image}`;
+    } 
+    // If it starts with /upload/ but not with http
+    else if (image.startsWith('/upload/') && !image.startsWith('http')) {
+      imageUrl = `${API_BASE_URL}${image}`;
+    }
+    
+    console.log("Opening image preview with URL:", imageUrl);
+    setPreviewImage(imageUrl);
     setShowImagePreview(true);
   };
 
@@ -528,13 +544,19 @@ const Events = () => {
                     onClick={() => handleImageClick(event.image)}
                   >
                     <img
-                      src={event.image.startsWith("http") ? event.image : `/upload/${event.image}`}
+                      src={
+                        event.image.startsWith("http") 
+                          ? event.image 
+                          : event.image.startsWith("/upload/") 
+                            ? `${API_BASE_URL}${event.image}`
+                            : `${API_BASE_URL}/upload/${event.image}`
+                      }
                       alt={event.title}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       onError={(e) => {
                         console.error("Image failed to load:", event.image);
-                        e.target.src = "/placeholder-event.jpg"; // Fallback image
-                        e.target.onerror = null; // Prevent infinite loop
+                        // Hide the image on error
+                        e.target.style.display = 'none';
                       }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center p-6">
@@ -965,15 +987,23 @@ const Events = () => {
                     : "bg-gradient-to-br from-white via-gray-50 to-white border-gray-100"
                 }`}
               >
+                // Only show image in event details if it exists
                 {eventDetails.image && (
                   <div className="relative h-64 cursor-pointer group" onClick={() => handleImageClick(eventDetails.image)}>
                     <img
-                      src={eventDetails.image.startsWith("http") ? eventDetails.image : `/upload/${eventDetails.image}`}
+                      src={
+                        eventDetails.image.startsWith("http") 
+                          ? eventDetails.image 
+                          : eventDetails.image.startsWith("/upload/") 
+                            ? `${API_BASE_URL}${eventDetails.image}`
+                            : `${API_BASE_URL}/upload/${eventDetails.image}`
+                      }
                       alt={eventDetails.title}
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                       onError={(e) => {
-                        e.target.src = "/placeholder-event.jpg"; // Fallback image
-                        e.target.onerror = null;
+                        console.error("Image failed to load:", eventDetails.image);
+                        // Hide the image on error
+                        e.target.style.display = 'none';
                       }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
@@ -1143,7 +1173,7 @@ const Events = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[999] flex items-center justify-center p-4"
+              className="fixed inset-0 bg-black/95 backdrop-blur-sm z-[999] flex items-center justify-center p-4"
               onClick={() => setShowImagePreview(false)}
             >
               <motion.div
@@ -1153,14 +1183,12 @@ const Events = () => {
                 className="relative w-full h-full flex items-center justify-center"
                 onClick={e => e.stopPropagation()}
               >
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
+                <button
                   onClick={() => setShowImagePreview(false)}
                   className="absolute top-4 right-4 w-12 h-12 flex items-center justify-center rounded-full bg-black/70 text-white hover:bg-emerald-500 hover:text-white shadow-lg transition-all duration-200 z-10"
                 >
                   <XCircle size={32} strokeWidth={2.5} />
-                </motion.button>
+                </button>
                 <div className="max-w-[90vw] max-h-[90vh] overflow-auto flex items-center justify-center">
                   <img
                     src={previewImage}
@@ -1169,8 +1197,8 @@ const Events = () => {
                     style={{ display: 'block' }}
                     onError={(e) => {
                       console.error("Preview image failed to load:", previewImage);
-                      e.target.src = "/placeholder-event.jpg"; // Fallback image
-                      e.target.onerror = null; // Prevent infinite loop
+                      // Close the preview modal if the image fails to load
+                      setShowImagePreview(false);
                     }}
                   />
                 </div>
@@ -1505,6 +1533,11 @@ const Events = () => {
 };
 
 export default Events;
+
+
+
+
+
 
 
 
