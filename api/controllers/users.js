@@ -77,22 +77,26 @@ export const getSuggestions = (req, res) => {
     // Use userInfo from middleware
     const userInfo = req.userInfo;
     
-    console.log("Getting suggestions for user:", userInfo.id);
+    // Check if we should only return admin users
+    const adminOnly = req.query.adminOnly === 'true';
+    
+    console.log("Getting suggestions for user:", userInfo.id, "adminOnly:", adminOnly);
     
     // If user is a guest, return a limited set of suggestions
     if (userInfo.role === 'guest' || userInfo.id === 'guest') {
       console.log("Providing guest suggestions");
       
-      // For guests, just return some random users
+      // For guests, just return some random admin users if adminOnly is true
       const guestSuggestionsQuery = `
         SELECT 
           u.user_id, 
           u.username, 
           u.name, 
           u.profilePic, 
-          u.city
+          u.city,
+          u.role
         FROM users u
-        WHERE u.role != 'guest'
+        WHERE u.role != 'guest' ${adminOnly ? "AND u.role = 'admin'" : ""}
         ORDER BY RAND()
         LIMIT 10
       `;
@@ -119,18 +123,20 @@ export const getSuggestions = (req, res) => {
       return;
     }
     
-    // For logged-in users, use the original query
+    // For logged-in users, use the modified query to include role filtering
     const suggestionsQuery = `
       SELECT 
         u.user_id, 
         u.username, 
         u.name, 
         u.profilePic, 
-        u.city
+        u.city,
+        u.role
       FROM users u
       LEFT JOIN relationships r ON u.user_id = r.followedUser_id AND r.followerUser_id = ?
       WHERE u.user_id != ? 
         AND u.role != 'guest'
+        ${adminOnly ? "AND u.role = 'admin'" : ""}
         AND r.followerUser_id IS NULL
       ORDER BY RAND()
       LIMIT 15
@@ -149,7 +155,7 @@ export const getSuggestions = (req, res) => {
         ...user,
         id: user.user_id,
         isFollowing: false, // All suggestions are not being followed
-        reason: user.city ? "From your city" : "Popular in the community"
+        reason: user.role === 'admin' ? "Admin account" : (user.city ? "From your city" : "Popular in the community")
       }));
       
       return res.status(200).json(enhancedSuggestions);
