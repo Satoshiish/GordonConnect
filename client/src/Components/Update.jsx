@@ -61,17 +61,17 @@ const Update = ({ setOpenUpdate, user }) => {
     let profileUrl = user.profilePic;
     
     if (cover) {
-      // Upload the file and get just the filename
+      // Upload the file and get just the filename WITHOUT adding /upload/ prefix
       const coverFilename = await upload(cover);
-      // Store the complete path with /upload/ prefix
-      coverUrl = coverFilename ? `/upload/${coverFilename}` : user.coverPic;
+      // Let the backend add the prefix
+      coverUrl = coverFilename || user.coverPic;
     }
     
     if (profile) {
-      // Upload the file and get just the filename
+      // Upload the file and get just the filename WITHOUT adding /upload/ prefix
       const profileFilename = await upload(profile);
-      // Store the complete path with /upload/ prefix
-      profileUrl = profileFilename ? `/upload/${profileFilename}` : user.profilePic;
+      // Let the backend add the prefix
+      profileUrl = profileFilename || user.profilePic;
     }
 
     mutation.mutate({

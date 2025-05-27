@@ -32,13 +32,13 @@ export const updateUser = (req, res) => {
 
     console.log("Update user request body:", req.body);
     
-    // Prepare profile pic URL
+    // Prepare profile pic URL - ONLY add prefix if it doesn't already have one
     let profilePic = req.body.profilePic;
     if (profilePic && !profilePic.startsWith('/upload/') && !profilePic.startsWith('http')) {
       profilePic = '/upload/' + profilePic;
     }
     
-    // Prepare cover pic URL
+    // Prepare cover pic URL - ONLY add prefix if it doesn't already have one
     let coverPic = req.body.coverPic;
     if (coverPic && !coverPic.startsWith('/upload/') && !coverPic.startsWith('http')) {
       coverPic = '/upload/' + coverPic;
