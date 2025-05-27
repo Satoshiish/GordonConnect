@@ -118,7 +118,19 @@ const Events = () => {
         return;
       }
       
-      setEvents(filterPastEvents(res.data));
+      // Filter out past events and sort by date (newest first)
+      const upcomingEvents = filterPastEvents(res.data);
+      
+      // Sort events by date (newest first)
+      const sortedEvents = upcomingEvents.sort((a, b) => {
+        // Create Date objects for comparison
+        const dateA = new Date(`${a.date}T${a.time}`);
+        const dateB = new Date(`${b.date}T${b.time}`);
+        // Sort descending (newest first)
+        return dateB - dateA;
+      });
+      
+      setEvents(sortedEvents);
     } catch (err) {
       console.error("Failed to fetch events", err);
       // Set empty array instead of showing error
@@ -1599,6 +1611,7 @@ const Events = () => {
 };
 
 export default Events;
+
 
 
 

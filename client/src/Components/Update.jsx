@@ -20,7 +20,22 @@ const Update = ({ setOpenUpdate, user }) => {
     try {
       const formData = new FormData();
       formData.append("file", file);
-      const res = await makeRequest.post("/upload", formData);
+      
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("No token found for upload");
+        return null;
+      }
+      
+      const res = await makeRequest.post("/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      
+      console.log("Upload response:", res.data);
+      // Return just the filename, not the full path
       return res.data;
     } catch (err) {
       console.error("Upload Error:", err);
@@ -56,16 +71,40 @@ const Update = ({ setOpenUpdate, user }) => {
 
   const handleClick = async (e) => {
     e.preventDefault();
-    const coverUrl = cover ? await upload(cover) : user.coverPic;
-    const profileUrl = profile ? await upload(profile) : user.profilePic;
-
-    mutation.mutate({
-      ...texts,
-      coverPic: coverUrl || user.coverPic,
-      profilePic: profileUrl || user.profilePic,
-    });
-
-    setOpenUpdate(false);
+    
+    try {
+      // Upload images if they exist
+      const coverUrl = cover ? await upload(cover) : null;
+      const profileUrl = profile ? await upload(profile) : null;
+      
+      // Prepare update data
+      const updateData = {
+        ...texts
+      };
+      
+      // Only include coverPic if we have a new one or there's an existing one
+      if (coverUrl) {
+        updateData.coverPic = coverUrl;
+      } else if (user.coverPic) {
+        updateData.coverPic = user.coverPic;
+      }
+      
+      // Only include profilePic if we have a new one or there's an existing one
+      if (profileUrl) {
+        updateData.profilePic = profileUrl;
+      } else if (user.profilePic) {
+        updateData.profilePic = user.profilePic;
+      }
+      
+      console.log("Updating user with data:", updateData);
+      
+      // Call the mutation
+      mutation.mutate(updateData);
+      setOpenUpdate(false);
+    } catch (error) {
+      console.error("Error during profile update:", error);
+      alert("Failed to update profile. Please try again.");
+    }
   };
 
   return (

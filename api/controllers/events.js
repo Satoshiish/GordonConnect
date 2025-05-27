@@ -2,12 +2,12 @@ import { db } from "../connect.js";
 import jwt from "jsonwebtoken";
 
 export const getEvents = (req, res) => {
-  // Simple query to get all events
+  // Updated query to get all events sorted by date in descending order (newest first)
   const q = `
     SELECT e.*, 
            (SELECT COUNT(*) FROM event_avails WHERE event_id = e.id) as join_count
     FROM events e
-    ORDER BY e.date ASC
+    ORDER BY e.date DESC, e.time DESC
   `;
 
   db.query(q, (err, data) => {
@@ -196,6 +196,7 @@ export const getEventJoins = (req, res) => {
     }
   );
 };
+
 
 
 
