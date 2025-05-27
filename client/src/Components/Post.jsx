@@ -22,6 +22,7 @@ import {
 } from "@mui/icons-material";
 import { toast } from 'react-hot-toast';
 import { Image as ImageIcon, XCircle, Heart, HeartOff, Bookmark as BookmarkIcon, BookmarkMinus, MessageCircle, Share2, MoreVertical, Loader2, Flag, ExternalLink } from 'lucide-react';
+import { formatImageUrl } from "../utils/imageUtils";
 
 // Function to detect and format links in text
 const detectLinks = (text, theme) => {
@@ -250,14 +251,8 @@ const Post = ({ post }) => {
         <div className="flex flex-wrap sm:flex-nowrap items-center justify-between mb-2 gap-2">
           <div className="flex gap-3 items-center">
             <img
-              className="h-12 w-12 rounded-full object-cover border-2 border-emerald-400 shadow-sm"
-              src={post.profilePic ? 
-                (post.profilePic.startsWith('http') ? 
-                  post.profilePic : 
-                  post.profilePic.startsWith('/upload/') ?
-                    post.profilePic :
-                    `/upload/${post.profilePic}`) 
-                : "/default-profile.jpg"}
+              className="w-10 h-10 rounded-full object-cover"
+              src={formatImageUrl(post.profilePic)}
               alt="Profile"
             />
             <div className="flex flex-col">
@@ -318,7 +313,7 @@ const Post = ({ post }) => {
           {post.img && (
             <motion.div className="relative group cursor-pointer mt-2" onClick={() => setShowImageModal(true)}>
               <img
-                src={`/upload/${post.img}`}
+                src={formatImageUrl(post.img)}
                 alt="Post"
                 className="w-full max-h-[340px] object-cover rounded-2xl border-2 border-gray-200 dark:border-gray-700 shadow group-hover:scale-[1.03] transition-transform duration-300"
               />
@@ -436,7 +431,7 @@ const Post = ({ post }) => {
                 <XCircle size={32} strokeWidth={2.5} />
               </button>
               <img
-                src={`/upload/${post.img}`}
+                src={formatImageUrl(post.img)}
                 alt="Post Preview"
                 className="w-full h-auto max-h-[80vh] object-contain rounded-2xl shadow-lg"
               />
@@ -519,11 +514,5 @@ const Post = ({ post }) => {
 };
 
 export default Post;
-
-
-
-
-
-
 
 
