@@ -4,7 +4,7 @@ import { AuthContext } from "../authContext";
 import { makeRequest } from "../axios";
 import { useTheme } from "../ThemeContext";
 import { motion } from "framer-motion";
-import { UserX2, UserPlus, UserCheck, Loader2, RefreshCw, Users, Sparkles, Shield } from "lucide-react";
+import { UserX2, UserPlus, UserCheck, Loader2, RefreshCw, Users, Sparkles } from "lucide-react";
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || "https://gordonconnect-production-f2bd.up.railway.app/api";
 
@@ -15,26 +15,22 @@ function People() {
     const [isRefreshing, setIsRefreshing] = useState(false);
 
     const isGuest = currentUser?.role === "guest";
-    const isAdmin = currentUser?.role === "admin";
 
-    // Fetch only admin users for suggestions
+    // Fetch suggestions with algorithm
     const { data: suggestions = [], isLoading, refetch, error } = useQuery({
-        queryKey: ["admin-suggestions"],
+        queryKey: ["suggestions"],
         queryFn: async () => {
+            console.log("Token being sent:", localStorage.getItem("token"));
             try {
-                // Modified to only fetch admin users
-                const res = await makeRequest.get("/users/suggestions?adminOnly=true");
-                console.log("Admin suggestions response:", res.data);
-                
-                // Filter to only include admin users if the backend doesn't do it
-                const adminUsers = res.data.filter(user => user.role === "admin");
-                
-                return adminUsers.map((user) => ({
+                const res = await makeRequest.get("/users/suggestions");
+                console.log("Suggestions response:", res.data);
+                return res.data.map((user) => ({
                     ...user,
                     id: user.user_id || user.id,
                 }));
             } catch (error) {
-                console.error("Error fetching admin suggestions:", error);
+                console.error("Error fetching suggestions:", error);
+                // Return empty array instead of throwing to prevent error state
                 return [];
             }
         },
@@ -42,27 +38,26 @@ function People() {
         retryDelay: 1000,
     });
 
-    // Handle refresh button click
-    const handleRefreshSuggestions = async () => {
-        setIsRefreshing(true);
-        await refetch();
-        setTimeout(() => setIsRefreshing(false), 500);
-    };
+    // Add error handling in the component
+    useEffect(() => {
+        if (error) {
+            console.error("Suggestions query error:", error);
+        }
+    }, [error]);
 
-    // Follow mutation
     const followMutation = useMutation({
         mutationFn: async (userId) => {
             await makeRequest.post("/relationships", { followedUserId: userId });
-            return userId;
+            return userId; // Return the userId for use in onSuccess
         },
         onSuccess: (userId) => {
             // Remove the followed user from suggestions
-            queryClient.setQueryData(["admin-suggestions"], (old) => {
+            queryClient.setQueryData(["suggestions"], (old) => {
                 if (!old) return old;
                 return old.filter(user => user.id !== userId);
             });
             
-            // Invalidate related queries
+            // Also invalidate other related queries
             queryClient.invalidateQueries(["friends"]);
             queryClient.invalidateQueries(["relationship"]);
             queryClient.invalidateQueries(["followers"]);
@@ -70,100 +65,191 @@ function People() {
         },
     });
 
+    const handleFollowToggle = (userId) => {
+        followMutation.mutate(userId);
+    };
+
+    const handleDismiss = (userId) => {
+        queryClient.setQueryData(["suggestions"], (old) =>
+            old?.filter((u) => u.id !== userId)
+        );
+    };
+
+    const handleRefreshSuggestions = async () => {
+        setIsRefreshing(true);
+        await refetch();
+        setTimeout(() => setIsRefreshing(false), 600); // Minimum animation time
+    };
+
     return (
-        <div className="p-4 md:p-6">
-            <div className="flex items-center justify-between mb-6">
-                <h1 className="text-2xl md:text-3xl font-bold flex items-center">
-                    <Shield className="mr-2 text-emerald-500" size={24} />
-                    Admin Accounts
-                </h1>
-                <button
-                    onClick={handleRefreshSuggestions}
-                    className={`p-2 rounded-full transition-all duration-300 ${
-                        theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-200"
-                    }`}
-                    disabled={isRefreshing}
-                >
-                    {isRefreshing ? (
-                        <Loader2 size={22} className="animate-spin text-emerald-500" />
-                    ) : (
-                        <RefreshCw size={22} className="text-emerald-500" />
-                    )}
-                </button>
+        <div className="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto">
+            {/* Enhanced Header Card */}
+            <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className={`mb-8 rounded-3xl shadow-xl overflow-hidden relative ${
+                    theme === "dark" ? "bg-gray-800" : "bg-white"
+                }`}
+            >
+                {/* Background Pattern */}
+                <div className="absolute inset-0 overflow-hidden opacity-10">
+                    <div className="absolute -inset-[10px] bg-[radial-gradient(#4ade80_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)]"></div>
+                </div>
+                
+                <div className="relative p-6 sm:p-8 md:p-10">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div className="flex items-start gap-4">
+                            <div className={`p-3 rounded-2xl ${
+                                theme === "dark" ? "bg-emerald-500/20" : "bg-emerald-100"
+                            }`}>
+                                <Sparkles size={28} className={
+                                    theme === "dark" ? "text-emerald-400" : "text-emerald-600"
+                                } />
+                            </div>
+                            <div>
+                                <h1 className="text-3xl sm:text-4xl font-bold mb-2 bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">
+                                    Discover People
+                                </h1>
+                                <p className={`text-base ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>
+                                    Connect with people based on your interests and location
+                                </p>
+                            </div>
+                        </div>
+                        
+                        {!isGuest && (
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={handleRefreshSuggestions}
+                                disabled={isLoading || isRefreshing}
+                                className="px-5 py-2.5 rounded-full flex items-center gap-2 shadow-md transition-all bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white"
+                            >
+                                <RefreshCw 
+                                    size={18} 
+                                    className={`${isRefreshing ? "animate-spin" : ""}`} 
+                                />
+                                Refresh Suggestions
+                            </motion.button>
+                        )}
+                    </div>
+                    
+                    {/* Algorithm Explanation */}
+                    <div className={`mt-6 p-4 rounded-xl text-sm ${
+                        theme === "dark" ? "bg-gray-700/50 text-gray-300" : "bg-gray-50 text-gray-700"
+                    }`}>
+                        <p className="flex items-center gap-2">
+                            <Sparkles size={16} className={theme === "dark" ? "text-amber-400" : "text-amber-500"} />
+                            <span>Our algorithm suggests people based on your interests, location, and community engagement.</span>
+                        </p>
+                    </div>
+                </div>
+            </motion.div>
+            
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+                <div className="relative z-10">
+                    <h2 className={`text-2xl sm:text-3xl font-bold mb-2 ${
+                        theme === "dark" ? "text-white" : "text-gray-800"
+                    }`}>
+                        Suggestions For You
+                    </h2>
+                    <p className={`text-base ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>
+                        People you might want to connect with
+                    </p>
+                </div>
             </div>
-
-            <div className={`mb-6 p-4 rounded-xl ${
-                theme === "dark" ? "bg-gray-800/60 text-gray-300" : "bg-gray-100 text-gray-700"
-            }`}>
-                <p className="text-sm">
-                    <strong>Note:</strong> Only admin users can create posts on the platform. Follow them to see their updates in your feed.
-                </p>
-            </div>
-
-            {isLoading ? (
+            
+            {isGuest ? (
+                <div className="text-gray-500 text-center py-16 rounded-2xl bg-gray-50 dark:bg-gray-800/60">
+                    <Users size={48} className="mx-auto mb-4 opacity-40" />
+                    <p className="text-lg">No suggestions for you, you're just a guest.</p>
+                </div>
+            ) : isLoading ? (
                 <div className="text-center py-16">
                     <Loader2 size={40} className="animate-spin mx-auto mb-4 text-emerald-500" />
-                    <p className="text-gray-500">Finding admin accounts...</p>
+                    <p className="text-gray-500">Finding people for you...</p>
                 </div>
             ) : suggestions.length === 0 ? (
                 <div className="text-gray-500 text-center py-16 rounded-2xl bg-gray-50 dark:bg-gray-800/60">
-                    <Shield size={48} className="mx-auto mb-4 opacity-40" />
-                    <p className="text-lg">No admin accounts available to follow at the moment.</p>
-                    <p className="text-sm mt-2">Try again later.</p>
+                    <Users size={48} className="mx-auto mb-4 opacity-40" />
+                    <p className="text-lg">No suggestions available at the moment.</p>
+                    <p className="text-sm mt-2">Try again later or explore categories.</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
                     {suggestions.map((user) => (
                         <motion.div
                             key={user.id}
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.3 }}
-                            className={`p-4 rounded-xl flex flex-col items-center ${
-                                theme === "dark"
-                                    ? "bg-gray-800/60 border border-gray-700/50"
-                                    : "bg-white border border-gray-200 shadow-md"
-                            }`}
+                            exit={{ opacity: 0, y: -20 }}
+                            whileHover={{ scale: 1.035 }}
+                            className={`relative p-7 rounded-3xl shadow-2xl border transition-all duration-300 group
+                            ${theme === "dark"
+                                ? "bg-gray-800 border-gray-700 hover:bg-gray-700"
+                                : "bg-white border-gray-200 hover:bg-gray-50"}
+                            `}
                         >
-                            <div className="relative">
+                            {/* Dismiss Button */}
+                            <button
+                                onClick={() => handleDismiss(user.id)}
+                                className="absolute top-4 right-4 p-2 rounded-full bg-red-500/80 text-white hover:bg-red-600 transition-colors z-10 shadow"
+                                title="Dismiss"
+                            >
+                                <UserX2 size={16} />
+                            </button>
+                            <div className="flex flex-col items-center gap-3">
                                 <img
                                     className="w-20 h-20 rounded-full object-cover border-4 border-emerald-400 shadow-lg mb-2"
                                     src={user.profilePic ? 
                                         (user.profilePic.startsWith('http') ? 
-                                        user.profilePic : 
-                                        `${API_BASE_URL}${user.profilePic.startsWith('/') ? user.profilePic : `/${user.profilePic}`}`) 
+                                            user.profilePic : 
+                                            `${API_BASE_URL}${user.profilePic.startsWith('/') ? user.profilePic : `/${user.profilePic}`}`) 
                                         : "/default-profile.jpg"}
                                     alt={user.name}
                                 />
-                                <div className="absolute -bottom-1 -right-1 bg-emerald-500 text-white p-1 rounded-full">
-                                    <Shield size={16} />
+                                <div className="text-center">
+                                    <p className="font-semibold text-lg mb-0.5">{user.name}</p>
+                                    {user.username && (
+                                        <p className="text-xs text-gray-400">@{user.username}</p>
+                                    )}
+                                    {user.city && (
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                            {user.city}
+                                        </p>
+                                    )}
+                                    
+                                    {/* Recommendation Reason */}
+                                    <div className={`mt-2 px-3 py-1 rounded-full text-xs inline-block ${
+                                        theme === "dark" ? "bg-gray-700 text-emerald-400" : "bg-emerald-100 text-emerald-700"
+                                    }`}>
+                                        {user.reason || "Suggested for you"}
+                                    </div>
                                 </div>
-                            </div>
-                            <h3 className="font-bold text-lg mt-2">{user.name}</h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Admin</p>
-                            {user.city && (
-                                <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                                    {user.city}
-                                </p>
-                            )}
-                            <button
-                                onClick={() => handleFollowToggle(user.id)}
-                                disabled={followMutation.isPending}
-                                className={`mt-auto w-full py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 ${
-                                    theme === "dark"
-                                        ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                                        : "bg-emerald-500 hover:bg-emerald-600 text-white"
-                                }`}
-                            >
-                                {followMutation.isPending ? (
-                                    <Loader2 size={18} className="animate-spin" />
-                                ) : (
-                                    <>
+                                
+                                <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => handleFollowToggle(user.id)}
+                                    disabled={followMutation.isLoading && followMutation.variables === user.id}
+                                    className={`mt-2 w-full py-2 rounded-full flex items-center justify-center gap-2 transition-all ${
+                                        user.isFollowing
+                                            ? theme === "dark"
+                                                ? "bg-gray-700 text-white"
+                                                : "bg-gray-200 text-gray-800"
+                                            : "bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white"
+                                    }`}
+                                >
+                                    {followMutation.isLoading && followMutation.variables === user.id ? (
+                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                    ) : user.isFollowing ? (
+                                        <UserCheck size={18} />
+                                    ) : (
                                         <UserPlus size={18} />
-                                        <span>Follow</span>
-                                    </>
-                                )}
-                            </button>
+                                    )}
+                                    {user.isFollowing ? "Following" : "Follow"}
+                                </motion.button>
+                            </div>
                         </motion.div>
                     ))}
                 </div>
