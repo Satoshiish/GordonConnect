@@ -24,15 +24,25 @@ export const getUser = (req, res) => {
 };
 
 export const updateUser = (req, res) => {
-  // Check for token in cookies or Authorization header
-  const cookieToken = req.cookies.accessToken;
-  const headerToken = req.headers.authorization?.split(" ")[1];
-  const token = cookieToken || headerToken;
-  
-  if (!token) return res.status(401).json("Not Authenticated");
+  const token = req.cookies.accessToken || req.headers.authorization?.split(" ")[1];
+  if (!token) return res.status(401).json("Not logged in!");
 
   jwt.verify(token, "secretkey", (err, userInfo) => {
     if (err) return res.status(403).json("Token is not valid");
+
+    console.log("Update user request body:", req.body);
+    
+    // Prepare profile pic URL
+    let profilePic = req.body.profilePic;
+    if (profilePic && !profilePic.startsWith('/upload/') && !profilePic.startsWith('http')) {
+      profilePic = '/upload/' + profilePic;
+    }
+    
+    // Prepare cover pic URL
+    let coverPic = req.body.coverPic;
+    if (coverPic && !coverPic.startsWith('/upload/') && !coverPic.startsWith('http')) {
+      coverPic = '/upload/' + coverPic;
+    }
 
     const q = `
       UPDATE users 
@@ -46,12 +56,15 @@ export const updateUser = (req, res) => {
         req.body.name,
         req.body.city,
         req.body.website,
-        req.body.profilePic,
-        req.body.coverPic,
+        profilePic,
+        coverPic,
         userInfo.id,
       ],
       (err, data) => {
-        if (err) return res.status(500).json(err);
+        if (err) {
+          console.error("Database error updating user:", err);
+          return res.status(500).json(err);
+        }
         if (data.affectedRows > 0) return res.json("Updated!");
         return res.status(403).json("You can only update your profile!");
       }
