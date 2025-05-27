@@ -5,7 +5,6 @@ import { makeRequest } from "../axios";
 import { useTheme } from "../ThemeContext";
 import { motion } from "framer-motion";
 import { UserX2, UserPlus, UserCheck, Loader2, RefreshCw, Users, Sparkles } from "lucide-react";
-import { formatImageUrl } from "../utils/imageUtils";
 
 function People() {
     const { currentUser } = useContext(AuthContext);
@@ -200,7 +199,7 @@ function People() {
                             <div className="flex flex-col items-center gap-3">
                                 <img
                                     className="w-20 h-20 rounded-full object-cover border-4 border-emerald-400 shadow-lg mb-2"
-                                    src={formatImageUrl(user.profilePic)}
+                                    src={user.profilePic ? `/upload/${user.profilePic}` : "/default-profile.jpg"}
                                     alt={user.name}
                                 />
                                 <div className="text-center">

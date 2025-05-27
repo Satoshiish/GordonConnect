@@ -251,7 +251,7 @@ const Post = ({ post }) => {
         <div className="flex flex-wrap sm:flex-nowrap items-center justify-between mb-2 gap-2">
           <div className="flex gap-3 items-center">
             <img
-              className="w-10 h-10 rounded-full object-cover"
+              className="h-12 w-12 rounded-full object-cover border-2 border-emerald-400 shadow-sm"
               src={formatImageUrl(post.profilePic)}
               alt="Profile"
             />
@@ -514,5 +514,13 @@ const Post = ({ post }) => {
 };
 
 export default Post;
+
+
+
+
+
+
+
+
 
 
