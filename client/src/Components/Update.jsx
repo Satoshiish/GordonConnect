@@ -21,7 +21,7 @@ const Update = ({ setOpenUpdate, user }) => {
       const formData = new FormData();
       formData.append("file", file);
       const res = await makeRequest.post("/upload", formData);
-      return res.data;
+      return res.data; // This should return just the filename, not the full path
     } catch (err) {
       console.error("Upload Error:", err);
       return null;
@@ -56,16 +56,24 @@ const Update = ({ setOpenUpdate, user }) => {
 
   const handleClick = async (e) => {
     e.preventDefault();
-    const coverUrl = cover ? await upload(cover) : user.coverPic;
-    const profileUrl = profile ? await upload(profile) : user.profilePic;
-
-    mutation.mutate({
-      ...texts,
-      coverPic: coverUrl || user.coverPic,
-      profilePic: profileUrl || user.profilePic,
-    });
-
-    setOpenUpdate(false);
+    
+    let coverUrl = user.coverPic;
+    let profileUrl = user.profilePic;
+    
+    try {
+      if (cover) coverUrl = await upload(cover);
+      if (profile) profileUrl = await upload(profile);
+      
+      // Don't add any path prefixes here - just use the filenames
+      await makeRequest.put("/users", { ...texts, coverPic: coverUrl, profilePic: profileUrl });
+      
+      // Update was successful
+      setOpenUpdate(false);
+      // Force refresh by updating the query client
+      queryClient.invalidateQueries(["user"]);
+    } catch (err) {
+      console.error("Update Error:", err);
+    }
   };
 
   return (
