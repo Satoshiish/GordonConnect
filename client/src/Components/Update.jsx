@@ -21,8 +21,8 @@ const Update = ({ setOpenUpdate, user }) => {
       const formData = new FormData();
       formData.append("file", file);
       const res = await makeRequest.post("/upload", formData);
-      // Just return the filename, don't add /upload/ prefix here
-      return res.data;
+      // Add the /upload/ prefix to the filename
+      return "/upload/" + res.data;
     } catch (err) {
       console.error("Upload Error:", err);
       return null;
