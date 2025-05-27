@@ -111,9 +111,21 @@ const Update = ({ setOpenUpdate, user }) => {
                   className="hidden"
                 />
                 {cover ? (
-                  <img src={URL.createObjectURL(cover)} alt="Cover Preview" className="mt-2 w-full h-32 object-cover rounded-md shadow" />
+                  <img
+                    src={URL.createObjectURL(cover)}
+                    alt="Cover Preview"
+                    className="mt-2 w-full h-32 object-cover rounded-md shadow"
+                  />
                 ) : user.coverPic ? (
-                  <img src={`/upload/${user.coverPic}`} alt="Current Cover" className="mt-2 w-full h-32 object-cover rounded-md opacity-60" />
+                  <img
+                    src={`${makeRequest.defaults.baseURL}/upload/${user.coverPic.split('/').pop()}`}
+                    alt="Current Cover"
+                    className="mt-2 w-full h-32 object-cover rounded-md opacity-60"
+                    onError={(e) => {
+                      console.error("Failed to load image:", user.coverPic);
+                      e.target.src = "/default-cover.png";
+                    }}
+                  />
                 ) : null}
               </label>
             </div>
@@ -132,11 +144,27 @@ const Update = ({ setOpenUpdate, user }) => {
                   className="hidden"
                 />
                 {profile ? (
-                  <img src={URL.createObjectURL(profile)} alt="Profile Preview" className="mt-2 w-16 h-16 object-cover rounded-full shadow" />
+                  <img
+                    src={URL.createObjectURL(profile)}
+                    alt="Profile Preview"
+                    className="mt-2 w-16 h-16 object-cover rounded-full shadow"
+                  />
                 ) : user.profilePic ? (
-                  <img src={`/upload/${user.profilePic}`} alt="Current Profile" className="mt-2 w-16 h-16 object-cover rounded-full opacity-60" />
+                  <img
+                    src={`${makeRequest.defaults.baseURL}/upload/${user.profilePic.split('/').pop()}`}
+                    alt="Current Profile"
+                    className="mt-2 w-16 h-16 object-cover rounded-full opacity-60"
+                    onError={(e) => {
+                      console.error("Failed to load image:", user.profilePic);
+                      e.target.src = "/default-profile.jpg";
+                    }}
+                  />
                 ) : (
-                  <img src="/default-profile.jpg" alt="Default Profile" className="mt-2 w-16 h-16 object-cover rounded-full opacity-60" />
+                  <img
+                    src="/default-profile.jpg"
+                    alt="Default Profile"
+                    className="mt-2 w-16 h-16 object-cover rounded-full opacity-60"
+                  />
                 )}
               </label>
             </div>
