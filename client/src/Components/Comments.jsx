@@ -98,7 +98,11 @@ const Comments = ({ postId }) => {
       {/* Comment Input */}
       <div className="flex items-center gap-4 mb-4">
         <img
-          src={"/upload/" + currentUser.profilePic}
+          src={currentUser.profilePic ? 
+            (currentUser.profilePic.startsWith('http') ? 
+              currentUser.profilePic : 
+              `/upload/${currentUser.profilePic}`) 
+            : "/default-profile.jpg"}
           alt="User Profile"
           className="w-10 h-10 rounded-full object-cover"
         />

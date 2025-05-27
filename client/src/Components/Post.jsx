@@ -251,7 +251,11 @@ const Post = ({ post }) => {
           <div className="flex gap-3 items-center">
             <img
               className="h-12 w-12 rounded-full object-cover border-2 border-emerald-400 shadow-sm"
-              src={post.profilePic ? `/upload/${post.profilePic}` : "/default-profile.jpg"}
+              src={post.profilePic ? 
+                (post.profilePic.startsWith('http') ? 
+                  post.profilePic : 
+                  `/upload/${post.profilePic}`) 
+                : "/default-profile.jpg"}
               alt="Profile"
             />
             <div className="flex flex-col">
@@ -513,6 +517,7 @@ const Post = ({ post }) => {
 };
 
 export default Post;
+
 
 
 
