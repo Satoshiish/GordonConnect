@@ -98,17 +98,6 @@ const detectLinks = (text, theme) => {
   return result;
 };
 
-// Function to handle image URL formatting
-const formatImageUrl = (imageUrl, defaultImage = "/default-profile.jpg") => {
-  if (!imageUrl) return defaultImage;
-  
-  if (imageUrl.startsWith('http')) {
-    return imageUrl;
-  } else {
-    return `${API_BASE_URL}${imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`}`;
-  }
-};
-
 const Post = ({ post }) => {
   const { theme } = useTheme();
   const [commentOpen, setCommentOpen] = useState(false);
@@ -264,7 +253,11 @@ const Post = ({ post }) => {
           <div className="flex gap-3 items-center">
             <img
               className="h-12 w-12 rounded-full object-cover border-2 border-emerald-400 shadow-sm"
-              src={formatImageUrl(post.profilePic)}
+              src={post.profilePic ? 
+                (post.profilePic.startsWith('http') ? 
+                  post.profilePic : 
+                  `${API_BASE_URL}${post.profilePic.startsWith('/') ? post.profilePic : `/${post.profilePic}`}`) 
+                : "/default-profile.jpg"}
               alt="Profile"
             />
             <div className="flex flex-col">
@@ -325,7 +318,11 @@ const Post = ({ post }) => {
           {post.img && (
             <motion.div className="relative group cursor-pointer mt-2" onClick={() => setShowImageModal(true)}>
               <img
-                src={formatImageUrl(post.img, "")}
+                src={post.img ? 
+                  (post.img.startsWith('http') ? 
+                    post.img : 
+                    `${API_BASE_URL}${post.img.startsWith('/') ? post.img : `/${post.img}`}`) 
+                  : ""}
                 alt="Post"
                 className="w-full max-h-[340px] object-cover rounded-2xl border-2 border-gray-200 dark:border-gray-700 shadow group-hover:scale-[1.03] transition-transform duration-300"
               />
@@ -443,7 +440,11 @@ const Post = ({ post }) => {
                 <XCircle size={32} strokeWidth={2.5} />
               </button>
               <img
-                src={formatImageUrl(post.img)}
+                src={post.img ? 
+                  (post.img.startsWith('http') ? 
+                    post.img : 
+                    `${API_BASE_URL}${post.img.startsWith('/') ? post.img : `/${post.img}`}`) 
+                  : ""}
                 alt="Post Preview"
                 className="w-full h-auto max-h-[80vh] object-contain rounded-2xl shadow-lg"
               />
@@ -526,6 +527,7 @@ const Post = ({ post }) => {
 };
 
 export default Post;
+
 
 
 

@@ -6,6 +6,8 @@ import { useTheme } from "../ThemeContext";
 import { motion } from "framer-motion";
 import { UserX2, UserPlus, UserCheck, Loader2, RefreshCw, Users, Sparkles } from "lucide-react";
 
+const API_BASE_URL = process.env.REACT_APP_API_URL || "https://gordonconnect-production-f2bd.up.railway.app/api";
+
 function People() {
     const { currentUser } = useContext(AuthContext);
     const { theme } = useTheme();
@@ -199,7 +201,11 @@ function People() {
                             <div className="flex flex-col items-center gap-3">
                                 <img
                                     className="w-20 h-20 rounded-full object-cover border-4 border-emerald-400 shadow-lg mb-2"
-                                    src={user.profilePic ? `/upload/${user.profilePic}` : "/default-profile.jpg"}
+                                    src={user.profilePic ? 
+                                        (user.profilePic.startsWith('http') ? 
+                                            user.profilePic : 
+                                            `${API_BASE_URL}${user.profilePic.startsWith('/') ? user.profilePic : `/${user.profilePic}`}`) 
+                                        : "/default-profile.jpg"}
                                     alt={user.name}
                                 />
                                 <div className="text-center">

@@ -203,7 +203,12 @@ function Profile() {
                     transition={{ duration: 0.6, delay: 0.2, ease: 'easeOut' }}
                     whileHover={{ scale: 1.05 }}
                     className="flex-shrink-0 mb-4 md:mb-0 relative cursor-pointer group"
-                    onClick={() => setImageModal({ open: true, src: formatImageUrl(data?.profilePic, "/default-profile.jpg"), alt: "Profile" })}
+                    onClick={() => setImageModal({ open: true, src: data?.profilePic ? 
+                      (data.profilePic.startsWith('http') ? 
+                        data.profilePic : 
+                        `${API_BASE_URL}${data.profilePic.startsWith('/') ? data.profilePic : `/${data.profilePic}`}`) 
+                      : "/default-profile.jpg", 
+                      alt: "Profile" })}
                   >
                     <div className="w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44 lg:w-56 lg:h-56 rounded-full bg-gradient-to-tr from-emerald-400 via-blue-400 to-purple-400 p-1.5 shadow-2xl transform transition-all duration-300 group-hover:shadow-emerald-500/20" style={{boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)'}}>
                       <img
@@ -451,7 +456,11 @@ function Profile() {
                             className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
                           >
                             <img
-                              src={formatImageUrl(follower.profilePic, "/default-profile.jpg")}
+                              src={follower.profilePic ? 
+                                (follower.profilePic.startsWith('http') ? 
+                                  follower.profilePic : 
+                                  `${API_BASE_URL}${follower.profilePic.startsWith('/') ? follower.profilePic : `/${follower.profilePic}`}`) 
+                                : "/default-profile.jpg"}
                               alt={follower.name}
                               className="w-10 h-10 rounded-full object-cover"
                             />
@@ -535,7 +544,11 @@ function Profile() {
                             className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
                           >
                             <img
-                              src={formatImageUrl(following.profilePic, "/default-profile.jpg")}
+                              src={following.profilePic ? 
+                                (following.profilePic.startsWith('http') ? 
+                                  following.profilePic : 
+                                  `${API_BASE_URL}${following.profilePic.startsWith('/') ? following.profilePic : `/${following.profilePic}`}`) 
+                                : "/default-profile.jpg"}
                               alt={following.name}
                               className="w-10 h-10 rounded-full object-cover"
                             />
@@ -572,6 +585,9 @@ function Profile() {
 }
 
 export default Profile;
+
+
+
 
 
 
