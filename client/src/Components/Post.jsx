@@ -22,7 +22,8 @@ import {
 } from "@mui/icons-material";
 import { toast } from 'react-hot-toast';
 import { Image as ImageIcon, XCircle, Heart, HeartOff, Bookmark as BookmarkIcon, BookmarkMinus, MessageCircle, Share2, MoreVertical, Loader2, Flag, ExternalLink } from 'lucide-react';
-import { formatImageUrl } from "../utils";
+
+const API_BASE_URL = process.env.REACT_APP_API_URL || "https://gordonconnect-production-f2bd.up.railway.app/api";
 
 // Function to detect and format links in text
 const detectLinks = (text, theme) => {
@@ -514,6 +515,7 @@ const Post = ({ post }) => {
 };
 
 export default Post;
+
 
 
 

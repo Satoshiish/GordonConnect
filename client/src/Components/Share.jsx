@@ -7,6 +7,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Image, X, Send, CheckCircle, Check, UploadCloud } from "lucide-react";
 import { formatImageUrl } from "../utils";
 
+// Add API_BASE_URL constant
+const API_BASE_URL = process.env.REACT_APP_API_URL || "https://gordonconnect-production-f2bd.up.railway.app/api";
+
 const Share = () => {
   const { theme } = useTheme();
   const [file, setFile] = useState(null);
@@ -129,7 +132,11 @@ const Share = () => {
         <form onSubmit={handleClick} className="space-y-3 sm:space-y-4">
           <div className="flex items-start gap-2 sm:gap-3">
             <img
-              src={formatImageUrl(currentUser.profilePic)}
+              src={currentUser.profilePic ? 
+                (currentUser.profilePic.startsWith('http') ? 
+                  currentUser.profilePic : 
+                  `${API_BASE_URL}${currentUser.profilePic.startsWith('/') ? currentUser.profilePic : `/${currentUser.profilePic}`}`) 
+                : "/default-profile.jpg"}
               alt="Profile"
               className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover ring-2 ring-offset-2 transition-all duration-200 ${
                 theme === "dark" ? "ring-emerald-500" : "ring-teal-500"
@@ -291,6 +298,7 @@ const Share = () => {
 };
 
 export default Share;
+
 
 
 

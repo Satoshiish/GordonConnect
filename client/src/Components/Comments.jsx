@@ -5,7 +5,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { makeRequest } from "../axios";
 import moment from "moment";
 import { motion, AnimatePresence } from "framer-motion";
-import { formatImageUrl } from "../utils";
+
+// Add API_BASE_URL constant
+const API_BASE_URL = process.env.REACT_APP_API_URL || "https://gordonconnect-production-f2bd.up.railway.app/api";
 
 const Comments = ({ postId }) => {
   const { currentUser, canComment } = useContext(AuthContext);
@@ -102,9 +104,7 @@ const Comments = ({ postId }) => {
           src={currentUser.profilePic ? 
             (currentUser.profilePic.startsWith('http') ? 
               currentUser.profilePic : 
-              currentUser.profilePic.startsWith('/upload/') ?
-                currentUser.profilePic :
-                `/upload/${currentUser.profilePic}`) 
+              `${API_BASE_URL}${currentUser.profilePic.startsWith('/') ? currentUser.profilePic : `/${currentUser.profilePic}`}`) 
             : "/default-profile.jpg"}
           alt="User Profile"
           className="w-10 h-10 rounded-full object-cover"
@@ -160,7 +160,11 @@ const Comments = ({ postId }) => {
                 `}
               >
                 <img
-                  src={formatImageUrl(comment.profilePic)}
+                  src={comment.profilePic ? 
+                    (comment.profilePic.startsWith('http') ? 
+                      comment.profilePic : 
+                      `${API_BASE_URL}${comment.profilePic.startsWith('/') ? comment.profilePic : `/${comment.profilePic}`}`) 
+                    : "/default-profile.jpg"}
                   alt="User Profile"
                   className="w-8 h-8 rounded-full object-cover"
                 />
