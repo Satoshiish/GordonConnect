@@ -25,6 +25,8 @@ import {
 } from "lucide-react";
 import { toast } from 'react-hot-toast';
 
+const API_BASE_URL = "https://gordonconnect-production-f2bd.up.railway.app/api";
+
 const Events = () => {
   const { theme } = useTheme();
   const { currentUser } = useContext(AuthContext);
@@ -165,17 +167,24 @@ const Events = () => {
       
       // If there's an image, upload it first
       if (selectedImage) {
-        const formData = new FormData();
-        formData.append("file", selectedImage);
-        const token = localStorage.getItem("token");
-        
-        const uploadRes = await makeRequest.post("upload", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            "Authorization": `Bearer ${token}`
-          },
-        });
-        imageUrl = "/upload/" + uploadRes.data; // Use the filename directly as in posts
+        try {
+          const formData = new FormData();
+          formData.append("file", selectedImage);
+          const token = localStorage.getItem("token");
+          
+          const uploadRes = await makeRequest.post("upload", formData, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+              "Authorization": `Bearer ${token}`
+            },
+          });
+          imageUrl = "/upload/" + uploadRes.data; // Use the filename directly as in posts
+          console.log("Image uploaded successfully:", imageUrl);
+        } catch (uploadErr) {
+          console.error("Image upload failed:", uploadErr);
+          toast.error("Image upload failed. Creating event without image.");
+          imageUrl = null; // Continue without image
+        }
       }
 
       // Create the event with the image URL
@@ -200,13 +209,14 @@ const Events = () => {
       setSelectedImage(null);
       setImagePreview(null);
       setShowForm(false);
+      toast.success("Event created successfully!");
     } catch (err) {
       console.error("Failed to create event:", err);
       if (err.response) {
         console.error("Server response:", err.response.data);
-        alert(`Failed to create event: ${err.response.data.message || err.response.data}`);
+        toast.error(`Failed to create event: ${err.response.data.message || err.response.data}`);
       } else {
-        alert("Failed to create event. Please try again.");
+        toast.error("Failed to create event. Please try again.");
       }
     }
   };
@@ -341,15 +351,22 @@ const Events = () => {
       let imageUrl = editEvent.image;
 
       if (editImage) {
-        const formData = new FormData();
-        formData.append("file", editImage);
-        const uploadRes = await makeRequest.post("upload", formData, {
-          headers: { 
-            "Content-Type": "multipart/form-data",
-            "Authorization": `Bearer ${localStorage.getItem("token")}`
-          },
-        });
-        imageUrl = "/upload/" + uploadRes.data;
+        try {
+          const formData = new FormData();
+          formData.append("file", editImage);
+          const uploadRes = await makeRequest.post("upload", formData, {
+            headers: { 
+              "Content-Type": "multipart/form-data",
+              "Authorization": `Bearer ${localStorage.getItem("token")}`
+            },
+          });
+          imageUrl = "/upload/" + uploadRes.data;
+          console.log("Image uploaded successfully:", imageUrl);
+        } catch (uploadErr) {
+          console.error("Image upload failed:", uploadErr);
+          toast.error("Image upload failed. Keeping existing image.");
+          // Keep existing image
+        }
       }
 
       const updatedEvent = {
@@ -504,9 +521,14 @@ const Events = () => {
                     onClick={() => handleImageClick(event.image)}
                   >
                     <img
-                      src={event.image}
+                      src={event.image.startsWith("http") ? event.image : `${API_BASE_URL}${event.image}`}
                       alt={event.title}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      onError={(e) => {
+                        console.error("Image failed to load:", event.image);
+                        e.target.src = "/placeholder-event.jpg"; // Fallback image
+                        e.target.onerror = null; // Prevent infinite loop
+                      }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center p-6">
                       <div className="flex items-center gap-2 text-white">
@@ -939,9 +961,13 @@ const Events = () => {
                 {eventDetails.image && (
                   <div className="relative h-64 cursor-pointer group" onClick={() => handleImageClick(eventDetails.image)}>
                     <img
-                      src={eventDetails.image}
+                      src={eventDetails.image.startsWith("http") ? eventDetails.image : `${API_BASE_URL}${eventDetails.image}`}
                       alt={eventDetails.title}
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      onError={(e) => {
+                        e.target.src = "/placeholder-event.jpg"; // Fallback image
+                        e.target.onerror = null;
+                      }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                       <Maximize2 className="text-white w-10 h-10" />
@@ -1467,6 +1493,10 @@ const Events = () => {
 };
 
 export default Events;
+
+
+
+
 
 
 
