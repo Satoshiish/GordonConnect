@@ -528,7 +528,7 @@ const Events = () => {
                     onClick={() => handleImageClick(event.image)}
                   >
                     <img
-                      src={event.image.startsWith("http") ? event.image : `${API_BASE_URL}${event.image}`}
+                      src={event.image.startsWith("http") ? event.image : `/upload/${event.image}`}
                       alt={event.title}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       onError={(e) => {
@@ -968,7 +968,7 @@ const Events = () => {
                 {eventDetails.image && (
                   <div className="relative h-64 cursor-pointer group" onClick={() => handleImageClick(eventDetails.image)}>
                     <img
-                      src={eventDetails.image.startsWith("http") ? eventDetails.image : `${API_BASE_URL}${eventDetails.image}`}
+                      src={eventDetails.image.startsWith("http") ? eventDetails.image : `/upload/${eventDetails.image}`}
                       alt={eventDetails.title}
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                       onError={(e) => {
@@ -1505,6 +1505,9 @@ const Events = () => {
 };
 
 export default Events;
+
+
+
 
 
 
