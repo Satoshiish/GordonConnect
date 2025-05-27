@@ -13,6 +13,7 @@ import eventRoutes from "./routes/events.js";
 import bookmarksRoutes from "./routes/bookmarks.js";
 import forumRoutes from "./routes/forum.js";
 import reportsRoutes from "./routes/reports.js";
+import { verifyToken } from "./middleware/auth.js";
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Credentials", true);
@@ -56,20 +57,12 @@ const upload = multer({
 });
 
 // Handle file upload errors
-app.post("/api/upload", (req, res) => {
-  upload.single("file")(req, res, function (err) {
-    if (err) {
-      console.error("Upload error:", err);
-      return res.status(400).json({ error: err.message });
-    }
-    
-    if (!req.file) {
-      return res.status(400).json({ error: "No file uploaded" });
-    }
-    
-    // Return the filename
-    res.status(200).json(req.file.filename);
-  });
+app.post("/api/upload", verifyToken, upload.single("file"), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: "No file uploaded" });
+  }
+  // Return only the filename
+  res.status(200).json(req.file.filename);
 });
 
 // Serve uploaded files from the /tmp directory
