@@ -157,12 +157,20 @@ function Profile() {
         className="relative w-full h-[180px] sm:h-[240px] md:h-[300px] lg:h-[380px] overflow-hidden cursor-pointer group"
       >
         <img
-          src={formatImageUrl(data?.coverPic, "/default-cover.png")}
+          src={data?.coverPic ? 
+            (data.coverPic.startsWith('http') ? 
+              data.coverPic : 
+              `${API_BASE_URL}${data.coverPic.startsWith('/') ? data.coverPic : `/${data.coverPic}`}`) 
+            : "/default-cover.png"}
           alt="Cover"
           className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
           onClick={() => setImageModal({ 
             open: true, 
-            src: formatImageUrl(data?.coverPic, "/default-cover.png"), 
+            src: data?.coverPic ? 
+              (data.coverPic.startsWith('http') ? 
+                data.coverPic : 
+                `${API_BASE_URL}${data.coverPic.startsWith('/') ? data.coverPic : `/${data.coverPic}`}`) 
+              : "/default-cover.png", 
             alt: "Cover" 
           })}
         />
@@ -200,7 +208,11 @@ function Profile() {
                   >
                     <div className="w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44 lg:w-56 lg:h-56 rounded-full bg-gradient-to-tr from-emerald-400 via-blue-400 to-purple-400 p-1.5 shadow-2xl transform transition-all duration-300 group-hover:shadow-emerald-500/20" style={{boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)'}}>
                       <img
-                        src={formatImageUrl(data?.profilePic, "/default-profile.jpg")}
+                        src={data?.profilePic ? 
+                          (data.profilePic.startsWith('http') ? 
+                            data.profilePic : 
+                            `${API_BASE_URL}${data.profilePic.startsWith('/') ? data.profilePic : `/${data.profilePic}`}`) 
+                          : "/default-profile.jpg"}
                         alt="Profile"
                         className="w-full h-full rounded-full object-cover"
                       />
@@ -561,6 +573,8 @@ function Profile() {
 }
 
 export default Profile;
+
+
 
 
 
