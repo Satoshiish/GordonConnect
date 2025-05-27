@@ -22,6 +22,7 @@ import {
 } from "@mui/icons-material";
 import { toast } from 'react-hot-toast';
 import { Image as ImageIcon, XCircle, Heart, HeartOff, Bookmark as BookmarkIcon, BookmarkMinus, MessageCircle, Share2, MoreVertical, Loader2, Flag, ExternalLink } from 'lucide-react';
+import { formatImageUrl } from "../utils";
 
 // Function to detect and format links in text
 const detectLinks = (text, theme) => {
@@ -312,7 +313,7 @@ const Post = ({ post }) => {
           {post.img && (
             <motion.div className="relative group cursor-pointer mt-2" onClick={() => setShowImageModal(true)}>
               <img
-                src={formatImageUrl(post.img)}
+                src={formatImageUrl(post.img, "")}
                 alt="Post"
                 className="w-full max-h-[340px] object-cover rounded-2xl border-2 border-gray-200 dark:border-gray-700 shadow group-hover:scale-[1.03] transition-transform duration-300"
               />
@@ -513,6 +514,7 @@ const Post = ({ post }) => {
 };
 
 export default Post;
+
 
 
 

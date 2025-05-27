@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { makeRequest } from "../axios";
 import moment from "moment";
 import { motion, AnimatePresence } from "framer-motion";
+import { formatImageUrl } from "../utils";
 
 const Comments = ({ postId }) => {
   const { currentUser, canComment } = useContext(AuthContext);
@@ -159,7 +160,7 @@ const Comments = ({ postId }) => {
                 `}
               >
                 <img
-                  src={"/upload/" + comment.profilePic}
+                  src={formatImageUrl(comment.profilePic)}
                   alt="User Profile"
                   className="w-8 h-8 rounded-full object-cover"
                 />

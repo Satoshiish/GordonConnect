@@ -5,6 +5,7 @@ import { makeRequest } from "../axios";
 import { useTheme } from "../ThemeContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { Image, X, Send, CheckCircle, Check, UploadCloud } from "lucide-react";
+import { formatImageUrl } from "../utils";
 
 const Share = () => {
   const { theme } = useTheme();
@@ -128,13 +129,7 @@ const Share = () => {
         <form onSubmit={handleClick} className="space-y-3 sm:space-y-4">
           <div className="flex items-start gap-2 sm:gap-3">
             <img
-              src={currentUser.profilePic ? 
-                (currentUser.profilePic.startsWith('http') ? 
-                  currentUser.profilePic : 
-                  currentUser.profilePic.startsWith('/upload/') ?
-                    currentUser.profilePic :
-                    `/upload/${currentUser.profilePic}`) 
-                : "/default-profile.jpg"}
+              src={formatImageUrl(currentUser.profilePic)}
               alt="Profile"
               className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover ring-2 ring-offset-2 transition-all duration-200 ${
                 theme === "dark" ? "ring-emerald-500" : "ring-teal-500"
@@ -296,6 +291,7 @@ const Share = () => {
 };
 
 export default Share;
+
 
 
 
