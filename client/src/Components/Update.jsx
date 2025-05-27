@@ -73,38 +73,46 @@ const Update = ({ setOpenUpdate, user }) => {
   const handleClick = async (e) => {
     e.preventDefault();
     
-    // Upload files if selected and get just the filenames
-    const uploadedCover = cover ? await upload(cover) : null;
-    const uploadedProfile = profile ? await upload(profile) : null;
-    
-    // For cover: use the new filename if uploaded, otherwise keep existing path
-    let coverUrl;
-    if (uploadedCover) {
-      coverUrl = `/upload/${uploadedCover}`;
-    } else if (user.coverPic) {
-      // Keep existing coverPic as is
-      coverUrl = user.coverPic;
-    } else {
-      coverUrl = null;
-    }
-    
-    // For profile: use the new filename if uploaded, otherwise keep existing path
-    let profileUrl;
-    if (uploadedProfile) {
-      profileUrl = `/upload/${uploadedProfile}`;
-    } else if (user.profilePic) {
-      // Keep existing profilePic as is
-      profileUrl = user.profilePic;
-    } else {
-      profileUrl = null;
-    }
+    try {
+      // Upload files if selected and get just the filenames
+      let coverUrl = user.coverPic;  // Default to current value
+      let profileUrl = user.profilePic;  // Default to current value
+      
+      if (cover) {
+        const uploadedCover = await upload(cover);
+        if (uploadedCover) {
+          // Make sure we have the proper format with /upload/ prefix
+          coverUrl = uploadedCover.startsWith('/upload/') ? 
+            uploadedCover : `/upload/${uploadedCover}`;
+          console.log("New cover URL:", coverUrl);
+        }
+      }
+      
+      if (profile) {
+        const uploadedProfile = await upload(profile);
+        if (uploadedProfile) {
+          // Make sure we have the proper format with /upload/ prefix
+          profileUrl = uploadedProfile.startsWith('/upload/') ? 
+            uploadedProfile : `/upload/${uploadedProfile}`;
+          console.log("New profile URL:", profileUrl);
+        }
+      }
 
-    // Send update request
-    mutation.mutate({
-      ...texts,
-      coverPic: coverUrl,
-      profilePic: profileUrl,
-    });
+      // Send update request with the image URLs
+      const userData = {
+        ...texts,
+        coverPic: coverUrl,
+        profilePic: profileUrl,
+      };
+      
+      console.log("Sending update with data:", userData);
+      
+      // Execute the mutation
+      mutation.mutate(userData);
+    } catch (error) {
+      console.error("Error during update process:", error);
+      alert("Failed to update profile. Please try again.");
+    }
   };
 
   return (

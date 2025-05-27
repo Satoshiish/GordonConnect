@@ -84,12 +84,23 @@ export const AuthContextProvider = ({ children }) => {
     }
   };
 
-  const updateUser = (updatedData) => {
-    setCurrentUser((prevUser) => {
-      const newUser = { ...prevUser, ...updatedData };
-      localStorage.setItem("user", JSON.stringify(newUser));
-      return newUser;
-    });
+  const updateUser = (updatedUserData) => {
+    // Make sure we're updating the current user
+    if (!currentUser) return;
+    
+    // Create a new user object with the updated data
+    const updatedUser = {
+      ...currentUser,
+      ...updatedUserData
+    };
+    
+    console.log("Updating current user in context:", updatedUser);
+    
+    // Update the current user in state
+    setCurrentUser(updatedUser);
+    
+    // Also update in localStorage to persist across page refreshes
+    localStorage.setItem("user", JSON.stringify(updatedUser));
   };
 
   const isAdmin = () => currentUser?.role === "admin";

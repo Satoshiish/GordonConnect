@@ -65,7 +65,16 @@ export const updateUser = (req, res) => {
           console.error("Database error updating user:", err);
           return res.status(500).json(err);
         }
-        if (data.affectedRows > 0) return res.json("Updated!");
+        
+        if (data.affectedRows > 0) {
+          // Return the updated user data including the image URLs
+          return res.json({
+            message: "Updated!",
+            profilePic: profilePic,
+            coverPic: coverPic
+          });
+        }
+        
         return res.status(403).json("You can only update your profile!");
       }
     );
