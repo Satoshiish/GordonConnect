@@ -57,21 +57,30 @@ const Update = ({ setOpenUpdate, user }) => {
   const handleClick = async (e) => {
     e.preventDefault();
     
-    let coverUrl = user.coverPic;
-    let profileUrl = user.profilePic;
+    // Upload files if selected and get just the filenames
+    const uploadedCover = cover ? await upload(cover) : null;
+    const uploadedProfile = profile ? await upload(profile) : null;
     
-    if (cover) {
-      // Upload the file and get just the filename WITHOUT adding /upload/ prefix
-      const coverFilename = await upload(cover);
-      // Let the backend add the prefix
-      coverUrl = coverFilename || user.coverPic;
+    // For cover: use the new filename if uploaded, otherwise extract filename from existing path
+    let coverUrl;
+    if (uploadedCover) {
+      coverUrl = `/upload/${uploadedCover}`;
+    } else if (user.coverPic) {
+      // Keep existing coverPic as is
+      coverUrl = user.coverPic;
+    } else {
+      coverUrl = null;
     }
     
-    if (profile) {
-      // Upload the file and get just the filename WITHOUT adding /upload/ prefix
-      const profileFilename = await upload(profile);
-      // Let the backend add the prefix
-      profileUrl = profileFilename || user.profilePic;
+    // For profile: use the new filename if uploaded, otherwise extract filename from existing path
+    let profileUrl;
+    if (uploadedProfile) {
+      profileUrl = `/upload/${uploadedProfile}`;
+    } else if (user.profilePic) {
+      // Keep existing profilePic as is
+      profileUrl = user.profilePic;
+    } else {
+      profileUrl = null;
     }
 
     mutation.mutate({
@@ -118,7 +127,7 @@ const Update = ({ setOpenUpdate, user }) => {
                   />
                 ) : user.coverPic ? (
                   <img
-                    src={`${makeRequest.defaults.baseURL}/upload/${user.coverPic.split('/').pop()}`}
+                    src={user.coverPic}
                     alt="Current Cover"
                     className="mt-2 w-full h-32 object-cover rounded-md opacity-60"
                     onError={(e) => {
@@ -151,7 +160,7 @@ const Update = ({ setOpenUpdate, user }) => {
                   />
                 ) : user.profilePic ? (
                   <img
-                    src={`${makeRequest.defaults.baseURL}/upload/${user.profilePic.split('/').pop()}`}
+                    src={user.profilePic}
                     alt="Current Profile"
                     className="mt-2 w-16 h-16 object-cover rounded-full opacity-60"
                     onError={(e) => {
