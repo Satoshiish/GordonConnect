@@ -21,7 +21,10 @@ const Update = ({ setOpenUpdate, user }) => {
       const formData = new FormData();
       formData.append("file", file);
       const res = await makeRequest.post("/upload", formData);
-      return res.data;
+      // Make sure we're only returning the filename, not a path
+      const filename = res.data;
+      // If the response already includes a path prefix, strip it
+      return filename.replace(/^\/upload\//, '');
     } catch (err) {
       console.error("Upload Error:", err);
       return null;
@@ -44,13 +47,29 @@ const Update = ({ setOpenUpdate, user }) => {
 
   const handleClick = async (e) => {
     e.preventDefault();
-    const coverUrl = cover ? await upload(cover) : user.coverPic;
-    const profileUrl = profile ? await upload(profile) : user.profilePic;
+    
+    // For cover image
+    let coverUrl = user.coverPic;
+    if (cover) {
+      coverUrl = await upload(cover);
+    } else if (coverUrl && coverUrl.startsWith('/upload/')) {
+      // Strip the prefix if it exists
+      coverUrl = coverUrl.replace(/^\/upload\//, '');
+    }
+    
+    // For profile image
+    let profileUrl = user.profilePic;
+    if (profile) {
+      profileUrl = await upload(profile);
+    } else if (profileUrl && profileUrl.startsWith('/upload/')) {
+      // Strip the prefix if it exists
+      profileUrl = profileUrl.replace(/^\/upload\//, '');
+    }
 
     mutation.mutate({
       ...texts,
-      coverPic: coverUrl || user.coverPic,
-      profilePic: profileUrl || user.profilePic,
+      coverPic: coverUrl,
+      profilePic: profileUrl,
     });
 
     setOpenUpdate(false);
@@ -83,11 +102,14 @@ const Update = ({ setOpenUpdate, user }) => {
                   onChange={(e) => setCover(e.target.files[0])}
                   className="hidden"
                 />
+                {/* Cover Photo Preview */}
                 {cover ? (
                   <img src={URL.createObjectURL(cover)} alt="Cover Preview" className="mt-2 w-full h-32 object-cover rounded-md shadow" />
                 ) : user.coverPic ? (
                   <img 
-                    src={`${import.meta.env.VITE_API_URL || ""}/api/upload/${user.coverPic}`} 
+                    src={user.coverPic.startsWith('/upload/') 
+                      ? `${import.meta.env.VITE_API_URL || ""}${user.coverPic}` 
+                      : `${import.meta.env.VITE_API_URL || ""}/api/upload/${user.coverPic}`} 
                     alt="Current Cover" 
                     className="mt-2 w-full h-32 object-cover rounded-md opacity-60" 
                   />
@@ -108,11 +130,14 @@ const Update = ({ setOpenUpdate, user }) => {
                   onChange={(e) => setProfile(e.target.files[0])}
                   className="hidden"
                 />
+                {/* Profile Photo Preview */}
                 {profile ? (
                   <img src={URL.createObjectURL(profile)} alt="Profile Preview" className="mt-2 w-16 h-16 object-cover rounded-full shadow" />
                 ) : user.profilePic ? (
                   <img 
-                    src={`${import.meta.env.VITE_API_URL || ""}/api/upload/${user.profilePic}`} 
+                    src={user.profilePic.startsWith('/upload/') 
+                      ? `${import.meta.env.VITE_API_URL || ""}${user.profilePic}` 
+                      : `${import.meta.env.VITE_API_URL || ""}/api/upload/${user.profilePic}`} 
                     alt="Current Profile" 
                     className="mt-2 w-16 h-16 object-cover rounded-full opacity-60" 
                   />
