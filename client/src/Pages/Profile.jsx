@@ -19,7 +19,6 @@ import { Pencil, XCircle, X } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
-import { formatImageUrl } from "../utils";
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || "https://gordonconnect-production-f2bd.up.railway.app/api";
 
