@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { makeRequest } from "../axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { makeRequest } from "../axios";
 import { useTheme } from "../ThemeContext";
 import { XCircle } from "lucide-react";
 
@@ -12,19 +12,25 @@ const Update = ({ setOpenUpdate, user }) => {
     city: user.city || "",
     website: user.website || "",
   });
+  const [isUploading, setIsUploading] = useState(false);
 
   const { theme } = useTheme();
   const queryClient = useQueryClient();
 
   const upload = async (file) => {
     try {
+      setIsUploading(true);
       const formData = new FormData();
       formData.append("file", file);
       const res = await makeRequest.post("/upload", formData);
-      return res.data;
+      console.log("Upload response:", res.data);
+      return res.data; // This should be just the filename
     } catch (err) {
       console.error("Upload Error:", err);
+      console.error("Error details:", err.response?.data);
       return null;
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -33,27 +39,48 @@ const Update = ({ setOpenUpdate, user }) => {
   };
 
   const mutation = useMutation({
-    mutationFn: (userData) => makeRequest.put("/users", userData),
+    mutationFn: (userData) => {
+      console.log("Updating user with data:", userData);
+      return makeRequest.put("/users", userData);
+    },
     onSuccess: () => {
+      console.log("User updated successfully");
       queryClient.invalidateQueries({ queryKey: ["user"] });
+      setOpenUpdate(false);
     },
     onError: (error) => {
       console.error("Update failed:", error);
+      console.error("Error details:", error.response?.data);
     },
   });
 
   const handleClick = async (e) => {
     e.preventDefault();
-    const coverUrl = cover ? await upload(cover) : user.coverPic;
-    const profileUrl = profile ? await upload(profile) : user.profilePic;
-
-    mutation.mutate({
-      ...texts,
-      coverPic: coverUrl || user.coverPic,
-      profilePic: profileUrl || user.profilePic,
-    });
-
-    setOpenUpdate(false);
+    
+    try {
+      // Upload new images if selected
+      let coverUrl = user.coverPic;
+      let profileUrl = user.profilePic;
+      
+      if (cover) {
+        coverUrl = await upload(cover);
+        console.log("New cover URL:", coverUrl);
+      }
+      
+      if (profile) {
+        profileUrl = await upload(profile);
+        console.log("New profile URL:", profileUrl);
+      }
+      
+      // Update user data
+      mutation.mutate({
+        ...texts,
+        coverPic: coverUrl,
+        profilePic: profileUrl,
+      });
+    } catch (err) {
+      console.error("Error in handleClick:", err);
+    }
   };
 
   return (
@@ -86,8 +113,23 @@ const Update = ({ setOpenUpdate, user }) => {
                 {cover ? (
                   <img src={URL.createObjectURL(cover)} alt="Cover Preview" className="mt-2 w-full h-32 object-cover rounded-md shadow" />
                 ) : user.coverPic ? (
-                  <img src={`/upload/${user.coverPic}`} alt="Current Cover" className="mt-2 w-full h-32 object-cover rounded-md opacity-60" />
-                ) : null}
+                  <img 
+                    src={`/api/upload/${user.coverPic}`} 
+                    alt="Current Cover" 
+                    className="mt-2 w-full h-32 object-cover rounded-md opacity-60"
+                    onError={(e) => {
+                      console.error("Failed to load cover image:", `/api/upload/${user.coverPic}`);
+                      e.target.src = "/api/defaults/default-cover.png";
+                    }}
+                  />
+                ) : (
+                  <img 
+                    src="/api/defaults/default-cover.png" 
+                    alt="Default Cover" 
+                    className="mt-2 w-full h-32 object-cover rounded-md opacity-60"
+                    onError={(e) => console.error("Failed to load default cover image")}
+                  />
+                )}
               </label>
             </div>
           </div>
@@ -107,9 +149,22 @@ const Update = ({ setOpenUpdate, user }) => {
                 {profile ? (
                   <img src={URL.createObjectURL(profile)} alt="Profile Preview" className="mt-2 w-16 h-16 object-cover rounded-full shadow" />
                 ) : user.profilePic ? (
-                  <img src={`/upload/${user.profilePic}`} alt="Current Profile" className="mt-2 w-16 h-16 object-cover rounded-full opacity-60" />
+                  <img 
+                    src={`/api/upload/${user.profilePic}`} 
+                    alt="Current Profile" 
+                    className="mt-2 w-16 h-16 object-cover rounded-full opacity-60"
+                    onError={(e) => {
+                      console.error("Failed to load profile image:", `/api/upload/${user.profilePic}`);
+                      e.target.src = "/api/defaults/default-profile.jpg";
+                    }}
+                  />
                 ) : (
-                  <img src="/default-profile.jpg" alt="Default Profile" className="mt-2 w-16 h-16 object-cover rounded-full opacity-60" />
+                  <img 
+                    src="/api/defaults/default-profile.jpg" 
+                    alt="Default Profile" 
+                    className="mt-2 w-16 h-16 object-cover rounded-full opacity-60"
+                    onError={(e) => console.error("Failed to load default profile image")}
+                  />
                 )}
               </label>
             </div>
@@ -143,9 +198,10 @@ const Update = ({ setOpenUpdate, user }) => {
 
           <button
             onClick={handleClick}
-            className="w-full bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-all text-lg"
+            disabled={isUploading}
+            className={`w-full bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-all text-lg ${isUploading ? 'opacity-70 cursor-not-allowed' : ''}`}
           >
-            Update
+            {isUploading ? 'Uploading...' : 'Update'}
           </button>
         </form>
       </div>

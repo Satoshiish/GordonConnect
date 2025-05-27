@@ -13,6 +13,25 @@ import eventRoutes from "./routes/events.js";
 import bookmarksRoutes from "./routes/bookmarks.js";
 import forumRoutes from "./routes/forum.js";
 import reportsRoutes from "./routes/reports.js";
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Get the directory name of the current module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Create a directory for uploads if it doesn't exist
+import fs from 'fs';
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+// Create a directory for default images if it doesn't exist
+const defaultsDir = path.join(__dirname, 'defaults');
+if (!fs.existsSync(defaultsDir)) {
+  fs.mkdirSync(defaultsDir, { recursive: true });
+}
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Credentials", true);
@@ -28,34 +47,19 @@ app.use(
   })
 );
 
-// Configure multer for file uploads
+// Configure multer to store files in the uploads directory
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    // Use a directory that's guaranteed to exist and be writable
-    // For Railway, this should be a tmp directory
-    cb(null, "/tmp");
+    cb(null, uploadDir);
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + file.originalname);
-  },
-});
-
-const upload = multer({ 
-  storage: storage,
-  limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
-  },
-  fileFilter: (req, file, cb) => {
-    // Accept only images
-    if (file.mimetype.startsWith('image/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only image files are allowed!'), false);
-    }
+    cb(null, Date.now() + path.extname(file.originalname));
   }
 });
 
-// Handle file upload errors
+const upload = multer({ storage: storage });
+
+// Handle file upload
 app.post("/api/upload", (req, res) => {
   upload.single("file")(req, res, function (err) {
     if (err) {
@@ -67,16 +71,16 @@ app.post("/api/upload", (req, res) => {
       return res.status(400).json({ error: "No file uploaded" });
     }
     
-    // Return the filename
+    // Return just the filename, not the full path
     res.status(200).json(req.file.filename);
   });
 });
 
-// Serve uploaded files from the /tmp directory
-app.use("/api/upload", express.static("/tmp"));
+// Serve uploaded files
+app.use("/api/upload", express.static(uploadDir));
 
 // Serve default images
-app.use("/api/defaults", express.static("./defaults"));
+app.use("/api/defaults", express.static(defaultsDir));
 
 // ✅ Add a route for /api
 app.get("/api", (req, res) => {
@@ -98,6 +102,7 @@ app.use("/api/reports", reportsRoutes);
 app.listen(8800, () => {
   console.log("API is WORKING");
 });
+
 
 
 
