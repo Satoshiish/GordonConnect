@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import { makeRequest } from "../axios";
+import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { makeRequest } from "../axios";
 import { useTheme } from "../ThemeContext";
 import { XCircle } from "lucide-react";
 
@@ -21,6 +21,7 @@ const Update = ({ setOpenUpdate, user }) => {
       const formData = new FormData();
       formData.append("file", file);
       const res = await makeRequest.post("/upload", formData);
+      // Just return the filename, don't add /upload/ prefix here
       return res.data;
     } catch (err) {
       console.error("Upload Error:", err);
@@ -86,7 +87,7 @@ const Update = ({ setOpenUpdate, user }) => {
                 {cover ? (
                   <img src={URL.createObjectURL(cover)} alt="Cover Preview" className="mt-2 w-full h-32 object-cover rounded-md shadow" />
                 ) : user.coverPic ? (
-                  <img src={`/upload/${user.coverPic}`} alt="Current Cover" className="mt-2 w-full h-32 object-cover rounded-md opacity-60" />
+                  <img src={user.coverPic.startsWith('/upload/') ? user.coverPic : `/upload/${user.coverPic}`} alt="Current Cover" className="mt-2 w-full h-32 object-cover rounded-md opacity-60" />
                 ) : null}
               </label>
             </div>
@@ -107,7 +108,7 @@ const Update = ({ setOpenUpdate, user }) => {
                 {profile ? (
                   <img src={URL.createObjectURL(profile)} alt="Profile Preview" className="mt-2 w-16 h-16 object-cover rounded-full shadow" />
                 ) : user.profilePic ? (
-                  <img src={`/upload/${user.profilePic}`} alt="Current Profile" className="mt-2 w-16 h-16 object-cover rounded-full opacity-60" />
+                  <img src={user.profilePic.startsWith('/upload/') ? user.profilePic : `/upload/${user.profilePic}`} alt="Current Profile" className="mt-2 w-16 h-16 object-cover rounded-full opacity-60" />
                 ) : (
                   <img src="/default-profile.jpg" alt="Default Profile" className="mt-2 w-16 h-16 object-cover rounded-full opacity-60" />
                 )}
