@@ -154,10 +154,22 @@ function Profile() {
         className="relative w-full h-[180px] sm:h-[240px] md:h-[300px] lg:h-[380px] overflow-hidden cursor-pointer group"
       >
         <img
-          src={data?.coverPic && data.coverPic.trim() !== "" ? "/upload/" + data.coverPic : "/default-cover.png"}
+          src={data?.coverPic && data.coverPic.trim() !== "" 
+            ? (data.coverPic.startsWith("/upload/") 
+              ? data.coverPic 
+              : "/upload/" + data.coverPic) 
+            : "/default-cover.png"}
           alt="Cover"
           className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
-          onClick={() => setImageModal({ open: true, src: data?.coverPic && data.coverPic.trim() !== "" ? "/upload/" + data.coverPic : "/default-cover.png", alt: "Cover" })}
+          onClick={() => setImageModal({ 
+            open: true, 
+            src: data?.coverPic && data.coverPic.trim() !== "" 
+              ? (data.coverPic.startsWith("/upload/") 
+                ? data.coverPic 
+                : "/upload/" + data.coverPic) 
+              : "/default-cover.png", 
+            alt: "Cover" 
+          })}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-transparent rounded-b-3xl pointer-events-none" />
         <motion.div 
@@ -554,6 +566,7 @@ function Profile() {
 }
 
 export default Profile;
+
 
 
 
