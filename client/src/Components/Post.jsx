@@ -98,6 +98,17 @@ const detectLinks = (text, theme) => {
   return result;
 };
 
+// Function to handle image URL formatting
+const formatImageUrl = (imageUrl, defaultImage = "/default-profile.jpg") => {
+  if (!imageUrl) return defaultImage;
+  
+  if (imageUrl.startsWith('http')) {
+    return imageUrl;
+  } else {
+    return `${API_BASE_URL}${imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`}`;
+  }
+};
+
 const Post = ({ post }) => {
   const { theme } = useTheme();
   const [commentOpen, setCommentOpen] = useState(false);
@@ -515,6 +526,7 @@ const Post = ({ post }) => {
 };
 
 export default Post;
+
 
 
 
