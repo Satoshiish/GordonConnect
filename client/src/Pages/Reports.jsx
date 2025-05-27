@@ -154,14 +154,14 @@ const Reports = () => {
   if (error) return <div className="text-center py-20 text-red-500 font-semibold">{error}</div>;
 
   return (
-    <div className={`min-h-screen p-2 sm:p-4 md:p-6 lg:p-8 ${theme === "dark" ? "bg-gray-900 text-gray-100" : "bg-gray-50 text-gray-900"}`}>
+    <div className={`p-2 sm:p-4 md:p-6 lg:p-8 ${theme === "dark" ? "bg-gray-900 text-gray-100" : "bg-gray-50 text-gray-900"}`}>
       <div className="max-w-6xl mx-auto">
-        {/* Enhanced Header Card */}
+        {/* Enhanced Header Card - improve padding for smaller screens */}
         <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className={`mb-8 rounded-3xl shadow-xl overflow-hidden relative ${
+            className={`mb-6 sm:mb-8 rounded-2xl sm:rounded-3xl shadow-xl overflow-hidden relative ${
                 theme === "dark" ? "bg-gray-850 border border-gray-700" : "bg-white"
             }`}
         >
@@ -170,35 +170,35 @@ const Reports = () => {
                 <div className="absolute -inset-[10px] bg-[radial-gradient(#4ade80_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)]"></div>
             </div>
             
-            <div className="relative p-6 sm:p-8 md:p-10">
+            <div className="relative p-4 sm:p-6 md:p-8 lg:p-10">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div className="flex items-start gap-4">
-                        <div className={`p-3 rounded-2xl ${
+                    <div className="flex items-start gap-3 sm:gap-4">
+                        <div className={`p-2 sm:p-3 rounded-xl sm:rounded-2xl ${
                             theme === "dark" ? "bg-emerald-500/20" : "bg-emerald-100"
                         }`}>
-                            <Flag size={28} className={
+                            <Flag size={24} className={
                                 theme === "dark" ? "text-emerald-400" : "text-emerald-600"
                             } />
                         </div>
                         <div>
-                            <h1 className="text-3xl sm:text-4xl font-bold mb-2 bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">
+                            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-1 sm:mb-2 bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">
                                 Content Reports
                             </h1>
-                            <p className={`text-base ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>
+                            <p className={`text-sm sm:text-base ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>
                                 Review and manage reported content
                             </p>
                         </div>
                     </div>
                     
-                    <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="flex flex-wrap w-full sm:w-auto gap-2 sm:gap-3 mt-3 sm:mt-0">
                         <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={exportAllReports}
-                            className="px-5 py-2.5 rounded-full flex items-center gap-2 shadow-md transition-all bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white"
+                            className="flex-1 sm:flex-none px-3 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm rounded-full flex items-center justify-center gap-2 shadow-md transition-all bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white"
                             disabled={reports.length === 0}
                         >
-                            <FileSpreadsheet size={18} />
+                            <FileSpreadsheet size={16} />
                             Export All
                         </motion.button>
                         
@@ -206,31 +206,31 @@ const Reports = () => {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={handleRefresh}
-                            className="px-5 py-2.5 rounded-full flex items-center gap-2 shadow-md transition-all bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white"
+                            className="flex-1 sm:flex-none px-3 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm rounded-full flex items-center justify-center gap-2 shadow-md transition-all bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white"
                         >
                             <RefreshCw 
-                                size={18} 
+                                size={16} 
                                 className={`${isRefreshing ? "animate-spin" : ""}`} 
                             />
-                            Refresh Reports
+                            Refresh
                         </motion.button>
                     </div>
                 </div>
                 
-                {/* Reports Info */}
-                <div className={`mt-6 p-4 rounded-xl text-sm ${
+                {/* Reports Info - improve padding for smaller screens */}
+                <div className={`mt-4 sm:mt-6 p-3 sm:p-4 rounded-lg sm:rounded-xl text-xs sm:text-sm ${
                     theme === "dark" ? "bg-gray-800/70 text-gray-200" : "bg-gray-50 text-gray-700"
                 }`}>
                     <p className="flex items-center gap-2">
-                        <AlertCircle size={16} className={theme === "dark" ? "text-amber-400" : "text-amber-500"} />
+                        <AlertCircle size={14} className={theme === "dark" ? "text-amber-400" : "text-amber-500"} />
                         <span>Review reported content to maintain community standards and safety.</span>
                     </p>
                 </div>
             </div>
         </motion.div>
         
-        {/* Mobile Card View (visible on small screens only) */}
-        <div className="block sm:hidden space-y-4">
+        {/* Improve Mobile Card View spacing and sizing */}
+        <div className="block sm:hidden space-y-3">
           {reports.map((report) => (
             <motion.div 
               key={report.id}
@@ -241,11 +241,11 @@ const Reports = () => {
                 theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
               }`}
             >
-              <div className={`px-4 py-3 flex justify-between items-center ${
+              <div className={`px-3 py-2.5 flex justify-between items-center ${
                 theme === "dark" ? "bg-gray-900/50" : "bg-emerald-50"
               }`}>
-                <div className="flex items-center gap-3">
-                  <div className="h-9 w-9 rounded-full overflow-hidden border-2 border-emerald-200 dark:border-emerald-800 flex-shrink-0">
+                <div className="flex items-center gap-2">
+                  <div className="h-8 w-8 rounded-full overflow-hidden border-2 border-emerald-200 dark:border-emerald-800 flex-shrink-0">
                     <img 
                       src={report.user_profile ? `/upload/${report.user_profile}` : "/default-profile.jpg"} 
                       alt="User" 
@@ -253,13 +253,13 @@ const Reports = () => {
                     />
                   </div>
                   <div>
-                    <div className="font-medium">{report.user_name || `User ${report.user_id}`}</div>
+                    <div className="font-medium text-sm">{report.user_name || `User ${report.user_id}`}</div>
                     <div className="text-xs text-gray-500 dark:text-gray-400">
                       {new Date(report.created_at).toLocaleDateString()}
                     </div>
                   </div>
                 </div>
-                <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                   report.reviewed === 0 || report.reviewed === null
                     ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200' 
                     : report.reviewed === 1
@@ -271,7 +271,7 @@ const Reports = () => {
                 </span>
               </div>
               
-              <div className="p-4 space-y-3">
+              <div className="p-3 space-y-2.5">
                 <div>
                   <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Report ID</div>
                   <div className="text-sm font-medium">{report.id}</div>
@@ -279,84 +279,84 @@ const Reports = () => {
                 
                 <div>
                   <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Reason</div>
-                  <div className="text-sm p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50">{report.reason}</div>
+                  <div className="text-xs p-2.5 rounded-lg bg-gray-50 dark:bg-gray-700/50">{report.reason}</div>
                 </div>
                 
                 <div>
                   <button 
                     onClick={() => handleViewPost(report.post_id)}
-                    className="w-full py-2 mt-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-800/50 transition-colors font-medium text-sm flex items-center justify-center gap-2"
+                    className="w-full py-1.5 mt-1 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-800/50 transition-colors font-medium text-xs flex items-center justify-center gap-1.5"
                   >
-                    <Eye size={16} />
+                    <Eye size={14} />
                     View Reported Post
                   </button>
                 </div>
               </div>
               
-              <div className="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 flex justify-end space-x-2">
+              <div className="px-3 py-2.5 bg-gray-50 dark:bg-gray-800/50 flex justify-end space-x-2">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => handleReview(report.id, 1)}
                   disabled={report.reviewed === 1}
-                  className={`p-2 rounded-full ${
+                  className={`p-1.5 rounded-full ${
                     report.reviewed === 0 || report.reviewed === null
                       ? 'bg-green-100 text-green-600 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-800/50 shadow-sm'
                       : 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-500'
                   }`}
                   title="Mark as Resolved"
                 >
-                  <CheckCircle2 className="w-5 h-5" />
+                  <CheckCircle2 className="w-4 h-4" />
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => handleReview(report.id, 2)}
                   disabled={report.reviewed === 2}
-                  className={`p-2 rounded-full ${
+                  className={`p-1.5 rounded-full ${
                     report.reviewed === 0 || report.reviewed === null
                       ? 'bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-800/50 shadow-sm'
                       : 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-500'
                   }`}
                   title="Reject Report"
                 >
-                  <XCircle className="w-5 h-5" />
+                  <XCircle className="w-4 h-4" />
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => handleExport(report)}
-                  className="p-2 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-800/50 shadow-sm"
+                  className="p-1.5 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-800/50 shadow-sm"
                   title="Export Report"
                 >
-                  <Download className="w-5 h-5" />
+                  <Download className="w-4 h-4" />
                 </motion.button>
               </div>
             </motion.div>
           ))}
         </div>
         
-        {/* Desktop Table View (hidden on small screens) */}
+        {/* Improve Desktop Table View responsiveness */}
         <div className="hidden sm:block overflow-x-auto rounded-xl border shadow-lg">
           <table className={`w-full min-w-full divide-y ${theme === "dark" ? "bg-gray-850 border-gray-700 divide-gray-700" : "bg-white border-gray-200 divide-gray-200"}`}>
             <thead className={`${theme === "dark" ? "bg-gray-900/90" : "bg-emerald-50"}`}>
               <tr>
-                <th className="px-4 md:px-6 py-3 text-left text-xs sm:text-sm font-bold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">Report ID</th>
-                <th className="px-4 md:px-6 py-3 text-left text-xs sm:text-sm font-bold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">User</th>
-                <th className="px-4 md:px-6 py-3 text-left text-xs sm:text-sm font-bold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">Post</th>
-                <th className="px-4 md:px-6 py-3 text-left text-xs sm:text-sm font-bold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">Reason</th>
-                <th className="px-4 md:px-6 py-3 text-left text-xs sm:text-sm font-bold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">Date</th>
-                <th className="px-4 md:px-6 py-3 text-left text-xs sm:text-sm font-bold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">Status</th>
-                <th className="px-4 md:px-6 py-3 text-left text-xs sm:text-sm font-bold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">Actions</th>
+                <th className="px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 text-left text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">ID</th>
+                <th className="px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 text-left text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">User</th>
+                <th className="px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 text-left text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">Post</th>
+                <th className="px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 text-left text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">Reason</th>
+                <th className="px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 text-left text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">Date</th>
+                <th className="px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 text-left text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">Status</th>
+                <th className="px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 text-left text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">Actions</th>
               </tr>
             </thead>
             <tbody className={`divide-y ${theme === "dark" ? "divide-gray-800" : "divide-gray-200"}`}>
               {reports.map((report) => (
                 <tr key={report.id} className={`${theme === "dark" ? "hover:bg-gray-800/70" : "hover:bg-gray-50"} transition-colors`}>
-                  <td className="px-4 md:px-6 py-4 text-sm whitespace-nowrap font-medium">{report.id}</td>
-                  <td className="px-4 md:px-6 py-4 text-sm whitespace-nowrap">
+                  <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-xs sm:text-sm whitespace-nowrap font-medium">{report.id}</td>
+                  <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-xs sm:text-sm whitespace-nowrap">
                     <div className="flex items-center">
-                      <div className="h-9 w-9 rounded-full overflow-hidden border-2 border-emerald-200 dark:border-emerald-800 mr-3 flex-shrink-0">
+                      <div className="h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9 rounded-full overflow-hidden border-2 border-emerald-200 dark:border-emerald-800 mr-2 sm:mr-3 flex-shrink-0">
                         <img 
                           src={report.user_profile ? `/upload/${report.user_profile}` : "/default-profile.jpg"} 
                           alt="User" 
@@ -366,25 +366,25 @@ const Reports = () => {
                       <span className="font-medium">{report.user_name || `User ${report.user_id}`}</span>
                     </div>
                   </td>
-                  <td className="px-4 md:px-6 py-4 text-sm">
+                  <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-xs sm:text-sm">
                     <button 
                       onClick={() => handleViewPost(report.post_id)}
-                      className="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-800/50 transition-colors font-medium text-xs flex items-center gap-1.5"
+                      className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-800/50 transition-colors font-medium text-xs flex items-center gap-1.5"
                     >
                       <Eye size={14} />
                       View Post
                     </button>
                   </td>
-                  <td className="px-4 md:px-6 py-4 text-sm">
-                    <div className="max-w-[200px] md:max-w-xs truncate">
+                  <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-xs sm:text-sm">
+                    <div className="max-w-[120px] sm:max-w-[150px] md:max-w-xs truncate">
                       {report.reason}
                     </div>
                   </td>
-                  <td className="px-4 md:px-6 py-4 text-sm whitespace-nowrap">
+                  <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-xs sm:text-sm whitespace-nowrap">
                     {new Date(report.created_at).toLocaleDateString()}
                   </td>
-                  <td className="px-4 md:px-6 py-4 text-sm">
-                    <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${
+                  <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-xs sm:text-sm">
+                    <span className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-medium ${
                       report.reviewed === 0 || report.reviewed === null
                         ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200' 
                         : report.reviewed === 1
@@ -395,14 +395,14 @@ const Reports = () => {
                        report.reviewed === 1 ? "Resolved" : "Rejected"}
                     </span>
                   </td>
-                  <td className="px-4 md:px-6 py-4 text-sm whitespace-nowrap">
-                    <div className="flex space-x-2">
+                  <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-xs sm:text-sm whitespace-nowrap">
+                    <div className="flex space-x-1 sm:space-x-2">
                       <motion.button
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
                         onClick={() => handleReview(report.id, 1)}
                         disabled={report.reviewed === 1}
-                        className={`p-2 rounded-full ${
+                        className={`p-1.5 sm:p-2 rounded-full ${
                           report.reviewed === 0 || report.reviewed === null
                             ? 'bg-green-100 text-green-600 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-800/50 shadow-sm'
                             : 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-500'
@@ -416,7 +416,7 @@ const Reports = () => {
                         whileTap={{ scale: 0.9 }}
                         onClick={() => handleReview(report.id, 2)}
                         disabled={report.reviewed === 2}
-                        className={`p-2 rounded-full ${
+                        className={`p-1.5 sm:p-2 rounded-full ${
                           report.reviewed === 0 || report.reviewed === null
                             ? 'bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-800/50 shadow-sm'
                             : 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-500'
@@ -429,7 +429,7 @@ const Reports = () => {
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
                         onClick={() => handleExport(report)}
-                        className="p-2 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-800/50 shadow-sm"
+                        className="p-1.5 sm:p-2 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-800/50 shadow-sm"
                         title="Export Report"
                       >
                         <Download className="w-5 h-5" />
@@ -565,4 +565,5 @@ const Reports = () => {
 };
 
 export default Reports; 
+
 
