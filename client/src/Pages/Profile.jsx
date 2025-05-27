@@ -156,14 +156,14 @@ function Profile() {
         <img
           src={data?.coverPic && data.coverPic.trim() !== "" 
             ? `/api/upload/${data.coverPic}` 
-            : "/default-cover.png"}
+            : `/api/defaults/default-cover.png`}
           alt="Cover"
           className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
           onClick={() => setImageModal({ 
             open: true, 
             src: data?.coverPic && data.coverPic.trim() !== "" 
               ? `/api/upload/${data.coverPic}` 
-              : "/default-cover.png", 
+              : `/api/defaults/default-cover.png`, 
             alt: "Cover" 
           })}
         />
@@ -562,6 +562,7 @@ function Profile() {
 }
 
 export default Profile;
+
 
 
 

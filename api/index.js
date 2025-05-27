@@ -75,6 +75,9 @@ app.post("/api/upload", (req, res) => {
 // Serve uploaded files from the /tmp directory
 app.use("/api/upload", express.static("/tmp"));
 
+// Serve default images
+app.use("/api/defaults", express.static("./defaults"));
+
 // ✅ Add a route for /api
 app.get("/api", (req, res) => {
   res.send("API is working! 🚀");
@@ -95,6 +98,7 @@ app.use("/api/reports", reportsRoutes);
 app.listen(8800, () => {
   console.log("API is WORKING");
 });
+
 
 
 
