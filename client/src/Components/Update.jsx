@@ -35,6 +35,13 @@ const Update = ({ setOpenUpdate, user }) => {
   const mutation = useMutation({
     mutationFn: (userData) => {
       const token = localStorage.getItem("token");
+      console.log("Token for update:", token); // Debug token
+      
+      if (!token) {
+        console.error("No token found in localStorage");
+        return Promise.reject(new Error("No authentication token"));
+      }
+      
       return makeRequest.put("/users", userData, {
         headers: { Authorization: `Bearer ${token}` }
       });
