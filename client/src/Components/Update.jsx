@@ -3,6 +3,10 @@ import { makeRequest } from "../axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTheme } from "../ThemeContext";
 import { XCircle } from "lucide-react";
+import { useContext } from "react";
+import { AuthContext } from "../authContext";
+
+const API_BASE_URL = process.env.REACT_APP_API_URL || "https://gordonconnect-production-f2bd.up.railway.app/api";
 
 const Update = ({ setOpenUpdate, user }) => {
   const [cover, setCover] = useState(null);
@@ -15,6 +19,7 @@ const Update = ({ setOpenUpdate, user }) => {
 
   const { theme } = useTheme();
   const queryClient = useQueryClient();
+  const { updateUser } = useContext(AuthContext);
 
   const upload = async (file) => {
     try {
@@ -46,8 +51,19 @@ const Update = ({ setOpenUpdate, user }) => {
 
   const mutation = useMutation({
     mutationFn: (userData) => makeRequest.put("/users", userData),
-    onSuccess: () => {
+    onSuccess: (response) => {
+      // Invalidate user query to refresh data
       queryClient.invalidateQueries({ queryKey: ["user"] });
+      
+      // Update the current user in AuthContext to reflect changes immediately
+      updateUser({
+        ...texts,
+        coverPic: response.data.coverPic || user.coverPic,
+        profilePic: response.data.profilePic || user.profilePic,
+      });
+      
+      // Close the update modal
+      setOpenUpdate(false);
     },
     onError: (error) => {
       console.error("Update failed:", error);
@@ -61,7 +77,7 @@ const Update = ({ setOpenUpdate, user }) => {
     const uploadedCover = cover ? await upload(cover) : null;
     const uploadedProfile = profile ? await upload(profile) : null;
     
-    // For cover: use the new filename if uploaded, otherwise extract filename from existing path
+    // For cover: use the new filename if uploaded, otherwise keep existing path
     let coverUrl;
     if (uploadedCover) {
       coverUrl = `/upload/${uploadedCover}`;
@@ -72,7 +88,7 @@ const Update = ({ setOpenUpdate, user }) => {
       coverUrl = null;
     }
     
-    // For profile: use the new filename if uploaded, otherwise extract filename from existing path
+    // For profile: use the new filename if uploaded, otherwise keep existing path
     let profileUrl;
     if (uploadedProfile) {
       profileUrl = `/upload/${uploadedProfile}`;
@@ -83,13 +99,12 @@ const Update = ({ setOpenUpdate, user }) => {
       profileUrl = null;
     }
 
+    // Send update request
     mutation.mutate({
       ...texts,
       coverPic: coverUrl,
       profilePic: profileUrl,
     });
-
-    setOpenUpdate(false);
   };
 
   return (
