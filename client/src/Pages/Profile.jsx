@@ -155,19 +155,15 @@ function Profile() {
       >
         <img
           src={data?.coverPic && data.coverPic.trim() !== "" 
-            ? (data.coverPic.includes("/api/upload/") 
-                ? data.coverPic 
-                : `/api/upload/${data.coverPic}`)
-            : "/api/defaults/default-cover.png"}
+            ? `${import.meta.env.VITE_API_URL || ""}/api/upload/${data.coverPic}` 
+            : `${import.meta.env.VITE_API_URL || ""}/api/defaults/default-cover.png`}
           alt="Cover"
           className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
           onClick={() => setImageModal({ 
             open: true, 
             src: data?.coverPic && data.coverPic.trim() !== "" 
-              ? (data.coverPic.includes("/api/upload/") 
-                  ? data.coverPic 
-                  : `/api/upload/${data.coverPic}`)
-              : "/api/defaults/default-cover.png", 
+              ? `${import.meta.env.VITE_API_URL || ""}/api/upload/${data.coverPic}` 
+              : `${import.meta.env.VITE_API_URL || ""}/api/defaults/default-cover.png`, 
             alt: "Cover" 
           })}
         />
@@ -206,10 +202,8 @@ function Profile() {
                     <div className="w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44 lg:w-56 lg:h-56 rounded-full bg-gradient-to-tr from-emerald-400 via-blue-400 to-purple-400 p-1.5 shadow-2xl transform transition-all duration-300 group-hover:shadow-emerald-500/20" style={{boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)'}}>
                       <img
                         src={data?.profilePic 
-                          ? (data.profilePic.includes("/api/upload/") 
-                              ? data.profilePic 
-                              : `/api/upload/${data.profilePic}`)
-                          : "/api/defaults/default-profile.jpg"}
+                          ? `${import.meta.env.VITE_API_URL || ""}/api/upload/${data.profilePic}` 
+                          : `${import.meta.env.VITE_API_URL || ""}/api/defaults/default-profile.jpg`}
                         alt="Profile"
                         className="w-full h-full rounded-full object-cover"
                       />
@@ -570,9 +564,6 @@ function Profile() {
 }
 
 export default Profile;
-
-
-
 
 
 

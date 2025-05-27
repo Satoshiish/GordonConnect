@@ -21,7 +21,7 @@ const Update = ({ setOpenUpdate, user }) => {
       const formData = new FormData();
       formData.append("file", file);
       const res = await makeRequest.post("/upload", formData);
-      return res.data; // This should return just the filename, not the full path
+      return res.data;
     } catch (err) {
       console.error("Upload Error:", err);
       return null;
@@ -33,19 +33,7 @@ const Update = ({ setOpenUpdate, user }) => {
   };
 
   const mutation = useMutation({
-    mutationFn: (userData) => {
-      const token = localStorage.getItem("token");
-      console.log("Token for update:", token); // Debug token
-      
-      if (!token) {
-        console.error("No token found in localStorage");
-        return Promise.reject(new Error("No authentication token"));
-      }
-      
-      return makeRequest.put("/users", userData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-    },
+    mutationFn: (userData) => makeRequest.put("/users", userData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user"] });
     },
@@ -56,24 +44,16 @@ const Update = ({ setOpenUpdate, user }) => {
 
   const handleClick = async (e) => {
     e.preventDefault();
-    
-    let coverUrl = user.coverPic;
-    let profileUrl = user.profilePic;
-    
-    try {
-      if (cover) coverUrl = await upload(cover);
-      if (profile) profileUrl = await upload(profile);
-      
-      // Don't add any path prefixes here - just use the filenames
-      await makeRequest.put("/users", { ...texts, coverPic: coverUrl, profilePic: profileUrl });
-      
-      // Update was successful
-      setOpenUpdate(false);
-      // Force refresh by updating the query client
-      queryClient.invalidateQueries(["user"]);
-    } catch (err) {
-      console.error("Update Error:", err);
-    }
+    const coverUrl = cover ? await upload(cover) : user.coverPic;
+    const profileUrl = profile ? await upload(profile) : user.profilePic;
+
+    mutation.mutate({
+      ...texts,
+      coverPic: coverUrl || user.coverPic,
+      profilePic: profileUrl || user.profilePic,
+    });
+
+    setOpenUpdate(false);
   };
 
   return (
@@ -106,7 +86,11 @@ const Update = ({ setOpenUpdate, user }) => {
                 {cover ? (
                   <img src={URL.createObjectURL(cover)} alt="Cover Preview" className="mt-2 w-full h-32 object-cover rounded-md shadow" />
                 ) : user.coverPic ? (
-                  <img src={`/upload/${user.coverPic}`} alt="Current Cover" className="mt-2 w-full h-32 object-cover rounded-md opacity-60" />
+                  <img 
+                    src={`${import.meta.env.VITE_API_URL || ""}/api/upload/${user.coverPic}`} 
+                    alt="Current Cover" 
+                    className="mt-2 w-full h-32 object-cover rounded-md opacity-60" 
+                  />
                 ) : null}
               </label>
             </div>
@@ -127,9 +111,17 @@ const Update = ({ setOpenUpdate, user }) => {
                 {profile ? (
                   <img src={URL.createObjectURL(profile)} alt="Profile Preview" className="mt-2 w-16 h-16 object-cover rounded-full shadow" />
                 ) : user.profilePic ? (
-                  <img src={`/upload/${user.profilePic}`} alt="Current Profile" className="mt-2 w-16 h-16 object-cover rounded-full opacity-60" />
+                  <img 
+                    src={`${import.meta.env.VITE_API_URL || ""}/api/upload/${user.profilePic}`} 
+                    alt="Current Profile" 
+                    className="mt-2 w-16 h-16 object-cover rounded-full opacity-60" 
+                  />
                 ) : (
-                  <img src="/default-profile.jpg" alt="Default Profile" className="mt-2 w-16 h-16 object-cover rounded-full opacity-60" />
+                  <img 
+                    src={`${import.meta.env.VITE_API_URL || ""}/api/defaults/default-profile.jpg`} 
+                    alt="Default Profile" 
+                    className="mt-2 w-16 h-16 object-cover rounded-full opacity-60" 
+                  />
                 )}
               </label>
             </div>
