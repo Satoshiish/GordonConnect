@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from 'react-hot-toast';
 
-const BASE_URL = "https://gordon-connect.vercel.app";
+const BASE_URL = "https://gordonconnect-production-f2bd.up.railway.app/api";
 
 const Forum = () => {
   const { theme } = useTheme();
@@ -91,14 +91,22 @@ const Forum = () => {
     try {
       let imageUrl = null;
       if (selectedImage) {
-        const formData = new FormData();
-        formData.append("file", selectedImage);
-        const uploadRes = await makeRequest.post("/upload", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
-        imageUrl = "/upload/" + uploadRes.data;
+        try {
+          const formData = new FormData();
+          formData.append("file", selectedImage);
+          const uploadRes = await makeRequest.post("/upload", formData, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          });
+          imageUrl = "/upload/" + uploadRes.data;
+          console.log("Image uploaded successfully:", imageUrl);
+        } catch (uploadError) {
+          console.error("Image upload failed:", uploadError);
+          toast.error("Image upload failed. Creating forum without image.");
+          // Continue without the image
+          imageUrl = null;
+        }
       }
       
       const forumData = {
@@ -790,6 +798,8 @@ const Forum = () => {
 };
 
 export default Forum;
+
+
 
 
 
