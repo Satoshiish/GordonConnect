@@ -56,13 +56,28 @@ const Update = ({ setOpenUpdate, user }) => {
 
   const handleClick = async (e) => {
     e.preventDefault();
-    const coverUrl = cover ? await upload(cover) : user.coverPic;
-    const profileUrl = profile ? await upload(profile) : user.profilePic;
+    
+    let coverUrl = user.coverPic;
+    let profileUrl = user.profilePic;
+    
+    if (cover) {
+      // Upload the file and get just the filename
+      const coverFilename = await upload(cover);
+      // Store the complete path with /upload/ prefix
+      coverUrl = coverFilename ? `/upload/${coverFilename}` : user.coverPic;
+    }
+    
+    if (profile) {
+      // Upload the file and get just the filename
+      const profileFilename = await upload(profile);
+      // Store the complete path with /upload/ prefix
+      profileUrl = profileFilename ? `/upload/${profileFilename}` : user.profilePic;
+    }
 
     mutation.mutate({
       ...texts,
-      coverPic: coverUrl || user.coverPic,
-      profilePic: profileUrl || user.profilePic,
+      coverPic: coverUrl,
+      profilePic: profileUrl,
     });
 
     setOpenUpdate(false);
