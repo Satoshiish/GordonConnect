@@ -5,7 +5,6 @@ import { makeRequest } from "../axios";
 import { useTheme } from "../ThemeContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { Image, X, Send, CheckCircle, Check, UploadCloud } from "lucide-react";
-import { formatImageUrl } from "../utils";
 
 // Add API_BASE_URL constant
 const API_BASE_URL = process.env.REACT_APP_API_URL || "https://gordonconnect-production-f2bd.up.railway.app/api";
