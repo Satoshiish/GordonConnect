@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState } from "react";
 import { useTheme } from "../ThemeContext";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { makeRequest } from "../axios";
@@ -145,22 +145,6 @@ function Profile() {
   const uniqueFollowingList = Array.from(
     new Map(followingList.map(item => [item.id, item])).values()
   );
-
-  useEffect(() => {
-    if (data) {
-      console.log("Profile data:", data);
-      console.log("Cover pic path:", data.coverPic);
-      console.log("Profile pic path:", data.profilePic);
-      
-      // Log the constructed image URLs
-      if (data.coverPic) {
-        console.log("Constructed cover URL:", `/api/upload/${data.coverPic}`);
-      }
-      if (data.profilePic) {
-        console.log("Constructed profile URL:", `/api/upload/${data.profilePic}`);
-      }
-    }
-  }, [data]);
 
   return (
     <div className={`min-h-screen ${theme === "dark" ? "bg-gray-900" : "bg-gray-50"} text-gray-900`}>
