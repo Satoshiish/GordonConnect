@@ -154,69 +154,6 @@ function Profile() {
         className="relative w-full h-[180px] sm:h-[240px] md:h-[300px] lg:h-[380px] overflow-hidden cursor-pointer group"
       >
         <img
-          src={
-            data?.coverPic && data.coverPic.trim() !== "" 
-              ? data.coverPic.startsWith('http')
-                ? data.coverPic
-                : data.coverPic.startsWith('/upload/')
-                  ? `${API_BASE_URL}${data.coverPic}`
-                  : `${API_BASE_URL}/upload/${data.coverPic}`
-              : "/default-cover.png"
-          }
-          alt="Cover"
-          className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
-          onError={(e) => {
-            console.error("Cover image failed to load:", data?.coverPic);
-            e.target.src = "/default-cover.png";
-          }}
-          onClick={() => setImageModal({ 
-            open: true, 
-            src: data?.coverPic && data.coverPic.trim() !== "" 
-              ? data.coverPic.startsWith('http')
-                ? data.coverPic
-                : data.coverPic.startsWith('/upload/')
-                  ? `${API_BASE_URL}${data.coverPic}`
-                  : `${API_BASE_URL}/upload/${data.coverPic}`
-              : "/default-cover.png", 
-            alt: "Cover" 
-          })}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-transparent rounded-b-3xl pointer-events-none" />
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="absolute top-4 right-4 bg-black/60 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium opacity-0 group-hover:opacity-100 transition-all duration-300"
-        >
-          View Cover
-        </motion.div>
-      </motion.div>
-
-      {/* Profile Info Section */}
-      <div className="relative px-2 sm:px-4 md:px-6 lg:px-8 -mt-12 sm:-mt-16 md:-mt-20 lg:-mt-24 z-10">
-        <div className="max-w-5xl mx-auto">
-          <div className={`rounded-xl p-3 sm:p-4 md:p-6 lg:p-8 ${theme === "dark" ? "bg-gray-800/90" : "bg-white/90"} backdrop-blur-lg shadow-xl border ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}>
-            {/* Profile content */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, ease: 'easeOut' }}
-              className="relative"
-            >
-              <div className="container mx-auto px-2 sm:px-4 md:px-6">
-                <div className="flex flex-col md:flex-row items-center md:items-end -mt-20 sm:-mt-24 md:-mt-28 lg:-mt-32 relative z-10">
-                  {/* Enhanced Profile Picture */}
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.6, delay: 0.2, ease: 'easeOut' }}
-                    whileHover={{ scale: 1.05 }}
-                    className="flex-shrink-0 mb-4 md:mb-0 relative cursor-pointer group"
-                    onClick={() => setImageModal({ open: true, src: data?.profilePic ? "/upload/" + data.profilePic : "/default-profile.jpg", alt: "Profile" })}
-                  >
-                    <div className="w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44 lg:w-56 lg:h-56 rounded-full bg-gradient-to-tr from-emerald-400 via-blue-400 to-purple-400 p-1.5 shadow-2xl transform transition-all duration-300 group-hover:shadow-emerald-500/20" style={{boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)'}}>
-                      <img
-                        src={
-                          data?.profilePic 
           src={data?.coverPic && data.coverPic.trim() !== "" ? "/upload/" + data.coverPic : "/default-cover.png"}
           alt="Cover"
           className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
