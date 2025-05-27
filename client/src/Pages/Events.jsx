@@ -178,8 +178,10 @@ const Events = () => {
               "Authorization": `Bearer ${token}`
             },
           });
-          imageUrl = "/upload/" + uploadRes.data; // Use the filename directly as in posts
-          console.log("Image uploaded successfully:", imageUrl);
+          
+          // Just use the filename without the path prefix
+          imageUrl = uploadRes.data; 
+          console.log("Image uploaded successfully, filename:", imageUrl);
         } catch (uploadErr) {
           console.error("Image upload failed:", uploadErr);
           toast.error("Image upload failed. Creating event without image.");
@@ -194,8 +196,10 @@ const Events = () => {
         time: formatTimeTo24Hour(newEvent.time),
         location: newEvent.location,
         description: newEvent.description,
-        image: imageUrl
+        image: imageUrl // Just the filename
       };
+
+      console.log("Creating event with data:", eventData);
 
       const token = localStorage.getItem("token");
       await makeRequest.post("events", eventData, {
@@ -360,8 +364,9 @@ const Events = () => {
               "Authorization": `Bearer ${localStorage.getItem("token")}`
             },
           });
-          imageUrl = "/upload/" + uploadRes.data;
-          console.log("Image uploaded successfully:", imageUrl);
+          // Just use the filename
+          imageUrl = uploadRes.data;
+          console.log("Image uploaded successfully, filename:", imageUrl);
         } catch (uploadErr) {
           console.error("Image upload failed:", uploadErr);
           toast.error("Image upload failed. Keeping existing image.");
@@ -373,6 +378,8 @@ const Events = () => {
         ...editEvent,
         image: imageUrl,
       };
+
+      console.log("Updating event with data:", updatedEvent);
 
       await makeRequest.put(`events/${editEvent.id}`, updatedEvent, {
         headers: {
@@ -1493,6 +1500,8 @@ const Events = () => {
 };
 
 export default Events;
+
+
 
 
 

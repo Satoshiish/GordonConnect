@@ -41,6 +41,15 @@ export const addEvent = (req, res) => {
       if (data[0].role !== "admin")
         return res.status(403).json("Only admins can create events!");
 
+      // Log the incoming request body for debugging
+      console.log("Creating event with data:", req.body);
+      
+      // Prepare image URL - if it's just a filename, add the /upload/ prefix
+      let imageUrl = req.body.image;
+      if (imageUrl && !imageUrl.startsWith("/upload/") && !imageUrl.startsWith("http")) {
+        imageUrl = "/upload/" + imageUrl;
+      }
+      
       const q = `
         INSERT INTO events (title, date, time, location, description, image, user_id)
         VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -51,12 +60,15 @@ export const addEvent = (req, res) => {
         req.body.time,
         req.body.location,
         req.body.description,
-        req.body.image || null,
+        imageUrl,
         userInfo.id,
       ];
 
       db.query(q, values, (err, data) => {
-        if (err) return res.status(500).json(err);
+        if (err) {
+          console.error("Database error creating event:", err);
+          return res.status(500).json(err);
+        }
         return res.status(201).json("Event has been created!");
       });
     });
@@ -77,6 +89,12 @@ export const updateEvent = (req, res) => {
       if (data[0].role !== "admin")
         return res.status(403).json("Only admins can update events!");
 
+      // Prepare image URL - if it's just a filename, add the /upload/ prefix
+      let imageUrl = req.body.image;
+      if (imageUrl && !imageUrl.startsWith("/upload/") && !imageUrl.startsWith("http")) {
+        imageUrl = "/upload/" + imageUrl;
+      }
+      
       const q = `
         UPDATE events 
         SET title = ?, date = ?, time = ?, location = ?, description = ?, image = ?
@@ -88,13 +106,16 @@ export const updateEvent = (req, res) => {
         req.body.time,
         req.body.location,
         req.body.description,
-        req.body.image || null,
+        imageUrl,
         req.params.id,
         userInfo.id,
       ];
 
       db.query(q, values, (err, data) => {
-        if (err) return res.status(500).json(err);
+        if (err) {
+          console.error("Database error updating event:", err);
+          return res.status(500).json(err);
+        }
         if (data.affectedRows === 0)
           return res.status(403).json("You can only update your own events!");
         return res.status(200).json("Event has been updated!");
@@ -175,4 +196,6 @@ export const getEventJoins = (req, res) => {
     }
   );
 };
+
+
 
