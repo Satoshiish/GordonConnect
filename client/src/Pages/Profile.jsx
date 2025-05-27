@@ -154,10 +154,10 @@ function Profile() {
         className="relative w-full h-[180px] sm:h-[240px] md:h-[300px] lg:h-[380px] overflow-hidden cursor-pointer group"
       >
         <img
-          src={data?.coverPic && data.coverPic.trim() !== "" ? "/upload/" + data.coverPic : "/default-cover.png"}
+          src={data?.coverPic || "/default-cover.png"}
           alt="Cover"
           className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
-          onClick={() => setImageModal({ open: true, src: data?.coverPic && data.coverPic.trim() !== "" ? "/upload/" + data.coverPic : "/default-cover.png", alt: "Cover" })}
+          onClick={() => setImageModal({ open: true, src: data?.coverPic || "/default-cover.png", alt: "Cover" })}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-transparent rounded-b-3xl pointer-events-none" />
         <motion.div 
@@ -189,11 +189,11 @@ function Profile() {
                     transition={{ duration: 0.6, delay: 0.2, ease: 'easeOut' }}
                     whileHover={{ scale: 1.05 }}
                     className="flex-shrink-0 mb-4 md:mb-0 relative cursor-pointer group"
-                    onClick={() => setImageModal({ open: true, src: data?.profilePic ? "/upload/" + data.profilePic : "/default-profile.jpg", alt: "Profile" })}
+                    onClick={() => setImageModal({ open: true, src: data?.profilePic || "/default-profile.jpg", alt: "Profile" })}
                   >
                     <div className="w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44 lg:w-56 lg:h-56 rounded-full bg-gradient-to-tr from-emerald-400 via-blue-400 to-purple-400 p-1.5 shadow-2xl transform transition-all duration-300 group-hover:shadow-emerald-500/20" style={{boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)'}}>
                       <img
-                        src={data?.profilePic ? "/upload/" + data.profilePic : "/default-profile.jpg"}
+                        src={data?.profilePic || "/default-profile.jpg"}
                         alt="Profile"
                         className="w-full h-full rounded-full object-cover"
                       />
@@ -433,7 +433,7 @@ function Profile() {
                             className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
                           >
                             <img
-                              src={follower.profilePic ? "/upload/" + follower.profilePic : "/default-profile.jpg"}
+                              src={follower.profilePic || "/default-profile.jpg"}
                               alt={follower.name}
                               className="w-10 h-10 rounded-full object-cover"
                             />
@@ -517,7 +517,7 @@ function Profile() {
                             className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
                           >
                             <img
-                              src={following.profilePic ? "/upload/" + following.profilePic : "/default-profile.jpg"}
+                              src={following.profilePic || "/default-profile.jpg"}
                               alt={following.name}
                               className="w-10 h-10 rounded-full object-cover"
                             />
@@ -554,3 +554,7 @@ function Profile() {
 }
 
 export default Profile;
+
+
+
+
