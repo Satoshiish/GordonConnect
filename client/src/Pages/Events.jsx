@@ -188,17 +188,16 @@ const Events = () => {
           imageUrl = null; // Continue without image
         }
       }
-
-      // Create the event with the image URL
+      
+      // Format the date correctly for the API
+      const formattedDate = formatDateForAPI(newEvent.date);
+      
       const eventData = {
-        title: newEvent.title,
-        date: newEvent.date,
-        time: formatTimeTo24Hour(newEvent.time),
-        location: newEvent.location,
-        description: newEvent.description,
-        image: imageUrl // Just the filename
+        ...newEvent,
+        date: formattedDate,
+        image: imageUrl,
       };
-
+      
       console.log("Creating event with data:", eventData);
 
       const token = localStorage.getItem("token");
@@ -266,6 +265,7 @@ const Events = () => {
   };
 
   const formatDatePretty = (dateString) => {
+    if (!dateString) return "";
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
       weekday: 'long',
@@ -374,8 +374,12 @@ const Events = () => {
         }
       }
 
+      // Format the date correctly for the API
+      const formattedDate = formatDateForAPI(editEvent.date);
+      
       const updatedEvent = {
         ...editEvent,
+        date: formattedDate,
         image: imageUrl,
       };
 
@@ -449,6 +453,18 @@ const Events = () => {
     console.log("Opening image preview with URL:", imageUrl);
     setPreviewImage(imageUrl);
     setShowImagePreview(true);
+  };
+
+  // Add a function to format dates correctly for the API
+  const formatDateForAPI = (dateString) => {
+    // If it's already in YYYY-MM-DD format, return it
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+      return dateString;
+    }
+    
+    // If it's an ISO string or Date object, convert to YYYY-MM-DD
+    const date = new Date(dateString);
+    return date.toISOString().split('T')[0];
   };
 
   // Filter out past events before rendering
@@ -1002,7 +1018,8 @@ const Events = () => {
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                       onError={(e) => {
                         console.error("Image failed to load:", eventDetails.image);
-                        e.target.style.display = 'none';
+                        // Provide a fallback image instead of hiding
+                        e.target.src = "/placeholder-event.jpg";
                       }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
@@ -1582,6 +1599,9 @@ const Events = () => {
 };
 
 export default Events;
+
+
+
 
 
 

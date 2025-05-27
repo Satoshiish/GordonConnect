@@ -191,7 +191,6 @@ const Forum = () => {
   };
 
   useEffect(() => {
-    testForumApi(); // Test the API first
     fetchForums();
   }, [currentUser]);
 
@@ -798,6 +797,7 @@ const Forum = () => {
 };
 
 export default Forum;
+
 
 
 
