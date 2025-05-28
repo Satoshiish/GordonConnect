@@ -5,6 +5,7 @@ import { AuthContext } from '../authContext';
 import { useTheme } from '../ThemeContext';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { toast } from 'react-toastify';
 
 const Reports = () => {
   const [reports, setReports] = useState([]);
@@ -80,13 +81,45 @@ const Reports = () => {
     setSelectedPost(null);
   };
 
-  // Admin review action (mark as reviewed or false)
+  // Function to handle admin review action (mark as reviewed or false)
   const handleReview = async (id, reviewed) => {
     try {
-      await makeRequest.put(`/reports/${id}`, { reviewed });
-      fetchReports();
+      setLoading(true);
+      
+      // Get the report details before updating
+      const reportToUpdate = reports.find(report => report.id === id);
+      
+      // Update the report status
+      await makeRequest.put(`/reports/${id}`, { 
+        reviewed,
+        // Include post_id to ensure backend knows which post this affects
+        post_id: reportToUpdate?.post_id
+      });
+      
+      // If rejecting the report (status 2), we don't need to do anything to the post
+      // If approving the report (status 1), we need to ensure the post remains visible
+      if (reviewed === 1) {
+        // Make an additional request to ensure the post remains visible
+        await makeRequest.put(`/posts/${reportToUpdate.post_id}/visibility`, {
+          visible: true
+        });
+      }
+      
+      // Refresh the reports list
+      await fetchReports();
+      
+      // Show success message
+      toast.success(
+        reviewed === 1 
+          ? "Report approved. Post will remain visible." 
+          : "Report rejected."
+      );
     } catch (err) {
+      console.error("Error updating report:", err);
       setError('Failed to update report status.');
+      toast.error("Failed to update report status.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -636,6 +669,7 @@ const Reports = () => {
 };
 
 export default Reports; 
+
 
 
 

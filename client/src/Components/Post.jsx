@@ -239,294 +239,311 @@ const Post = ({ post }) => {
   };
 
   return (
-    <motion.div
-      initial={{ scale: 0.97, opacity: 1 }}
-      animate={isDeleting ? { scale: 0.7, opacity: 0 } : { scale: 1, opacity: 1 }}
-      exit={{ scale: 0.8, opacity: 0 }}
-      transition={{ duration: 0.4, ease: "easeInOut" }}
-      className={`rounded-3xl shadow-2xl mb-8 border transition-all duration-300 overflow-hidden
-        ${theme === "dark" ? "bg-gray-900 border-gray-800 text-white" : "bg-white border-gray-200 text-gray-900"}`}
-    >
-      <div className="p-4 sm:p-5 md:p-7">
-        {/* User Info */}
-        <div className="flex flex-wrap sm:flex-nowrap items-center justify-between mb-2 gap-2">
-          <div className="flex gap-3 items-center">
-            <img
-              className="h-12 w-12 rounded-full object-cover border-2 border-emerald-400 shadow-sm"
-              src={post.profilePic ? 
-                (post.profilePic.startsWith('http') ? 
-                  post.profilePic : 
-                  `${API_BASE_URL}${post.profilePic.startsWith('/') ? post.profilePic : `/${post.profilePic}`}`) 
-                : "/default-profile.jpg"}
-              alt="Profile"
-            />
-            <div className="flex flex-col">
-              <Link to={`/profile/${post.userId}`} className="hover:underline font-semibold text-base">
-                {post.name || "Unknown User"}
-              </Link>
-              <span className="text-xs text-gray-400 mt-0.5">{moment(post.createdAt).fromNow()}</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            {/* Existing menu for delete, etc. */}
-            {!isGuest && (
-              <motion.div whileHover={{ scale: 1.12 }} className="relative cursor-pointer text-gray-400" onClick={() => setMenuOpen(!menuOpen)}>
-                <MoreVertical />
-                {menuOpen && (
-                  <motion.button
-                    whileHover={{ scale: 1.08 }}
-                    className={`absolute top-full right-0 mt-2 px-4 py-2 rounded-xl shadow-lg transition-all duration-300 z-10
-                      ${theme === "dark" ? "bg-red-700 text-white hover:bg-red-600" : "bg-red-500 text-white hover:bg-red-600"}`}
-                    onClick={() => deleteMutation.mutate()}
-                  >
-                    Delete Post
-                  </motion.button>
+    <>
+      {post && !post.deleted && (post.visible === undefined || post.visible === 1) ? (
+        <motion.div
+          initial={{ scale: 0.97, opacity: 1 }}
+          animate={isDeleting ? { scale: 0.7, opacity: 0 } : { scale: 1, opacity: 1 }}
+          exit={{ scale: 0.8, opacity: 0 }}
+          transition={{ duration: 0.4, ease: "easeInOut" }}
+          className={`rounded-3xl shadow-2xl mb-8 border transition-all duration-300 overflow-hidden
+            ${theme === "dark" ? "bg-gray-900 border-gray-800 text-white" : "bg-white border-gray-200 text-gray-900"}`}
+        >
+          <div className="p-4 sm:p-5 md:p-7">
+            {/* User Info */}
+            <div className="flex flex-wrap sm:flex-nowrap items-center justify-between mb-2 gap-2">
+              <div className="flex gap-3 items-center">
+                <img
+                  className="h-12 w-12 rounded-full object-cover border-2 border-emerald-400 shadow-sm"
+                  src={post.profilePic ? 
+                    (post.profilePic.startsWith('http') ? 
+                      post.profilePic : 
+                      `${API_BASE_URL}${post.profilePic.startsWith('/') ? post.profilePic : `/${post.profilePic}`}`) 
+                    : "/default-profile.jpg"}
+                  alt="Profile"
+                />
+                <div className="flex flex-col">
+                  <Link to={`/profile/${post.userId}`} className="hover:underline font-semibold text-base">
+                    {post.name || "Unknown User"}
+                  </Link>
+                  <span className="text-xs text-gray-400 mt-0.5">{moment(post.createdAt).fromNow()}</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {/* Existing menu for delete, etc. */}
+                {!isGuest && (
+                  <motion.div whileHover={{ scale: 1.12 }} className="relative cursor-pointer text-gray-400" onClick={() => setMenuOpen(!menuOpen)}>
+                    <MoreVertical />
+                    {menuOpen && (
+                      <motion.button
+                        whileHover={{ scale: 1.08 }}
+                        className={`absolute top-full right-0 mt-2 px-4 py-2 rounded-xl shadow-lg transition-all duration-300 z-10
+                          ${theme === "dark" ? "bg-red-700 text-white hover:bg-red-600" : "bg-red-500 text-white hover:bg-red-600"}`}
+                        onClick={() => deleteMutation.mutate()}
+                      >
+                        Delete Post
+                      </motion.button>
+                    )}
+                  </motion.div>
                 )}
+              </div>
+            </div>
+
+            {/* Category Badges */}
+            {(post.category || post.category2 || post.category3 || post.category4) && (
+              <div className="mt-2 mb-2 flex gap-2 flex-wrap">
+                {[post.category, post.category2, post.category3, post.category4].filter(Boolean).map((cat) => (
+                  <span
+                    key={cat}
+                    className={`inline-block px-3 py-1 rounded-full text-xs font-semibold tracking-wide shadow-sm border
+                      ${cat === 'Student Life' ? 'bg-blue-100 text-blue-700 border-blue-300' :
+                        cat === 'Organization' ? 'bg-purple-100 text-purple-700 border-purple-300' :
+                        cat === 'Academics' ? 'bg-orange-100 text-orange-700 border-orange-300' :
+                        cat === 'Campus Services' ? 'bg-teal-100 text-teal-700 border-teal-300' :
+                        'bg-gray-200 text-gray-700 border-gray-300'}
+                    `}
+                  >
+                    {cat}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Post Content */}
+            <motion.div className="mt-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
+              {/* Replace the regular paragraph with this to handle links */}
+              <div className="text-base leading-relaxed mb-3 whitespace-pre-wrap break-words">
+                {detectLinks(post.desc, theme) || "No description available."}
+              </div>
+              
+              {/* Keep the original image code */}
+              {post.img && (
+                <motion.div className="relative group cursor-pointer mt-2" onClick={() => setShowImageModal(true)}>
+                  <img
+                    src={post.img ? 
+                      (post.img.startsWith('http') ? 
+                        post.img : 
+                        `${API_BASE_URL}${post.img.startsWith('/') ? post.img : `/${post.img}`}`) 
+                      : ""}
+                    alt="Post"
+                    className="w-full max-h-[340px] object-cover rounded-2xl border-2 border-gray-200 dark:border-gray-700 shadow group-hover:scale-[1.03] transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center rounded-2xl">
+                    <ImageIcon className="text-white w-8 h-8" />
+                  </div>
+                </motion.div>
+              )}
+            </motion.div>
+
+            {/* Action Bar */}
+            <div className="flex items-center justify-between mt-5">
+              <div className="flex gap-3 items-center">
+                <motion.button
+                  whileTap={{ scale: 0.93 }}
+                  onClick={() => likeMutation.mutate()}
+                  disabled={!canLike || likeMutation.isLoading}
+                  className={`flex items-center gap-1 px-3 py-2 rounded-xl transition-colors duration-200 font-medium
+                    ${!canLike || likeMutation.isLoading ? "opacity-50 cursor-not-allowed" : ""}
+                    ${isLiked ? (theme === "dark" ? "bg-emerald-700 text-white" : "bg-emerald-100 text-emerald-600") : (theme === "dark" ? "hover:bg-gray-800 text-gray-400" : "hover:bg-gray-100 text-gray-500")}`}
+                  title={!canLike ? "Please sign in to like posts" : (isLiked ? "Unlike" : "Like")}
+                >
+                  {likeMutation.isLoading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : isLiked ? (
+                    <Heart className="w-5 h-5 fill-emerald-500" />
+                  ) : (
+                    <HeartOff className="w-5 h-5" />
+                  )}
+                  <span className="text-sm">{totalLikes}</span>
+                </motion.button>
+                <motion.button
+                  whileTap={{ scale: 0.93 }}
+                  onClick={() => setCommentOpen((prev) => !prev)}
+                  disabled={!canComment}
+                  className={`flex items-center gap-1 px-3 py-2 rounded-xl transition-colors duration-200 font-medium
+                    ${!canComment ? "opacity-50 cursor-not-allowed" : ""}
+                    ${theme === "dark" ? "hover:bg-gray-800 text-gray-400" : "hover:bg-gray-100 text-gray-500"}`}
+                  title={!canComment ? "Please sign in to comment" : "Comments"}
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  <span className="text-sm">{commentCount} {commentLabel}</span>
+                </motion.button>
+                <motion.button
+                  whileTap={{ scale: 0.93 }}
+                  onClick={() => bookmarkMutation.mutate()}
+                  disabled={!canBookmark}
+                  className={`flex items-center gap-1 px-3 py-2 rounded-xl transition-colors duration-200 font-medium
+                    ${!canBookmark ? "opacity-50 cursor-not-allowed" : ""}
+                    ${isBookmarked ? "bg-yellow-100 text-yellow-500" : (theme === "dark" ? "hover:bg-gray-800 text-gray-400" : "hover:bg-gray-100 text-gray-500")}`}
+                  title={!canBookmark ? "Please sign in to bookmark posts" : (isBookmarked ? "Remove Bookmark" : "Bookmark")}
+                >
+                  {isBookmarked ? (
+                    <BookmarkIcon
+                      className="w-5 h-5 fill-yellow-500"
+                      stroke="currentColor"
+                    />
+                  ) : (
+                    <BookmarkMinus className="w-5 h-5" />
+                  )}
+                </motion.button>
+                {/* Report Icon beside bookmark, disabled for guests */}
+                <motion.button
+                  whileTap={{ scale: 0.93 }}
+                  onClick={() => {
+                    if (isGuest) return;
+                    setShowReportModal(true);
+                  }}
+                  disabled={isGuest}
+                  className={`flex items-center gap-1 px-3 py-2 rounded-xl transition-colors duration-200 font-medium text-gray-500 hover:text-red-500 ${isGuest ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  title={isGuest ? 'Please sign in to report posts' : 'Report this post'}
+                >
+                  <Flag className="w-5 h-5" />
+                </motion.button>
+              </div>
+            </div>
+
+            {/* Comments Section */}
+            <AnimatePresence>
+              {commentOpen && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="overflow-hidden mt-5"
+                >
+                  <Comments postId={post.posts_id} />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Image Modal */}
+          <AnimatePresence>
+            {showImageModal && post.img && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black/80 z-[9999] flex items-center justify-center p-4"
+                onClick={() => setShowImageModal(false)}
+              >
+                <motion.div
+                  initial={{ scale: 0.95, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.95, opacity: 0 }}
+                  className="relative max-w-3xl w-full"
+                  onClick={e => e.stopPropagation()}
+                >
+                  <button
+                    onClick={() => setShowImageModal(false)}
+                    className="absolute top-4 right-4 w-12 h-12 flex items-center justify-center rounded-full bg-black/70 text-white hover:bg-emerald-500 hover:text-white shadow-lg transition-all duration-200 z-10 text-3xl"
+                  >
+                    <XCircle size={32} strokeWidth={2.5} />
+                  </button>
+                  <img
+                    src={post.img ? 
+                      (post.img.startsWith('http') ? 
+                        post.img : 
+                        `${API_BASE_URL}${post.img.startsWith('/') ? post.img : `/${post.img}`}`) 
+                      : ""}
+                    alt="Post Preview"
+                    className="w-full h-auto max-h-[80vh] object-contain rounded-2xl shadow-lg"
+                  />
+                </motion.div>
               </motion.div>
             )}
-          </div>
-        </div>
+          </AnimatePresence>
 
-        {/* Category Badges */}
-        {(post.category || post.category2 || post.category3 || post.category4) && (
-          <div className="mt-2 mb-2 flex gap-2 flex-wrap">
-            {[post.category, post.category2, post.category3, post.category4].filter(Boolean).map((cat) => (
-              <span
-                key={cat}
-                className={`inline-block px-3 py-1 rounded-full text-xs font-semibold tracking-wide shadow-sm border
-                  ${cat === 'Student Life' ? 'bg-blue-100 text-blue-700 border-blue-300' :
-                    cat === 'Organization' ? 'bg-purple-100 text-purple-700 border-purple-300' :
-                    cat === 'Academics' ? 'bg-orange-100 text-orange-700 border-orange-300' :
-                    cat === 'Campus Services' ? 'bg-teal-100 text-teal-700 border-teal-300' :
-                    'bg-gray-200 text-gray-700 border-gray-300'}
-                `}
+          {/* Report Modal */}
+          <AnimatePresence>
+            {showReportModal && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
               >
-                {cat}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {/* Post Content */}
-        <motion.div className="mt-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
-          {/* Replace the regular paragraph with this to handle links */}
-          <div className="text-base leading-relaxed mb-3 whitespace-pre-wrap break-words">
-            {detectLinks(post.desc, theme) || "No description available."}
-          </div>
-          
-          {/* Keep the original image code */}
-          {post.img && (
-            <motion.div className="relative group cursor-pointer mt-2" onClick={() => setShowImageModal(true)}>
-              <img
-                src={post.img ? 
-                  (post.img.startsWith('http') ? 
-                    post.img : 
-                    `${API_BASE_URL}${post.img.startsWith('/') ? post.img : `/${post.img}`}`) 
-                  : ""}
-                alt="Post"
-                className="w-full max-h-[340px] object-cover rounded-2xl border-2 border-gray-200 dark:border-gray-700 shadow group-hover:scale-[1.03] transition-transform duration-300"
-              />
-              <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center rounded-2xl">
-                <ImageIcon className="text-white w-8 h-8" />
-              </div>
-            </motion.div>
-          )}
-        </motion.div>
-
-        {/* Action Bar */}
-        <div className="flex items-center justify-between mt-5">
-          <div className="flex gap-3 items-center">
-            <motion.button
-              whileTap={{ scale: 0.93 }}
-              onClick={() => likeMutation.mutate()}
-              disabled={!canLike || likeMutation.isLoading}
-              className={`flex items-center gap-1 px-3 py-2 rounded-xl transition-colors duration-200 font-medium
-                ${!canLike || likeMutation.isLoading ? "opacity-50 cursor-not-allowed" : ""}
-                ${isLiked ? (theme === "dark" ? "bg-emerald-700 text-white" : "bg-emerald-100 text-emerald-600") : (theme === "dark" ? "hover:bg-gray-800 text-gray-400" : "hover:bg-gray-100 text-gray-500")}`}
-              title={!canLike ? "Please sign in to like posts" : (isLiked ? "Unlike" : "Like")}
-            >
-              {likeMutation.isLoading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : isLiked ? (
-                <Heart className="w-5 h-5 fill-emerald-500" />
-              ) : (
-                <HeartOff className="w-5 h-5" />
-              )}
-              <span className="text-sm">{totalLikes}</span>
-            </motion.button>
-            <motion.button
-              whileTap={{ scale: 0.93 }}
-              onClick={() => setCommentOpen((prev) => !prev)}
-              disabled={!canComment}
-              className={`flex items-center gap-1 px-3 py-2 rounded-xl transition-colors duration-200 font-medium
-                ${!canComment ? "opacity-50 cursor-not-allowed" : ""}
-                ${theme === "dark" ? "hover:bg-gray-800 text-gray-400" : "hover:bg-gray-100 text-gray-500"}`}
-              title={!canComment ? "Please sign in to comment" : "Comments"}
-            >
-              <MessageCircle className="w-5 h-5" />
-              <span className="text-sm">{commentCount} {commentLabel}</span>
-            </motion.button>
-            <motion.button
-              whileTap={{ scale: 0.93 }}
-              onClick={() => bookmarkMutation.mutate()}
-              disabled={!canBookmark}
-              className={`flex items-center gap-1 px-3 py-2 rounded-xl transition-colors duration-200 font-medium
-                ${!canBookmark ? "opacity-50 cursor-not-allowed" : ""}
-                ${isBookmarked ? "bg-yellow-100 text-yellow-500" : (theme === "dark" ? "hover:bg-gray-800 text-gray-400" : "hover:bg-gray-100 text-gray-500")}`}
-              title={!canBookmark ? "Please sign in to bookmark posts" : (isBookmarked ? "Remove Bookmark" : "Bookmark")}
-            >
-              {isBookmarked ? (
-                <BookmarkIcon
-                  className="w-5 h-5 fill-yellow-500"
-                  stroke="currentColor"
-                />
-              ) : (
-                <BookmarkMinus className="w-5 h-5" />
-              )}
-            </motion.button>
-            {/* Report Icon beside bookmark, disabled for guests */}
-            <motion.button
-              whileTap={{ scale: 0.93 }}
-              onClick={() => {
-                if (isGuest) return;
-                setShowReportModal(true);
-              }}
-              disabled={isGuest}
-              className={`flex items-center gap-1 px-3 py-2 rounded-xl transition-colors duration-200 font-medium text-gray-500 hover:text-red-500 ${isGuest ? 'opacity-50 cursor-not-allowed' : ''}`}
-              title={isGuest ? 'Please sign in to report posts' : 'Report this post'}
-            >
-              <Flag className="w-5 h-5" />
-            </motion.button>
-          </div>
-        </div>
-
-        {/* Comments Section */}
-        <AnimatePresence>
-          {commentOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
-              className="overflow-hidden mt-5"
-            >
-              <Comments postId={post.posts_id} />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Image Modal */}
-      <AnimatePresence>
-        {showImageModal && post.img && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 z-[9999] flex items-center justify-center p-4"
-            onClick={() => setShowImageModal(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="relative max-w-3xl w-full"
-              onClick={e => e.stopPropagation()}
-            >
-              <button
-                onClick={() => setShowImageModal(false)}
-                className="absolute top-4 right-4 w-12 h-12 flex items-center justify-center rounded-full bg-black/70 text-white hover:bg-emerald-500 hover:text-white shadow-lg transition-all duration-200 z-10 text-3xl"
-              >
-                <XCircle size={32} strokeWidth={2.5} />
-              </button>
-              <img
-                src={post.img ? 
-                  (post.img.startsWith('http') ? 
-                    post.img : 
-                    `${API_BASE_URL}${post.img.startsWith('/') ? post.img : `/${post.img}`}`) 
-                  : ""}
-                alt="Post Preview"
-                className="w-full h-auto max-h-[80vh] object-contain rounded-2xl shadow-lg"
-              />
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Report Modal */}
-      <AnimatePresence>
-        {showReportModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full max-w-lg rounded-3xl p-8 bg-white dark:bg-gray-900 shadow-2xl border border-gray-100 dark:border-gray-800 relative"
-            >
-              <button
-                className="absolute top-6 right-6 text-gray-400 hover:text-gray-700 dark:hover:text-white text-2xl transition"
-                onClick={() => setShowReportModal(false)}
-                aria-label="Close"
-              >
-                <XCircle size={28} strokeWidth={2.5} />
-              </button>
-              <h2 className="text-2xl font-bold mb-1 text-gray-900 dark:text-white">Report Post</h2>
-              <p className="text-gray-500 dark:text-gray-400 mb-6">Fill in the details to report this post to the admin.</p>
-              {alreadyReported ? (
-                <motion.div 
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="flex flex-col items-center justify-center p-6 rounded-xl bg-red-100/90 dark:bg-red-900/30 text-red-600 dark:text-red-400 shadow-lg border border-red-200 dark:border-red-800/50"
+                <motion.div
+                  initial={{ scale: 0.95, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.95, opacity: 0 }}
+                  className="w-full max-w-lg rounded-3xl p-8 bg-white dark:bg-gray-900 shadow-2xl border border-gray-100 dark:border-gray-800 relative"
                 >
-                  <XCircle size={48} className="mb-2" />
-                  <p className="text-lg font-semibold mb-2">You have already reported this post.</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Thank you for helping us keep the community safe.</p>
+                  <button
+                    className="absolute top-6 right-6 text-gray-400 hover:text-gray-700 dark:hover:text-white text-2xl transition"
+                    onClick={() => setShowReportModal(false)}
+                    aria-label="Close"
+                  >
+                    <XCircle size={28} strokeWidth={2.5} />
+                  </button>
+                  <h2 className="text-2xl font-bold mb-1 text-gray-900 dark:text-white">Report Post</h2>
+                  <p className="text-gray-500 dark:text-gray-400 mb-6">Fill in the details to report this post to the admin.</p>
+                  {alreadyReported ? (
+                    <motion.div 
+                      initial={{ opacity: 0, y: -20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      className="flex flex-col items-center justify-center p-6 rounded-xl bg-red-100/90 dark:bg-red-900/30 text-red-600 dark:text-red-400 shadow-lg border border-red-200 dark:border-red-800/50"
+                    >
+                      <XCircle size={48} className="mb-2" />
+                      <p className="text-lg font-semibold mb-2">You have already reported this post.</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Thank you for helping us keep the community safe.</p>
+                    </motion.div>
+                  ) : (
+                    <>
+                      <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300" htmlFor="report-reason">Reason</label>
+                      <textarea
+                        id="report-reason"
+                        className="w-full p-4 rounded-xl border-0 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white mb-6 shadow-sm focus:ring-2 focus:ring-emerald-400 transition resize-none"
+                        rows={4}
+                        placeholder="Please describe the reason for reporting this post..."
+                        value={reportReason}
+                        onChange={e => setReportReason(e.target.value)}
+                        disabled={reportLoading}
+                      />
+                      <div className="flex justify-end gap-3 mt-2">
+                        <button
+                          className="px-6 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+                          onClick={() => setShowReportModal(false)}
+                          disabled={reportLoading}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          className="px-6 py-2 rounded-xl bg-red-500 text-white font-semibold hover:bg-red-600 transition shadow"
+                          onClick={handleReport}
+                          disabled={reportLoading}
+                        >
+                          {reportLoading ? "Reporting..." : "Report"}
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </motion.div>
-              ) : (
-                <>
-                  <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300" htmlFor="report-reason">Reason</label>
-                  <textarea
-                    id="report-reason"
-                    className="w-full p-4 rounded-xl border-0 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white mb-6 shadow-sm focus:ring-2 focus:ring-emerald-400 transition resize-none"
-                    rows={4}
-                    placeholder="Please describe the reason for reporting this post..."
-                    value={reportReason}
-                    onChange={e => setReportReason(e.target.value)}
-                    disabled={reportLoading}
-                  />
-                  <div className="flex justify-end gap-3 mt-2">
-                    <button
-                      className="px-6 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition"
-                      onClick={() => setShowReportModal(false)}
-                      disabled={reportLoading}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      className="px-6 py-2 rounded-xl bg-red-500 text-white font-semibold hover:bg-red-600 transition shadow"
-                      onClick={handleReport}
-                      disabled={reportLoading}
-                    >
-                      {reportLoading ? "Reporting..." : "Report"}
-                    </button>
-                  </div>
-                </>
-              )}
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+      ) : (
+        <div
+          className={`${
+            theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-800"
+          } rounded-xl shadow-sm border ${
+            theme === "dark" ? "border-gray-700" : "border-gray-200"
+          } p-5 mb-5 flex items-center justify-center`}
+        >
+          <p className="text-gray-500 dark:text-gray-400 py-8">
+            This post is no longer available.
+          </p>
+        </div>
+      )}
+    </>
   );
 };
 
 export default Post;
+
 
 
 
