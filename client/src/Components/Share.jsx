@@ -13,22 +13,19 @@ const Share = ({ onPostCreated }) => {
   const { currentUser, isAdmin, isGuest } = useContext(AuthContext);
   const { theme } = useTheme();
   const [canPost, setCanPost] = useState(false);
+  const [error, setError] = useState("");
   
-  // Check if user can post (admin or regular user, not guest)
+  // Check if user can post (admin only)
   useEffect(() => {
     if (currentUser) {
-      // Allow posting if user is admin or regular user (not guest)
-      setCanPost(!isGuest());
+      // Only allow posting if user is admin
+      setCanPost(isAdmin());
     } else {
       setCanPost(false);
     }
-  }, [currentUser, isGuest]);
+  }, [currentUser, isAdmin]);
   
-  // If user can't post, don't render the component
-  if (!canPost) {
-    return null;
-  }
-  
+  // If user can't post, show message but don't hide component
   const [file, setFile] = useState(null);
   const [desc, setDesc] = useState("");
   const [selectedCategories, setSelectedCategories] = useState([]);
@@ -49,6 +46,7 @@ const Share = ({ onPostCreated }) => {
       return res.data;
     } catch (err) {
       console.log(err);
+      setError("Failed to upload image");
       return "";
     }
   };
@@ -57,6 +55,7 @@ const Share = ({ onPostCreated }) => {
     mutationFn: (newPost) => makeRequest.post("/posts", newPost),
     onMutate: async () => {
       setIsSharing(true);
+      setError("");
       await new Promise((resolve) => setTimeout(resolve, 300));
     },
     onSuccess: () => {
@@ -64,6 +63,10 @@ const Share = ({ onPostCreated }) => {
       setIsSharing(false);
       setShowSuccessAnim(true);
       setTimeout(() => setShowSuccessAnim(false), 1200);
+    },
+    onError: (error) => {
+      setIsSharing(false);
+      setError(error.response?.data || "Failed to create post");
     },
     onSettled: () => {
       setDesc("");
@@ -81,7 +84,15 @@ const Share = ({ onPostCreated }) => {
 
   const handleClick = async (e) => {
     e.preventDefault();
-    if (!isAdmin || selectedCategories.length === 0) return;
+    if (!isAdmin()) {
+      setError("Only admin users can create posts");
+      return;
+    }
+    if (selectedCategories.length === 0) {
+      setError("Please select at least one category");
+      return;
+    }
+    
     let imgUrl = "";
     if (file) imgUrl = await upload();
     mutation.mutate({ 
@@ -313,6 +324,7 @@ const Share = ({ onPostCreated }) => {
 };
 
 export default Share;
+
 
 
 

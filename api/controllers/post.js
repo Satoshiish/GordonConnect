@@ -34,49 +34,10 @@ export const getPosts = async (req, res) => {
       console.log("No token found, using guest access");
     }
 
-    // Get user's interests and activity data (similar to getSuggestions algorithm)
-    let userInterests = [];
-    let userCity = '';
-    
-    try {
-      const query = util.promisify(db.query).bind(db);
-      
-      // Get user's primary and secondary interests
-      const interestsQuery = `
-        SELECT 
-          COALESCE(
-            (SELECT category FROM posts WHERE user_id = ? ORDER BY createdAt DESC LIMIT 1),
-            'general'
-          ) as primary_interest,
-          (
-            SELECT p.category 
-            FROM likes l 
-            JOIN posts p ON l.posts_id = p.posts_id 
-            WHERE l.user_id = ? 
-            GROUP BY p.category 
-            ORDER BY COUNT(*) DESC 
-            LIMIT 1
-          ) as secondary_interest
-      `;
-      
-      const interestData = await query(interestsQuery, [userInfo.id, userInfo.id]);
-      const primaryInterest = interestData[0]?.primary_interest || 'general';
-      const secondaryInterest = interestData[0]?.secondary_interest || 'general';
-      userInterests = [primaryInterest, secondaryInterest];
-      
-      // Get user's location/city
-      const locationQuery = `SELECT city FROM users WHERE user_id = ?`;
-      const locationData = await query(locationQuery, [userInfo.id]);
-      userCity = locationData[0]?.city || '';
-    } catch (e) {
-      console.error("Error getting user interests:", e);
-      userInterests = ['general'];
-    }
+    // Define query and values
+    let q, values = [];
 
-    let q;
-    let values;
-
-    // If a specific post ID is requested
+    // Specific post by ID
     if (postId) {
       q = `
         SELECT p.*, u.user_id AS userId, u.name, u.profilePic
@@ -85,19 +46,18 @@ export const getPosts = async (req, res) => {
         WHERE p.posts_id = ?
       `;
       values = [postId];
-    } 
-    // If a specific user's posts are requested
+    }
+    // User's posts
     else if (userId) {
       q = `
         SELECT p.*, u.user_id AS userId, u.name, u.profilePic
         FROM posts AS p 
         JOIN users AS u ON (u.user_id = p.user_id)
         WHERE p.user_id = ?
-        ${category ? "AND p.category = ?" : ""}
         ORDER BY p.createdAt DESC
       `;
-      values = category ? [userId, category] : [userId];
-    } 
+      values = [userId];
+    }
     // All posts (with optional category filter)
     else {
       // Simplified query that works for both guests and logged-in users
@@ -111,17 +71,26 @@ export const getPosts = async (req, res) => {
       values = anyCategory ? [anyCategory] : [];
     }
 
-    // Execute the query
-    db.query(q, values, (err, data) => {
-      if (err) {
-        console.error("Database error in getPosts:", err);
-        return res.status(500).json("Database error");
-      }
+    // Use promisify to convert callback-based db.query to Promise
+    const query = util.promisify(db.query).bind(db);
+    
+    try {
+      const data = await query(q, values);
       return res.status(200).json(data);
-    });
+    } catch (dbError) {
+      console.error("Database error in getPosts:", dbError);
+      return res.status(500).json({
+        error: "Database error", 
+        message: dbError.message,
+        code: dbError.code
+      });
+    }
   } catch (error) {
     console.error("Error in getPosts:", error);
-    return res.status(500).json("Server error");
+    return res.status(500).json({
+      error: "Server error",
+      message: error.message
+    });
   }
 };
 
@@ -136,18 +105,21 @@ export const addPost = (req, res) => {
   jwt.verify(token, "secretkey", (err, userInfo) => {
     if (err) return res.status(403).json("Token is not valid!");
 
-    // Check if user is admin or regular user (not guest)
+    // Check if user is admin
     const checkUserQuery = "SELECT role FROM users WHERE user_id = ?";
     db.query(checkUserQuery, [userInfo.id], (err, userData) => {
-      if (err) return res.status(500).json(err);
+      if (err) {
+        console.error("Database error checking user role:", err);
+        return res.status(500).json("Database error");
+      }
       
       if (userData.length === 0) return res.status(404).json("User not found!");
       
       const userRole = userData[0].role;
       
-      // Only allow admins and regular users to post (not guests)
-      if (userRole === "guest") {
-        return res.status(403).json("Guests cannot create posts!");
+      // Only allow admins to post
+      if (userRole !== "admin") {
+        return res.status(403).json("Only admin users can create posts!");
       }
       
       // Proceed with post creation
@@ -156,20 +128,20 @@ export const addPost = (req, res) => {
 
       const values = [
         req.body.desc,
-        req.body.img || null, 
-        moment().format("YYYY-MM-DD HH:mm:ss"), 
+        req.body.img,
+        moment(Date.now()).format("YYYY-MM-DD HH:mm:ss"),
         userInfo.id,
-        req.body.category || 'student_life',
-        req.body.category2 || null,
-        req.body.category3 || null,
-        req.body.category4 || null,
-        1, // Set visible to 1 (true) by default
+        req.body.category,
+        req.body.category2,
+        req.body.category3,
+        req.body.category4,
+        req.body.visible !== undefined ? req.body.visible : 1,
       ];
 
       db.query(q, [values], (err, data) => {
         if (err) {
-          console.error("MySQL Error:", err);
-          return res.status(500).json(err);
+          console.error("Database error creating post:", err);
+          return res.status(500).json("Database error");
         }
         return res.status(200).json("Post has been created!");
       });
@@ -228,6 +200,8 @@ export const updatePostVisibility = (req, res) => {
     });
   });
 };
+
+
 
 
 
