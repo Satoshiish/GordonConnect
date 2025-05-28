@@ -89,6 +89,11 @@ const Events = () => {
     return `${hourNum.toString().padStart(2, "0")}:${minutes.padStart(2, "0")}`;
   };
 
+  const formatTime = (timeString) => {
+    if (!timeString) return "";
+    return formatTimeToAMPM(timeString);
+  };
+
   const isPastEvent = (eventDate, eventTime) => {
     const now = new Date();
     const [year, month, day] = eventDate.split("-");
@@ -320,7 +325,7 @@ const Events = () => {
       user_email: emailInput,
       event_title: selectedEvent.title,
       event_date: formatDatePretty(selectedEvent.date),
-      event_time: formatTimeToAMPM(getTimeFromISO(selectedEvent.time)),
+      event_time: formatTimeToAMPM(selectedEvent.time),
       event_location: selectedEvent.location,
     };
 
@@ -601,7 +606,7 @@ const Events = () => {
                   <div className={`flex items-center gap-2 text-xs ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>
                     <div className="flex items-center gap-1">
                       <Clock size={14} />
-                      <span>{formatTime(event.event_time)}</span>
+                      <span>{formatTimeToAMPM(event.time)}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <MapPin size={14} />
@@ -1492,6 +1497,8 @@ const Events = () => {
 };
 
 export default Events;
+
+
 
 
 
