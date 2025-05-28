@@ -20,12 +20,9 @@ import {
   CalendarDays,
   ArrowRight,
   CheckCircle2,
-  AlertCircle,
-  Loader2
+  AlertCircle
 } from "lucide-react";
 import { toast } from 'react-hot-toast';
-
-const API_BASE_URL = "https://gordonconnect-production-f2bd.up.railway.app/api";
 
 // Define formatDate function at the top level
 const formatDate = (dateString) => {
@@ -588,16 +585,17 @@ const Events = () => {
             {events.map((event) => (
               <div
                 key={event.id}
-                className={`rounded-xl overflow-hidden shadow-lg border ${
+                className={`rounded-xl overflow-hidden shadow-lg ${
                   theme === "dark" 
-                    ? "bg-gray-800 border-gray-700" 
-                    : "bg-white border-gray-200"
-                }`}
+                    ? "bg-gray-800" 
+                    : "bg-white"
+                } ${deletingEventId === event.id ? "scale-0 opacity-0" : ""} transition-all duration-400`}
+                onClick={() => handleEventClick(event)}
               >
                 {/* Event image */}
                 <div className="h-48 overflow-hidden relative">
                   <img 
-                    src={event.image ? `/upload/${event.image}` : "/event-placeholder.jpg"} 
+                    src={event.image || "/event-placeholder.jpg"} 
                     alt={event.title} 
                     className="w-full h-full object-cover"
                   />
@@ -613,12 +611,12 @@ const Events = () => {
                 
                 {/* Event details */}
                 <div className="p-4">
-                  <h3 className={`text-lg font-semibold mb-1 ${theme === "dark" ? "text-white" : "text-gray-900"}`}>
+                  <h3 className={`text-lg font-semibold mb-2 ${theme === "dark" ? "text-white" : "text-gray-900"}`}>
                     {event.title}
                   </h3>
                   
                   {/* Event metadata */}
-                  <div className={`flex items-center gap-2 text-xs ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>
+                  <div className={`flex items-center gap-4 text-xs ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>
                     <div className="flex items-center gap-1">
                       <Clock size={14} />
                       <span>{formatTimeToAMPM(event.time)}</span>
@@ -661,18 +659,6 @@ const Events = () => {
                       </button>
                     </div>
                   )}
-                  
-                  {/* Join button */}
-                  <button
-                    onClick={() => handleEventClick(event)}
-                    className={`w-full mt-3 py-2 rounded-lg text-sm font-medium ${
-                      theme === "dark"
-                        ? "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30"
-                        : "bg-emerald-100 text-emerald-600 hover:bg-emerald-200"
-                    }`}
-                  >
-                    View Details
-                  </button>
                 </div>
               </div>
             ))}
@@ -1557,6 +1543,13 @@ const Events = () => {
 };
 
 export default Events;
+
+
+
+
+
+
+
 
 
 
