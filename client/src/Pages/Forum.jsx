@@ -195,7 +195,7 @@ const Forum = () => {
   }, [currentUser]);
 
   return (
-    <div className={`min-h-screen ${theme === "dark" ? "bg-gradient-to-br from-gray-900 via-gray-900 to-gray-900 text-gray-100" : "bg-gradient-to-br from-gray-50 via-white to-gray-50 text-gray-900"} transition-colors`}>
+    <div className={`min-h-screen ${theme === "dark" ? "bg-gray-900" : "bg-gray-50"} text-gray-900`}>
       <div className="max-w-6xl mx-auto p-2 sm:p-4 md:p-6 lg:p-8">
         {/* Enhanced Header Card */}
         <motion.div 
@@ -797,6 +797,7 @@ const Forum = () => {
 };
 
 export default Forum;
+
 
 
 
