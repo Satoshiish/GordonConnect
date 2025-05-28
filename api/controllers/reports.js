@@ -33,6 +33,8 @@ export const updateReport = (req, res) => {
   const { id } = req.params;
   const post_id = req.body.post_id;
 
+  console.log(`Updating report ${id} with reviewed=${reviewed} for post_id=${post_id}`);
+
   // First update the report status
   const q = 'UPDATE reports SET reviewed = ? WHERE id = ?';
   db.query(q, [reviewed, id], (err, result) => {
@@ -41,14 +43,21 @@ export const updateReport = (req, res) => {
       return res.status(500).json({ error: err.message });
     }
     
-    // If we're not handling a post visibility update or if no post_id was provided, just return success
-    if (reviewed !== 1 || !post_id) {
+    // If no post_id was provided, just return success
+    if (!post_id) {
+      console.log('No post_id provided, skipping post visibility update');
       return res.json({ success: true });
     }
     
-    // If report is approved (reviewed = 1), ensure the post remains visible
-    const postQuery = 'UPDATE posts SET visible = 1 WHERE posts_id = ?';
-    db.query(postQuery, [post_id], (postErr, postResult) => {
+    // Set post visibility based on review decision:
+    // When report is approved (reviewed = 1), the post should be hidden (visible = 0)
+    // When report is rejected (reviewed = 2), the post should remain visible (visible = 1)
+    const visible = reviewed === 1 ? 0 : 1;
+    
+    console.log(`Setting post ${post_id} visibility to ${visible}`);
+    
+    const postQuery = 'UPDATE posts SET visible = ? WHERE posts_id = ?';
+    db.query(postQuery, [visible, post_id], (postErr, postResult) => {
       if (postErr) {
         console.error('Error updating post visibility:', postErr);
         // We still mark the report update as successful even if post update fails
@@ -58,9 +67,11 @@ export const updateReport = (req, res) => {
         });
       }
       
+      console.log(`Post visibility updated. Affected rows: ${postResult.affectedRows}`);
+      
       return res.json({ 
         success: true, 
-        message: "Report and post status updated successfully" 
+        message: `Report updated and post is now ${visible ? 'visible' : 'hidden'}`
       });
     });
   });
