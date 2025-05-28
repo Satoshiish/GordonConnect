@@ -260,12 +260,21 @@ const Post = ({ post }) => {
     } catch (err) {
       if (err.response && err.response.data && err.response.data.error && err.response.data.error.toLowerCase().includes("duplicate")) {
         setAlreadyReported(true);
+        toast.error("You have already reported this post.");
       } else {
         toast.error("Failed to submit report.");
       }
     } finally {
       setReportLoading(false);
     }
+  };
+
+  const openReportModal = () => {
+    if (alreadyReported) {
+      toast.error("You have already reported this post.");
+      return;
+    }
+    setShowReportModal(true);
   };
 
   return (
@@ -419,10 +428,7 @@ const Post = ({ post }) => {
                 {/* Report Icon beside bookmark, disabled for guests */}
                 <motion.button
                   whileTap={{ scale: 0.93 }}
-                  onClick={() => {
-                    if (isGuest) return;
-                    setShowReportModal(true);
-                  }}
+                  onClick={openReportModal}
                   disabled={isGuest}
                   className={`flex items-center gap-1 px-3 py-2 rounded-xl transition-colors duration-200 font-medium text-gray-500 hover:text-red-500 ${isGuest ? 'opacity-50 cursor-not-allowed' : ''}`}
                   title={isGuest ? 'Please sign in to report posts' : 'Report this post'}
@@ -576,6 +582,7 @@ const Post = ({ post }) => {
 };
 
 export default Post;
+
 
 
 
