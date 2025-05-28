@@ -21,6 +21,7 @@ import ResetPassword from "./Pages/ResetPassword";
 import { ThemeProvider, useTheme } from "./ThemeContext";
 import { AuthContext, AuthContextProvider } from "./authContext";
 import Reports from "./Pages/Reports";
+import { Toaster } from 'react-hot-toast';
 
 function Layout() {
   const { theme } = useTheme();
@@ -199,15 +200,19 @@ const router = createBrowserRouter([
 
 function App() {
   return (
-    <AuthContextProvider>
-      <ThemeProvider>
-        <RouterProvider router={router} />
-      </ThemeProvider>
-    </AuthContextProvider>
+    <>
+      <Toaster position="top-center" />
+      <AuthContextProvider>
+        <ThemeProvider>
+          <RouterProvider router={router} />
+        </ThemeProvider>
+      </AuthContextProvider>
+    </>
   );
 }
 
 export default App;
+
 
 
 

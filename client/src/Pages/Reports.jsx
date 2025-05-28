@@ -5,7 +5,7 @@ import { AuthContext } from '../authContext';
 import { useTheme } from '../ThemeContext';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 
 const Reports = () => {
   const [reports, setReports] = useState([]);
@@ -108,7 +108,7 @@ const Reports = () => {
       // Refresh the reports list
       await fetchReports();
       
-      // Show success message
+      // Show success message using react-hot-toast
       toast.success(
         reviewed === 1 
           ? "Report approved. Post will remain visible." 
@@ -669,6 +669,7 @@ const Reports = () => {
 };
 
 export default Reports; 
+
 
 
 
