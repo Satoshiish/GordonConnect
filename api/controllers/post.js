@@ -251,21 +251,83 @@ export const addPost = (req, res) => {
 };
 
 export const deletePost = (req, res) => {
-  const token = req.cookies.accessToken;
-  if (!token) return res.status(401).json("Not logged in!");
+  try {
+    // Check for token in cookies or Authorization header
+    const cookieToken = req.cookies?.accessToken;
+    const headerToken = req.headers.authorization?.split(" ")[1];
+    const token = cookieToken || headerToken;
+    
+    console.log("DELETE POST - Token from cookie:", cookieToken ? "Present" : "Not present");
+    console.log("DELETE POST - Token from header:", headerToken ? "Present" : "Not present");
+    console.log("DELETE POST - Post ID:", req.params.id);
+    
+    if (!token) {
+      console.log("DELETE POST - No authentication token found");
+      return res.status(401).json("Not logged in!");
+    }
 
-  jwt.verify(token, "secretkey", (err, userInfo) => {
-    if (err) return res.status(403).json("Token is not valid!");
+    jwt.verify(token, "secretkey", (err, userInfo) => {
+      if (err) {
+        console.error("DELETE POST - Token verification failed:", err.message);
+        return res.status(403).json("Token is not valid!");
+      }
 
-    const q = "DELETE FROM posts WHERE `posts_id` = ? AND `user_id` = ?";
-
-    db.query(q, [req.params.id, userInfo.id], (err, data) => {
-      if (err) return res.status(500).json(err);
-      if (data.affectedRows > 0)
-        return res.status(200).json("Post has been deleted!");
-        return res.status(403).json("You can only delete your own post")
+      console.log("DELETE POST - User authenticated:", userInfo.id);
+      
+      // First check if user is admin
+      const checkUserQuery = "SELECT role FROM users WHERE user_id = ?";
+      db.query(checkUserQuery, [userInfo.id], (userErr, userData) => {
+        if (userErr) {
+          console.error("DELETE POST - Error checking user role:", userErr);
+          return res.status(500).json(userErr);
+        }
+        
+        const isAdmin = userData[0]?.role === "admin";
+        console.log("DELETE POST - User is admin:", isAdmin);
+        
+        // If admin, can delete any post
+        if (isAdmin) {
+          const adminDeleteQuery = "DELETE FROM posts WHERE `posts_id` = ?";
+          db.query(adminDeleteQuery, [req.params.id], (err, data) => {
+            if (err) {
+              console.error("DELETE POST - Admin delete error:", err);
+              return res.status(500).json(err);
+            }
+            
+            if (data.affectedRows > 0) {
+              console.log("DELETE POST - Admin successfully deleted post");
+              return res.status(200).json("Post has been deleted by admin!");
+            } else {
+              console.log("DELETE POST - Post not found for deletion");
+              return res.status(404).json("Post not found");
+            }
+          });
+        } else {
+          // Regular users can only delete their own posts
+          const userDeleteQuery = "DELETE FROM posts WHERE `posts_id` = ? AND `user_id` = ?";
+          db.query(userDeleteQuery, [req.params.id, userInfo.id], (err, data) => {
+            if (err) {
+              console.error("DELETE POST - User delete error:", err);
+              return res.status(500).json(err);
+            }
+            
+            if (data.affectedRows > 0) {
+              console.log("DELETE POST - User successfully deleted their post");
+              return res.status(200).json("Post has been deleted!");
+            } else {
+              console.log("DELETE POST - User attempted to delete post they don't own");
+              return res.status(403).json("You can only delete your own posts");
+            }
+          });
+        }
+      });
     });
-  });
+  } catch (error) {
+    console.error("DELETE POST - Unexpected error:", error);
+    return res.status(500).json({
+      error: "Server error",
+      message: error.message
+    });
+  }
 };
-
 

@@ -195,11 +195,22 @@ const Post = ({ post }) => {
   const deleteMutation = useMutation({
     mutationFn: async () => {
       const token = localStorage.getItem("token");
-      if (post.posts_id) {
-        await makeRequest.delete(`/posts/${post.posts_id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+      console.log("Deleting post with ID:", post.posts_id);
+      console.log("Using token (first 10 chars):", token ? token.substring(0, 10) + "..." : "No token");
+      
+      if (!token) {
+        throw new Error("Authentication token not found");
       }
+      
+      if (!post.posts_id) {
+        throw new Error("Post ID is missing");
+      }
+      
+      return await makeRequest.delete(`/posts/${post.posts_id}`, {
+        headers: { 
+          Authorization: `Bearer ${token}` 
+        }
+      });
     },
     onMutate: async () => {
       setIsDeleting(true);
@@ -208,7 +219,14 @@ const Post = ({ post }) => {
     onSuccess: () => {
       queryClient.invalidateQueries(["posts"]);
       setIsDeleting(false);
+      toast.success("Post deleted successfully");
     },
+    onError: (error) => {
+      console.error("Error deleting post:", error);
+      console.error("Error details:", error.response?.data);
+      setIsDeleting(false);
+      toast.error(error.response?.data || "Failed to delete post");
+    }
   });
 
   const handleReport = async () => {
@@ -543,6 +561,7 @@ const Post = ({ post }) => {
 };
 
 export default Post;
+
 
 
 
