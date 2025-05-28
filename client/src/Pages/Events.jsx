@@ -21,7 +21,7 @@ import {
   ArrowRight,
   CheckCircle2,
   AlertCircle,
-  Loader2 // Make sure Loader2 is imported
+  Loader2
 } from "lucide-react";
 import { toast } from 'react-hot-toast';
 
