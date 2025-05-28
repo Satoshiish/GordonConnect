@@ -212,6 +212,12 @@ const Post = ({ post }) => {
   });
 
   const handleReport = async () => {
+    // Check if user is logged in
+    if (!currentUser || !currentUser.id) {
+      toast.error("You must be logged in to report content.");
+      return;
+    }
+    
     if (!reportReason.trim()) {
       toast.error("Please provide a reason for reporting.");
       return;
@@ -219,7 +225,7 @@ const Post = ({ post }) => {
     setReportLoading(true);
     try {
       await makeRequest.post("/reports", {
-        user_id: currentUser?.id || currentUser?.user_id || null,
+        user_id: currentUser.id || currentUser.user_id,
         post_id: post.posts_id,
         reason: reportReason,
       });
@@ -228,7 +234,10 @@ const Post = ({ post }) => {
       setReportReason("");
       setAlreadyReported(true);
     } catch (err) {
-      if (err.response && err.response.data && err.response.data.error && err.response.data.error.toLowerCase().includes("duplicate")) {
+      if (err.response && err.response.data && err.response.data.error) {
+        toast.error(err.response.data.error);
+      } else if (err.response && err.response.data && err.response.data.error && 
+                 err.response.data.error.toLowerCase().includes("duplicate")) {
         setAlreadyReported(true);
       } else {
         toast.error("Failed to submit report.");
@@ -543,6 +552,8 @@ const Post = ({ post }) => {
 };
 
 export default Post;
+
+
 
 
 

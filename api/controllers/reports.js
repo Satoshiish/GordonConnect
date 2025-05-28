@@ -12,11 +12,17 @@ export const getReports = (req, res) => {
 };
 
 export const createReport = (req, res) => {
-  let { user_id, post_id, reason } = req.body;
-  if (!user_id) user_id = null; // Allow guest reports
+  const { user_id, post_id, reason } = req.body;
+  
+  // Don't allow guest reports
+  if (!user_id) {
+    return res.status(403).json({ error: 'You must be logged in to report content.' });
+  }
+  
   if (!post_id || !reason) {
     return res.status(400).json({ error: 'post_id and reason are required.' });
   }
+  
   console.log('Received report:', { user_id, post_id, reason });
   const q = 'INSERT INTO reports (user_id, post_id, reason, created_at, reviewed) VALUES (?, ?, ?, NOW(), 0)';
   db.query(q, [user_id, post_id, reason], (err, result) => {
@@ -41,17 +47,14 @@ export const updateReport = (req, res) => {
       return res.status(500).json({ error: err.message });
     }
     
-    // If no post_id was provided, just return success
-    if (!post_id) {
+    // If we're not handling a post visibility update or if no post_id was provided, just return success
+    if (reviewed !== 1 || !post_id) {
       return res.json({ success: true });
     }
     
-    // When report is REJECTED (reviewed = 1), the post should remain visible
-    // When report is APPROVED (reviewed = 2), the post should be hidden
-    const visible = reviewed === 2 ? 0 : 1;
-    
-    const postQuery = 'UPDATE posts SET visible = ? WHERE posts_id = ?';
-    db.query(postQuery, [visible, post_id], (postErr, postResult) => {
+    // If report is approved (reviewed = 1), ensure the post remains visible
+    const postQuery = 'UPDATE posts SET visible = 1 WHERE posts_id = ?';
+    db.query(postQuery, [post_id], (postErr, postResult) => {
       if (postErr) {
         console.error('Error updating post visibility:', postErr);
         // We still mark the report update as successful even if post update fails
@@ -63,7 +66,7 @@ export const updateReport = (req, res) => {
       
       return res.json({ 
         success: true, 
-        message: `Report updated and post is now ${visible ? 'visible' : 'hidden'}`
+        message: "Report and post status updated successfully" 
       });
     });
   });

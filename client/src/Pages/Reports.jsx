@@ -81,33 +81,29 @@ const Reports = () => {
     setSelectedPost(null);
   };
 
-  // Function to handle admin review action (approve or reject)
-  const handleReview = async (id, action) => {
+  // Function to handle admin review action (mark as reviewed or false)
+  const handleReview = async (id, reviewed) => {
     try {
       setLoading(true);
       
       // Get the report details before updating
       const reportToUpdate = reports.find(report => report.id === id);
       
-      // Set reviewed value based on action:
-      // 1 = Reject report (keep post visible)
-      // 2 = Approve report (hide post)
-      const reviewed = action === 'reject' ? 1 : 2;
-      
       // Update the report status
       await makeRequest.put(`/reports/${id}`, { 
         reviewed,
+        // Include post_id to ensure backend knows which post this affects
         post_id: reportToUpdate?.post_id
       });
       
       // Refresh the reports list
       await fetchReports();
       
-      // Show success message
+      // Show success message using react-hot-toast
       toast.success(
         reviewed === 1 
-          ? "Report rejected. Post will remain visible." 
-          : "Report approved. Post has been hidden."
+          ? "Report approved. Post will remain visible." 
+          : "Report rejected."
       );
     } catch (err) {
       console.error("Error updating report:", err);
@@ -664,7 +660,6 @@ const Reports = () => {
 };
 
 export default Reports; 
-
 
 
 
