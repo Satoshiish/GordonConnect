@@ -19,22 +19,35 @@ export const AuthContextProvider = ({ children }) => {
           return;
         }
 
-        // Verify token with backend
-        const res = await makeRequest.get("/auth/verify", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        // Only set user if response contains expected user fields
-        if (res.data && !res.data.error && res.data.id) {
-          const userData = { ...res.data, token };
-          setCurrentUser(userData);
-          localStorage.setItem("user", JSON.stringify(userData));
-        } else {
-          logout();
+        // Parse the stored user data
+        const userData = JSON.parse(storedUser);
+        
+        // Set the user immediately from localStorage to prevent flashing
+        setCurrentUser(userData);
+        
+        // Then verify with backend in background
+        try {
+          const res = await makeRequest.get("/auth/verify", {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          
+          // If verification successful, update with latest user data
+          if (res.data && res.data.user_id) {
+            const updatedUserData = { ...res.data, token };
+            setCurrentUser(updatedUserData);
+            localStorage.setItem("user", JSON.stringify(updatedUserData));
+          }
+        } catch (verifyError) {
+          console.error("Token verification failed:", verifyError);
+          // Only logout if there's a clear auth error (401/403)
+          if (verifyError.response && 
+              (verifyError.response.status === 401 || 
+               verifyError.response.status === 403)) {
+            logout();
+          }
         }
       } catch (error) {
-        console.error("Auth verification failed:", error);
-        logout();
+        console.error("Auth check failed:", error);
       } finally {
         setLoading(false);
       }
