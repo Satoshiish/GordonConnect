@@ -25,6 +25,9 @@ import {
 } from "lucide-react";
 import { toast } from 'react-hot-toast';
 
+// Add this constant at the top of your file, after imports
+const API_BASE_URL = process.env.REACT_APP_API_URL || "https://gordonconnect-production-f2bd.up.railway.app/api";
+
 // Define formatDate function at the top level
 const formatDate = (dateString) => {
   if (!dateString) return "TBA";
@@ -41,6 +44,20 @@ const formatDate = (dateString) => {
     day: 'numeric',
     year: 'numeric'
   });
+};
+
+// Helper function to format image URLs consistently
+const formatImageUrl = (image) => {
+  if (!image) return null;
+  
+  // If it's already a full URL, return as is
+  if (image.startsWith('http')) return image;
+  
+  // If it starts with /upload/, append to API base URL
+  if (image.startsWith('/upload/')) return `${API_BASE_URL}${image}`;
+  
+  // Otherwise, assume it's just a filename and format accordingly
+  return `${API_BASE_URL}/upload/${image}`;
 };
 
 const Events = () => {
@@ -597,9 +614,13 @@ const Events = () => {
                   onClick={() => handleImageClick(event.image)}
                 >
                   <img
-                    src={event.image}
+                    src={event.image ? formatImageUrl(event.image) : "/event-placeholder.jpg"}
                     alt={event.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    onError={(e) => {
+                      console.error("Failed to load image:", event.image);
+                      e.target.src = "/event-placeholder.jpg";
+                    }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center p-6">
                     <div className="flex items-center gap-2 text-white">
@@ -1226,6 +1247,10 @@ const Events = () => {
                     alt="Preview"
                     className="w-auto h-auto max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
                     style={{ display: 'block' }}
+                    onError={(e) => {
+                      console.error("Failed to load preview image:", previewImage);
+                      e.target.src = "/event-placeholder.jpg";
+                    }}
                   />
                 </div>
               </motion.div>
@@ -1555,3 +1580,7 @@ const Events = () => {
 };
 
 export default Events;
+
+
+
+
