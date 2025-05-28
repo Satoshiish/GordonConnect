@@ -4,8 +4,8 @@ import {
   addPost, 
   deletePost, 
   updatePost,
-  updatePostVisibility // Import the new controller function
-} from '../controllers/posts.js';
+  updatePostVisibility // Import the new function
+} from '../controllers/post.js'; // Note: using post.js (singular)
 
 const router = express.Router();
 
@@ -18,4 +18,6 @@ router.put('/:id', updatePost);
 router.put('/:id/visibility', updatePostVisibility);
 
 export default router;
+
+
 
