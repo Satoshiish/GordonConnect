@@ -9,31 +9,53 @@ const dbConfig = {
   user: process.env.MYSQL_USER,
   password: process.env.MYSQL_PASSWORD,
   database: process.env.MYSQL_DATABASE,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 0
 };
 
 export let db;
 
 const handleDisconnect = () => {
-  db = mysql.createConnection(dbConfig);
+  // Use connection pool instead of single connection
+  db = mysql.createPool(dbConfig);
 
-  db.connect((err) => {
+  // Log connection status
+  db.getConnection((err, connection) => {
     if (err) {
       console.error("❌ Database connection failed:", err);
-      setTimeout(handleDisconnect, 2000); // Reconnect after 2 seconds
+      // Don't call handleDisconnect recursively - the pool will handle reconnection
+      if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+        console.log("Connection lost. Pool will handle reconnection.");
+      } else if (err.code === 'ER_CON_COUNT_ERROR') {
+        console.log("Database has too many connections.");
+      } else if (err.code === 'ECONNREFUSED') {
+        console.log("Database connection was refused.");
+      } else {
+        console.log("Unknown database error:", err);
+      }
     } else {
-      console.log("✅ Connected to MySQL database.");
-    }
-  });
-
-  db.on("error", (err) => {
-    console.error("❗ MySQL error:", err);
-    if (err.code === "PROTOCOL_CONNECTION_LOST") {
-      console.log("🔄 Reconnecting...");
-      handleDisconnect();
-    } else {
-      throw err;
+      console.log("✅ Connected to MySQL database pool.");
+      connection.release(); // Release connection back to pool
     }
   });
 };
 
+// Initialize the connection
+handleDisconnect();
+
+// Export a function to get a connection from the pool
+export const getConnection = () => {
+  return new Promise((resolve, reject) => {
+    db.getConnection((err, connection) => {
+      if (err) {
+        console.error("Error getting connection from pool:", err);
+        reject(err);
+      } else {
+        resolve(connection);
+      }
+    });
+  });
 handleDisconnect();

@@ -71,20 +71,24 @@ export const getPosts = async (req, res) => {
       values = anyCategory ? [anyCategory] : [];
     }
 
-    // Use promisify to convert callback-based db.query to Promise
-    const query = util.promisify(db.query).bind(db);
-    
-    try {
-      const data = await query(q, values);
+    // Execute the query with proper error handling
+    db.query(q, values, (err, data) => {
+      if (err) {
+        console.error("Database error in getPosts:", err);
+        return res.status(500).json({
+          error: "Database error", 
+          message: err.message,
+          code: err.code
+        });
+      }
+      
+      // Return empty array if no data
+      if (!data) {
+        return res.status(200).json([]);
+      }
+      
       return res.status(200).json(data);
-    } catch (dbError) {
-      console.error("Database error in getPosts:", dbError);
-      return res.status(500).json({
-        error: "Database error", 
-        message: dbError.message,
-        code: dbError.code
-      });
-    }
+    });
   } catch (error) {
     console.error("Error in getPosts:", error);
     return res.status(500).json({
@@ -200,6 +204,7 @@ export const updatePostVisibility = (req, res) => {
     });
   });
 };
+
 
 
 

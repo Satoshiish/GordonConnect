@@ -32,11 +32,20 @@ const Posts = ({ userId = null }) => {
           config.headers = { Authorization: `Bearer ${token}` };
         }
         
+        console.log("Fetching posts with URL:", url);
         const res = await makeRequest.get(url, config);
-        return res.data;
+        return res.data || [];
       } catch (error) {
         console.error("Error fetching posts:", error);
-        return []; // Return empty array to prevent error state
+        console.error("Error details:", error.response?.data || "No additional details");
+        
+        // Show more detailed error in console for debugging
+        if (error.response?.data) {
+          console.error("Server error:", error.response.data);
+        }
+        
+        // Throw the error to trigger the error UI
+        throw error;
       }
     },
     enabled: userId !== undefined,
@@ -129,41 +138,11 @@ const Posts = ({ userId = null }) => {
   }
 
   if (error) {
+    console.error("Query error state:", error);
     return (
       <>
-        {/* Category Filter Tabs with Legend */}
+        {/* Category tabs component */}
         <div className="mb-5">
-          {/* Category Legend */}
-          <div className={`mb-3 p-3 rounded-lg flex flex-wrap gap-3 items-center ${
-            theme === "dark" ? "bg-gray-800/70 border border-gray-700" : "bg-gray-50 border border-gray-200"
-          }`}>
-            <span className={`text-sm font-medium ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>
-              Categories:
-            </span>
-            <div className="flex flex-wrap gap-2">
-              <div className="flex items-center gap-1.5">
-                <div className={`w-3 h-3 rounded-full ${theme === "dark" ? "bg-emerald-600" : "bg-emerald-500"}`}></div>
-                <span className="text-xs">All</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <div className={`w-3 h-3 rounded-full ${theme === "dark" ? "bg-blue-900" : "bg-blue-500"}`}></div>
-                <span className="text-xs">Student Life</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <div className={`w-3 h-3 rounded-full ${theme === "dark" ? "bg-purple-900" : "bg-purple-500"}`}></div>
-                <span className="text-xs">Organization</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <div className={`w-3 h-3 rounded-full ${theme === "dark" ? "bg-orange-900" : "bg-orange-500"}`}></div>
-                <span className="text-xs">Academics</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <div className={`w-3 h-3 rounded-full ${theme === "dark" ? "bg-teal-900" : "bg-teal-500"}`}></div>
-                <span className="text-xs">Campus Services</span>
-              </div>
-            </div>
-          </div>
-
           {/* Category Filter Buttons */}
           <div className="flex gap-2 flex-wrap">
             {categoryTabs.map(tab => (
@@ -206,6 +185,9 @@ const Posts = ({ userId = null }) => {
         </div>
         <div className={`text-center py-10 rounded-xl ${theme === "dark" ? "bg-red-900/20 text-red-300" : "bg-red-50 text-red-500"}`}>
           <p className="font-medium">Failed to load posts</p>
+          <p className="text-sm mt-1 opacity-80">
+            {error.response?.data?.message || error.message || "An unknown error occurred"}
+          </p>
           <button 
             onClick={() => refetch()} 
             className={`mt-3 px-4 py-2 rounded-lg ${theme === "dark" ? "bg-gray-800 hover:bg-gray-700" : "bg-gray-100 hover:bg-gray-200"}`}
@@ -329,6 +311,7 @@ const Posts = ({ userId = null }) => {
 };
 
 export default Posts;
+
 
 
 
