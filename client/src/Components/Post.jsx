@@ -229,9 +229,21 @@ const Post = ({ post }) => {
     }
   });
 
+  // Add state for predefined report reasons
+  const [reportReasons] = useState([
+    "It is inappropriate",
+    "Spam",
+    "Harassment",
+    "False information",
+    "Hate speech",
+    "Violence",
+    "Copyright violation",
+    "Other"
+  ]);
+
   const handleReport = async () => {
-    if (!reportReason.trim()) {
-      toast.error("Please provide a reason for reporting.");
+    if (!reportReason) {
+      toast.error("Please select a reason for reporting.");
       return;
     }
     setReportLoading(true);
@@ -511,15 +523,18 @@ const Post = ({ post }) => {
                   ) : (
                     <>
                       <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300" htmlFor="report-reason">Reason</label>
-                      <textarea
+                      <select
                         id="report-reason"
-                        className="w-full p-4 rounded-xl border-0 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white mb-6 shadow-sm focus:ring-2 focus:ring-emerald-400 transition resize-none"
-                        rows={4}
-                        placeholder="Please describe the reason for reporting this post..."
+                        className="w-full p-4 rounded-xl border-0 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white mb-6 shadow-sm focus:ring-2 focus:ring-emerald-400 transition"
                         value={reportReason}
                         onChange={e => setReportReason(e.target.value)}
                         disabled={reportLoading}
-                      />
+                      >
+                        <option value="">Select a reason</option>
+                        {reportReasons.map((reason, index) => (
+                          <option key={index} value={reason}>{reason}</option>
+                        ))}
+                      </select>
                       <div className="flex justify-end gap-3 mt-2">
                         <button
                           className="px-6 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition"
@@ -561,6 +576,7 @@ const Post = ({ post }) => {
 };
 
 export default Post;
+
 
 
 
