@@ -3,125 +3,51 @@ import { db } from "../connect.js";
 import jwt from "jsonwebtoken";
 import util from 'util';
 
-export const getPosts = async (req, res) => {
+export const getPosts = (req, res) => {
   try {
-    // Check for token in cookies or Authorization header
-    const cookieToken = req.cookies?.accessToken;
-    const headerToken = req.headers.authorization?.split(" ")[1];
-    const token = cookieToken || headerToken;
-    
-    // Get query parameters
-    const userId = req.query.userId; 
+    const userId = req.query.userId;
     const category = req.query.category;
-    const anyCategory = req.query.anyCategory;
     const postId = req.query.postId;
     
-    // Handle guest users or users with valid tokens
-    let userInfo = { id: 'guest', role: 'guest' }; // Default to guest
+    let q = `
+      SELECT p.*, u.user_id, u.username AS name, u.profile_pic AS profilePic, 
+      p.visible
+      FROM posts AS p 
+      JOIN users AS u ON (u.user_id = p.user_id)
+    `;
     
-    if (token && !token.startsWith('guest_')) {
-      try {
-        // Only verify if it's not a guest token
-        userInfo = jwt.verify(token, "secretkey");
-      } catch (err) {
-        console.log("Token verification failed, using guest access:", err.message);
-        // Continue as guest if token verification fails
-      }
-    } else if (token && token.startsWith('guest_')) {
-      // Already set default userInfo as guest
-      console.log("Using guest token");
-    } else {
-      console.log("No token found, using guest access");
-    }
-
-    // Get user's interests and activity data (similar to getSuggestions algorithm)
-    let userInterests = [];
-    let userCity = '';
+    const values = [];
     
-    try {
-      const query = util.promisify(db.query).bind(db);
-      
-      // Get user's primary and secondary interests
-      const interestsQuery = `
-        SELECT 
-          COALESCE(
-            (SELECT category FROM posts WHERE user_id = ? ORDER BY createdAt DESC LIMIT 1),
-            'general'
-          ) as primary_interest,
-          (
-            SELECT p.category 
-            FROM likes l 
-            JOIN posts p ON l.posts_id = p.posts_id 
-            WHERE l.user_id = ? 
-            GROUP BY p.category 
-            ORDER BY COUNT(*) DESC 
-            LIMIT 1
-          ) as secondary_interest
-      `;
-      
-      const interestData = await query(interestsQuery, [userInfo.id, userInfo.id]);
-      const primaryInterest = interestData[0]?.primary_interest || 'general';
-      const secondaryInterest = interestData[0]?.secondary_interest || 'general';
-      userInterests = [primaryInterest, secondaryInterest];
-      
-      // Get user's location/city
-      const locationQuery = `SELECT city FROM users WHERE user_id = ?`;
-      const locationData = await query(locationQuery, [userInfo.id]);
-      userCity = locationData[0]?.city || '';
-    } catch (e) {
-      console.error("Error getting user interests:", e);
-      userInterests = ['general'];
-    }
-
-    let q;
-    let values;
-
-    // If a specific post ID is requested
     if (postId) {
-      q = `
-        SELECT p.*, u.user_id AS userId, u.name, u.profilePic
-        FROM posts AS p 
-        JOIN users AS u ON (u.user_id = p.user_id)
-        WHERE p.posts_id = ?
-      `;
-      values = [postId];
-    } 
-    // If a specific user's posts are requested
-    else if (userId) {
-      q = `
-        SELECT p.*, u.user_id AS userId, u.name, u.profilePic
-        FROM posts AS p 
-        JOIN users AS u ON (u.user_id = p.user_id)
-        WHERE p.user_id = ?
-        ${category ? "AND p.category = ?" : ""}
-        ORDER BY p.createdAt DESC
-      `;
-      values = category ? [userId, category] : [userId];
-    } 
-    // All posts (with optional category filter)
-    else {
-      // Simplified query that works for both guests and logged-in users
-      q = `
-        SELECT p.*, u.user_id AS userId, u.name, u.profilePic
-        FROM posts AS p 
-        JOIN users AS u ON (u.user_id = p.user_id)
-        ${anyCategory ? "WHERE p.category = ?" : ""}
-        ORDER BY p.createdAt DESC
-      `;
-      values = anyCategory ? [anyCategory] : [];
+      q += " WHERE p.posts_id = ?";
+      values.push(postId);
+    } else if (userId) {
+      q += " WHERE p.user_id = ?";
+      values.push(userId);
+      if (category) {
+        q += " AND p.category = ?";
+        values.push(category);
+      }
+    } else if (category) {
+      q += " WHERE p.category = ?";
+      values.push(category);
     }
-
-    // Execute the query
+    
+    q += " ORDER BY p.createdAt DESC";
+    
+    console.log("Executing query:", q, "with values:", values);
+    
     db.query(q, values, (err, data) => {
       if (err) {
-        console.error("Database error in getPosts:", err);
-        return res.status(500).json("Database error");
+        console.error("Error fetching posts:", err);
+        return res.status(500).json({ error: err.message });
       }
+      console.log(`Successfully fetched ${data.length} posts`);
       return res.status(200).json(data);
     });
   } catch (error) {
-    console.error("Error in getPosts:", error);
-    return res.status(500).json("Server error");
+    console.error("Unexpected error in getPosts:", error);
+    return res.status(500).json({ error: "An unexpected error occurred" });
   }
 };
 
@@ -200,5 +126,6 @@ export const updatePostVisibility = (req, res) => {
     });
   });
 };
+
 
 

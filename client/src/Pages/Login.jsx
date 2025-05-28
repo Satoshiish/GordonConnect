@@ -24,11 +24,32 @@ function Login({ setIsActive }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    setErr(null);
+    
     try {
+      console.log("Attempting login with:", inputs.username);
       await login(inputs);
       navigate("/");
     } catch (err) {
-      setErr(err.response?.data || "An error occurred");
+      console.error("Login error:", err);
+      
+      if (err.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        if (err.response.status === 404) {
+          setErr("User not found. Please check your username.");
+        } else if (err.response.status === 400) {
+          setErr("Incorrect username or password. Please try again.");
+        } else {
+          setErr(err.response.data || "An error occurred during login");
+        }
+      } else if (err.request) {
+        // The request was made but no response was received
+        setErr("No response from server. Please check your internet connection.");
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        setErr("An error occurred. Please try again later.");
+      }
     } finally {
       setIsLoading(false);
     }

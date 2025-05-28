@@ -59,6 +59,7 @@ export const AuthContextProvider = ({ children }) => {
 
   const login = async (inputs) => {
     try {
+      console.log("AuthContext: Attempting login for user:", inputs.username);
       const res = await makeRequest.post(
         "/auth/login",
         inputs,
@@ -67,12 +68,14 @@ export const AuthContextProvider = ({ children }) => {
         }
       );
       const userData = res.data;
+      console.log("AuthContext: Login successful, setting user data");
       setCurrentUser(userData);
       localStorage.setItem("user", JSON.stringify(userData));
       localStorage.setItem("token", userData.token);
       return userData;
     } catch (err) {
-      console.error("Login failed:", err);
+      console.error("AuthContext: Login failed:", err);
+      // Rethrow the error so the component can handle it
       throw err;
     }
   };
