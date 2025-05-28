@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTheme } from "../ThemeContext";
 import Comments from "../Components/Comments";
@@ -238,15 +238,9 @@ const Post = ({ post }) => {
     }
   };
 
-  useEffect(() => {
-    if (post) {
-      console.log(`Rendering post ${post.posts_id} with visibility:`, post.visible);
-    }
-  }, [post]);
-
   return (
     <>
-      {post && !post.deleted && post.visible !== 0 ? (
+      {post && !post.deleted && (post.visible === undefined || post.visible === 1) ? (
         <motion.div
           initial={{ scale: 0.97, opacity: 1 }}
           animate={isDeleting ? { scale: 0.7, opacity: 0 } : { scale: 1, opacity: 1 }}
@@ -549,7 +543,6 @@ const Post = ({ post }) => {
 };
 
 export default Post;
-
 
 
 
