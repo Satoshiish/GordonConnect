@@ -41,14 +41,17 @@ export const updateReport = (req, res) => {
       return res.status(500).json({ error: err.message });
     }
     
-    // If we're not handling a post visibility update or if no post_id was provided, just return success
-    if (reviewed !== 1 || !post_id) {
+    // If no post_id was provided, just return success
+    if (!post_id) {
       return res.json({ success: true });
     }
     
-    // If report is approved (reviewed = 1), ensure the post remains visible
-    const postQuery = 'UPDATE posts SET visible = 1 WHERE posts_id = ?';
-    db.query(postQuery, [post_id], (postErr, postResult) => {
+    // When report is REJECTED (reviewed = 1), the post should remain visible
+    // When report is APPROVED (reviewed = 2), the post should be hidden
+    const visible = reviewed === 2 ? 0 : 1;
+    
+    const postQuery = 'UPDATE posts SET visible = ? WHERE posts_id = ?';
+    db.query(postQuery, [visible, post_id], (postErr, postResult) => {
       if (postErr) {
         console.error('Error updating post visibility:', postErr);
         // We still mark the report update as successful even if post update fails
@@ -60,7 +63,7 @@ export const updateReport = (req, res) => {
       
       return res.json({ 
         success: true, 
-        message: "Report and post status updated successfully" 
+        message: `Report updated and post is now ${visible ? 'visible' : 'hidden'}`
       });
     });
   });
