@@ -47,7 +47,20 @@ const Reports = () => {
       console.log("Post data received:", response.data); // Debug log
       
       if (response.data && response.data.length > 0) {
-        setSelectedPost(response.data[0]);
+        // Format the post data to ensure image paths are correct
+        const post = response.data[0];
+        
+        // Ensure profilePic has the correct format
+        if (post.profilePic && !post.profilePic.startsWith('http') && !post.profilePic.startsWith('/upload/')) {
+          post.profilePic = `/upload/${post.profilePic}`;
+        }
+        
+        // Ensure img has the correct format
+        if (post.img && !post.img.startsWith('http') && !post.img.startsWith('/upload/')) {
+          post.img = `/upload/${post.img}`;
+        }
+        
+        setSelectedPost(post);
         setPostModalOpen(true);
         setError(null);
       } else {
@@ -475,9 +488,17 @@ const Reports = () => {
               <div className="p-5 rounded-xl border bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 mb-6">
                 <div className="flex items-center mb-4">
                   <img 
-                    src={selectedPost.profilePic ? `/upload/${selectedPost.profilePic}` : "/default-profile.jpg"} 
+                    src={selectedPost.profilePic ? 
+                      (selectedPost.profilePic.startsWith('http') ? 
+                        selectedPost.profilePic : 
+                        `/upload/${selectedPost.profilePic}`) 
+                      : "/default-profile.jpg"} 
                     alt="User" 
                     className="w-10 h-10 rounded-full mr-3 border-2 border-emerald-400"
+                    onError={(e) => {
+                      console.error("Failed to load profile image");
+                      e.target.src = "/default-profile.jpg";
+                    }}
                   />
                   <div>
                     <div className="font-medium text-gray-900 dark:text-white">{selectedPost.name || "Anonymous User"}</div>
@@ -492,9 +513,15 @@ const Reports = () => {
                 {selectedPost.img && (
                   <div className="mt-3">
                     <img 
-                      src={`/upload/${selectedPost.img}`} 
+                      src={selectedPost.img.startsWith('http') ? 
+                        selectedPost.img : 
+                        `/upload/${selectedPost.img}`} 
                       alt="Post" 
                       className="w-full rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm"
+                      onError={(e) => {
+                        console.error("Failed to load post image");
+                        e.target.src = "/placeholder-post.jpg";
+                      }}
                     />
                   </div>
                 )}
@@ -520,6 +547,14 @@ const Reports = () => {
                         : "Unknown date"}
                     </span>
                   </div>
+                  <div className="text-sm mt-2">
+                    <span className="font-medium">Reported by: </span>
+                    <span className="text-gray-700 dark:text-gray-300">
+                      {reports.find(r => r.post_id === selectedPost.id || r.post_id === selectedPost.posts_id)?.user_name || 
+                       `User ${reports.find(r => r.post_id === selectedPost.id || r.post_id === selectedPost.posts_id)?.user_id}` || 
+                       "Unknown user"}
+                    </span>
+                  </div>
                 </div>
               </div>
               
@@ -539,7 +574,7 @@ const Reports = () => {
                         if (report) handleReview(report.id, 1);
                         closePostModal();
                       }}
-                      className="px-6 py-2 rounded-xl bg-green-500 text-white font-semibold hover:bg-green-600 transition shadow"
+                      className="px-6 py-2 rounded-xl bg-green-500 text-white font-semibold hover:bg-green-600 transition"
                     >
                       Approve
                     </button>
@@ -549,7 +584,7 @@ const Reports = () => {
                         if (report) handleReview(report.id, 2);
                         closePostModal();
                       }}
-                      className="px-6 py-2 rounded-xl bg-red-500 text-white font-semibold hover:bg-red-600 transition shadow"
+                      className="px-6 py-2 rounded-xl bg-red-500 text-white font-semibold hover:bg-red-600 transition"
                     >
                       Reject
                     </button>
@@ -565,5 +600,7 @@ const Reports = () => {
 };
 
 export default Reports; 
+
+
 
 
