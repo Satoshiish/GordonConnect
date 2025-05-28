@@ -20,7 +20,8 @@ import {
   CalendarDays,
   ArrowRight,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Loader2 // Make sure Loader2 is imported
 } from "lucide-react";
 import { toast } from 'react-hot-toast';
 
@@ -577,7 +578,7 @@ const Events = () => {
         {/* Events Grid with Original Card Design */}
         {isLoading ? (
           <div className="text-center py-16">
-            <Loader2 size={40} className="animate-spin mx-auto mb-4 text-emerald-500" />
+            <div className="animate-spin mx-auto mb-4 w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full"></div>
             <p className="text-gray-500">Loading events...</p>
           </div>
         ) : (
@@ -1543,6 +1544,8 @@ const Events = () => {
 };
 
 export default Events;
+
+
 
 
 
