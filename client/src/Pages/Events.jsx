@@ -577,7 +577,7 @@ const Events = () => {
           </div>
         </motion.div>
         
-        {/* Events Grid with Enhanced Cards */}
+        {/* Events Grid with Original Card Design */}
         {isLoading ? (
           <div className="text-center py-16">
             <Loader2 size={40} className="animate-spin mx-auto mb-4 text-emerald-500" />
@@ -586,10 +586,8 @@ const Events = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {events.map((event) => (
-              <motion.div
+              <div
                 key={event.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
                 className={`rounded-xl overflow-hidden shadow-lg border ${
                   theme === "dark" 
                     ? "bg-gray-800 border-gray-700" 
@@ -603,6 +601,7 @@ const Events = () => {
                     alt={event.title} 
                     className="w-full h-full object-cover"
                   />
+                  {/* Date overlay */}
                   <div className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold ${
                     theme === "dark" 
                       ? "bg-gray-800/90 text-white" 
@@ -617,23 +616,65 @@ const Events = () => {
                   <h3 className={`text-lg font-semibold mb-1 ${theme === "dark" ? "text-white" : "text-gray-900"}`}>
                     {event.title}
                   </h3>
-                  <p className={`text-sm mb-3 line-clamp-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>
-                    {event.description}
-                  </p>
                   
                   {/* Event metadata */}
                   <div className={`flex items-center gap-2 text-xs ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>
                     <div className="flex items-center gap-1">
                       <Clock size={14} />
-                      <span>{formatTime(event.time)}</span>
+                      <span>{formatTimeToAMPM(event.time)}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <MapPin size={14} />
                       <span>{event.location}</span>
                     </div>
                   </div>
+                  
+                  {/* Admin actions */}
+                  {isAdmin && (
+                    <div className="flex justify-end mt-3 gap-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditClick(event);
+                        }}
+                        className={`p-2 rounded-full ${
+                          theme === "dark" 
+                            ? "bg-gray-700 hover:bg-gray-600" 
+                            : "bg-gray-100 hover:bg-gray-200"
+                        }`}
+                      >
+                        <Edit2 size={16} className={theme === "dark" ? "text-gray-300" : "text-gray-600"} />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEventToDelete(event);
+                          setShowDeleteModal(true);
+                        }}
+                        className={`p-2 rounded-full ${
+                          theme === "dark" 
+                            ? "bg-red-500/20 hover:bg-red-500/30" 
+                            : "bg-red-100 hover:bg-red-200"
+                        }`}
+                      >
+                        <Trash2 size={16} className="text-red-500" />
+                      </button>
+                    </div>
+                  )}
+                  
+                  {/* Join button */}
+                  <button
+                    onClick={() => handleEventClick(event)}
+                    className={`w-full mt-3 py-2 rounded-lg text-sm font-medium ${
+                      theme === "dark"
+                        ? "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30"
+                        : "bg-emerald-100 text-emerald-600 hover:bg-emerald-200"
+                    }`}
+                  >
+                    View Details
+                  </button>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         )}
@@ -1516,6 +1557,7 @@ const Events = () => {
 };
 
 export default Events;
+
 
 
 
