@@ -9,7 +9,6 @@ export const updatePostVisibility = (req, res) => {
   }
   
   // Update the post's visibility status
-  // Note: We're using a 'visible' field - you may need to add this to your posts table
   const q = "UPDATE posts SET visible = ? WHERE posts_id = ?";
   
   db.query(q, [visible ? 1 : 0, postId], (err, result) => {
