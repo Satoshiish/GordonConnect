@@ -193,34 +193,61 @@ export const getPosts = async (req, res) => {
 };
 
 export const addPost = (req, res) => {
-  const token = req.cookies.accessToken;
-  if (!token) return res.status(401).json("Not logged in!");
+  try {
+    // Check for token in cookies or Authorization header
+    const cookieToken = req.cookies?.accessToken;
+    const headerToken = req.headers.authorization?.split(" ")[1];
+    const token = cookieToken || headerToken;
+    
+    console.log("ADD POST - Token from cookie:", cookieToken ? "Present" : "Not present");
+    console.log("ADD POST - Token from header:", headerToken ? "Present" : "Not present");
+    console.log("ADD POST - Full authorization header:", req.headers.authorization);
+    
+    if (!token) {
+      console.log("ADD POST - No authentication token found");
+      return res.status(401).json("Not logged in!");
+    }
 
-  jwt.verify(token, "secretkey", (err, userInfo) => {
-    if (err) return res.status(403).json("Token is not valid!");
-
-    const q =
-      "INSERT INTO posts (`desc`, `img`, `createdAt`, `user_id`, `category`, `category2`, `category3`, `category4`) VALUES (?)";
-
-    const values = [
-      req.body.desc,
-      req.body.img || null, 
-      moment().format("YYYY-MM-DD HH:mm:ss"), 
-      userInfo.id,
-      req.body.category || 'student_life',
-      req.body.category2 || null,
-      req.body.category3 || null,
-      req.body.category4 || null,
-    ];
-
-    db.query(q, [values], (err, data) => {
+    jwt.verify(token, "secretkey", (err, userInfo) => {
       if (err) {
-        console.error("MySQL Error:", err);
-        return res.status(500).json(err);
+        console.error("ADD POST - Token verification failed:", err.message);
+        return res.status(403).json("Token is not valid!");
       }
-      return res.status(200).json("Post has been created!");
+
+      console.log("ADD POST - User authenticated:", userInfo.id);
+      
+      const q =
+        "INSERT INTO posts (`desc`, `img`, `createdAt`, `user_id`, `category`, `category2`, `category3`, `category4`) VALUES (?)";
+
+      const values = [
+        req.body.desc,
+        req.body.img || null, 
+        moment().format("YYYY-MM-DD HH:mm:ss"), 
+        userInfo.id,
+        req.body.category || 'student_life',
+        req.body.category2 || null,
+        req.body.category3 || null,
+        req.body.category4 || null,
+      ];
+
+      console.log("ADD POST - Inserting with values:", JSON.stringify(values));
+
+      db.query(q, [values], (err, data) => {
+        if (err) {
+          console.error("ADD POST - Database Error:", err);
+          return res.status(500).json(err);
+        }
+        console.log("ADD POST - Post created successfully");
+        return res.status(200).json("Post has been created!");
+      });
     });
-  });
+  } catch (error) {
+    console.error("ADD POST - Unexpected error:", error);
+    return res.status(500).json({
+      error: "Server error",
+      message: error.message
+    });
+  }
 };
 
 export const deletePost = (req, res) => {
@@ -240,4 +267,5 @@ export const deletePost = (req, res) => {
     });
   });
 };
+
 

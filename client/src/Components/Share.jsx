@@ -84,14 +84,14 @@ const Share = ({ onPostCreated }) => {
 
   const handleClick = async (e) => {
     e.preventDefault();
-    if (!isAdmin()) {
-      setError("Only admin users can create posts");
+    
+    if (!desc.trim()) {
+      setError("Post cannot be empty");
       return;
     }
-    if (selectedCategories.length === 0) {
-      setError("Please select at least one category");
-      return;
-    }
+    
+    setIsSharing(true);
+    setError("");
     
     try {
       let imgUrl = "";
@@ -100,7 +100,7 @@ const Share = ({ onPostCreated }) => {
       const postData = { 
         desc, 
         img: imgUrl, 
-        category: selectedCategories[0] || null,
+        category: selectedCategories[0] || 'student_life',
         category2: selectedCategories[1] || null,
         category3: selectedCategories[2] || null,
         category4: selectedCategories[3] || null
@@ -110,6 +110,7 @@ const Share = ({ onPostCreated }) => {
       
       // Get token from localStorage
       const token = localStorage.getItem("token");
+      console.log("Using token (first 10 chars):", token ? token.substring(0, 10) + "..." : "No token");
       
       // Send the post data with the token
       const response = await makeRequest.post("/posts", postData, {
@@ -132,6 +133,7 @@ const Share = ({ onPostCreated }) => {
       queryClient.invalidateQueries({ queryKey: ["posts"] });
     } catch (error) {
       console.error("Error creating post:", error);
+      console.error("Error response:", error.response?.data);
       setError(error.response?.data || "Failed to create post");
     } finally {
       setIsSharing(false);
@@ -357,6 +359,7 @@ const Share = ({ onPostCreated }) => {
 };
 
 export default Share;
+
 
 
 
