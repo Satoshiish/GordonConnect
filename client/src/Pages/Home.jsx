@@ -8,7 +8,7 @@ function Home() {
   const { theme } = useTheme();
 
   return (
-    <div className="w-full">
+    <div className={`w-full ${theme === "dark" ? "bg-gray-900 text-gray-100" : "bg-gray-50 text-gray-900"}`}>
       <div className="space-y-6">
         {/* Share Component */}
         <Share />

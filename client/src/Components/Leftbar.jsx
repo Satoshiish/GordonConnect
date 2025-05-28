@@ -17,6 +17,19 @@ function Leftbar({ open, setOpen }) {
     }
   };
 
+  const menuItems = [
+    { path: "/", label: "Home", icon: <Home className="h-6 w-6" /> },
+    { path: `/profile/${currentUser?.user_id}`, label: "Profile", icon: <User className="h-6 w-6" /> },
+    { path: "/forum", label: "Forum", icon: <MessageSquare className="h-6 w-6" /> },
+    { path: "/events", label: "Events", icon: <Calendar className="h-6 w-6" /> },
+    { path: "/bookmarks", label: "Bookmarks", icon: <Bookmark className="h-6 w-6" /> },
+    { path: "/people", label: "People", icon: <Users className="h-6 w-6" /> },
+    ...(currentUser?.role === "admin" ? [
+      { path: "/reports", label: "Reports", icon: <BarChart2 className="h-6 w-6" /> },
+      { path: "/register", label: "Register User", icon: <UserPlus className="h-6 w-6" /> }
+    ] : [])
+  ];
+
   return (
     <div 
       className={`fixed h-[calc(100vh-4rem)] top-16 overflow-y-auto transition-all duration-300 ease-in-out z-40
@@ -29,170 +42,26 @@ function Leftbar({ open, setOpen }) {
         {/* Menu items */}
         <nav className="flex-1">
           <ul className="space-y-2">
-            {/* Home */}
-            <li>
-              <Link
-                to="/"
-                onClick={handleLinkClick}
-                className={`flex items-center md:justify-${open ? "start" : "center"} gap-3 p-3 rounded-xl transition-all duration-200 ${
-                  location.pathname === "/"
-                    ? theme === "dark"
-                      ? "bg-emerald-900/30 text-emerald-400"
-                      : "bg-teal-100/50 text-teal-600"
-                    : theme === "dark"
-                    ? "hover:bg-gray-800 text-gray-300"
-                    : "hover:bg-gray-100 text-gray-600"
-                }`}
-              >
-                <Home className="h-6 w-6" />
-                <span className={`font-medium ${!open && "md:hidden"}`}>Home</span>
-              </Link>
-            </li>
-            
-            {/* Profile */}
-            <li>
-              <Link
-                to={`/profile/${currentUser?.user_id}`}
-                onClick={handleLinkClick}
-                className={`flex items-center md:justify-${open ? "start" : "center"} gap-3 p-3 rounded-xl transition-all duration-200 ${
-                  location.pathname.startsWith("/profile")
-                    ? theme === "dark"
-                      ? "bg-emerald-900/30 text-emerald-400"
-                      : "bg-teal-100/50 text-teal-600"
-                    : theme === "dark"
-                    ? "hover:bg-gray-800 text-gray-300"
-                    : "hover:bg-gray-100 text-gray-600"
-                }`}
-              >
-                <User className="h-6 w-6" />
-                <span className={`font-medium ${!open && "md:hidden"}`}>Profile</span>
-              </Link>
-            </li>
-            
-            {/* Forum */}
-            <li>
-              <Link
-                to="/forum"
-                onClick={handleLinkClick}
-                className={`flex items-center md:justify-${open ? "start" : "center"} gap-3 p-3 rounded-xl transition-all duration-200 ${
-                  location.pathname === "/forum"
-                    ? theme === "dark"
-                      ? "bg-emerald-900/30 text-emerald-400"
-                      : "bg-teal-100/50 text-teal-600"
-                    : theme === "dark"
-                    ? "hover:bg-gray-800 text-gray-300"
-                    : "hover:bg-gray-100 text-gray-600"
-                }`}
-              >
-                <MessageSquare className="h-6 w-6" />
-                <span className={`font-medium ${!open && "md:hidden"}`}>Forum</span>
-              </Link>
-            </li>
-            
-            {/* Events */}
-            <li>
-              <Link
-                to="/events"
-                onClick={handleLinkClick}
-                className={`flex items-center md:justify-${open ? "start" : "center"} gap-3 p-3 rounded-xl transition-all duration-200 ${
-                  location.pathname === "/events"
-                    ? theme === "dark"
-                      ? "bg-emerald-900/30 text-emerald-400"
-                      : "bg-teal-100/50 text-teal-600"
-                    : theme === "dark"
-                    ? "hover:bg-gray-800 text-gray-300"
-                    : "hover:bg-gray-100 text-gray-600"
-                }`}
-              >
-                <Calendar className="h-6 w-6" />
-                <span className={`font-medium ${!open && "md:hidden"}`}>Events</span>
-              </Link>
-            </li>
-            
-            {/* Bookmarks */}
-            <li>
-              <Link
-                to="/bookmarks"
-                onClick={handleLinkClick}
-                className={`flex items-center md:justify-${open ? "start" : "center"} gap-3 p-3 rounded-xl transition-all duration-200 ${
-                  location.pathname === "/bookmarks"
-                    ? theme === "dark"
-                      ? "bg-emerald-900/30 text-emerald-400"
-                      : "bg-teal-100/50 text-teal-600"
-                    : theme === "dark"
-                    ? "hover:bg-gray-800 text-gray-300"
-                    : "hover:bg-gray-100 text-gray-600"
-                }`}
-              >
-                <Bookmark className="h-6 w-6" />
-                <span className={`font-medium ${!open && "md:hidden"}`}>Bookmarks</span>
-              </Link>
-            </li>
-            
-            {/* People */}
-            <li>
-              <Link
-                to="/people"
-                onClick={handleLinkClick}
-                className={`flex items-center md:justify-${open ? "start" : "center"} gap-3 p-3 rounded-xl transition-all duration-200 ${
-                  location.pathname === "/people"
-                    ? theme === "dark"
-                      ? "bg-emerald-900/30 text-emerald-400"
-                      : "bg-teal-100/50 text-teal-600"
-                    : theme === "dark"
-                    ? "hover:bg-gray-800 text-gray-300"
-                    : "hover:bg-gray-100 text-gray-600"
-                }`}
-              >
-                <Users className="h-6 w-6" />
-                <span className={`font-medium ${!open && "md:hidden"}`}>People</span>
-              </Link>
-            </li>
-            
-            {/* Admin Section */}
-            {currentUser?.role === "admin" && (
-              <>
-                {/* Reports */}
-                <li>
-                  <Link
-                    to="/reports"
-                    onClick={handleLinkClick}
-                    className={`flex items-center md:justify-${open ? "start" : "center"} gap-3 p-3 rounded-xl transition-all duration-200 ${
-                      location.pathname === "/reports"
-                        ? theme === "dark"
-                          ? "bg-emerald-900/30 text-emerald-400"
-                          : "bg-teal-100/50 text-teal-600"
-                        : theme === "dark"
-                        ? "hover:bg-gray-800 text-gray-300"
-                        : "hover:bg-gray-100 text-gray-600"
-                    }`}
-                  >
-                    <BarChart2 className="h-6 w-6" />
-                    <span className={`font-medium ${!open && "md:hidden"}`}>Reports</span>
-                  </Link>
-                </li>
-                
-                {/* Register User - New Admin Option */}
-                <li>
-                  <Link
-                    to="/register"
-                    onClick={handleLinkClick}
-                    className={`flex items-center md:justify-${open ? "start" : "center"} gap-3 p-3 rounded-xl transition-all duration-200 ${
-                      location.pathname === "/register"
-                        ? theme === "dark"
-                          ? "bg-purple-900/30 text-purple-400"
-                          : "bg-purple-100/50 text-purple-600"
-                        : theme === "dark"
-                        ? "hover:bg-gray-800 text-gray-300"
-                        : "hover:bg-gray-100 text-gray-600"
-                    }`}
-                  >
-                    <UserPlus className="h-6 w-6" />
-                    <span className={`font-medium ${!open && "md:hidden"}`}>Register User</span>
-                  </Link>
-                </li>
-              </>
-            )}
+            {menuItems.map((item) => (
+              <li key={item.path}>
+                <Link
+                  to={item.path}
+                  onClick={handleLinkClick}
+                  className={`flex items-center md:justify-${open ? "start" : "center"} gap-3 p-3 rounded-xl transition-all duration-200 ${
+                    location.pathname === item.path
+                      ? theme === "dark"
+                        ? "bg-emerald-900/30 text-emerald-400"
+                        : "bg-teal-100/50 text-teal-600"
+                      : theme === "dark"
+                      ? "hover:bg-gray-800/70 text-gray-300 hover:text-gray-100"
+                      : "hover:bg-gray-100/70 text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  {item.icon}
+                  <span className={`font-medium ${!open && "md:hidden"}`}>{item.label}</span>
+                </Link>
+              </li>
+            ))}
           </ul>
         </nav>
         
@@ -216,6 +85,7 @@ function Leftbar({ open, setOpen }) {
 }
 
 export default Leftbar;
+
 
 
 

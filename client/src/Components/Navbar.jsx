@@ -70,8 +70,8 @@ function Navbar({ open, setOpen }) {
             onClick={toggleTheme}
             className={`p-2 rounded-lg transition-all duration-200
               ${theme === "dark" 
-                ? "hover:bg-gray-800 text-yellow-400" 
-                : "hover:bg-gray-100 text-gray-700"}`}
+                ? "hover:bg-gray-800 text-yellow-400 hover:text-yellow-300" 
+                : "hover:bg-gray-100 text-gray-700 hover:text-gray-900"}`}
           >
             {theme === "dark" ? (
               <WbSunnyOutlinedIcon className="text-xl" />
@@ -91,6 +91,7 @@ function Navbar({ open, setOpen }) {
 }
 
 export default Navbar;
+
 
 
 

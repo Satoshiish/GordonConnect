@@ -19,7 +19,7 @@ const Posts = ({ userId = null }) => {
   ];
   const [category, setCategory] = useState("");
 
-  const { isPending, error, data } = useQuery({
+  const { isPending, error, data, refetch } = useQuery({
     queryKey: userId ? ["posts", userId, category] : ["posts", category],
     queryFn: async () => {
       try {
@@ -44,7 +44,7 @@ const Posts = ({ userId = null }) => {
     retryDelay: 1000,
   });
 
-   if (isPending) {
+  if (isPending) {
     return (
       <>
         {/* Category Filter Tabs */}
@@ -67,40 +67,18 @@ const Posts = ({ userId = null }) => {
                             : tab.label === "Campus Services"
                               ? "bg-teal-900 text-teal-200 border-teal-800"
                               : "bg-gray-800 text-white border-gray-700"
-                    : tab.label === "All"
-                      ? "bg-transparent text-emerald-400 border-emerald-800 hover:bg-emerald-900/30"
+                    : "bg-gray-800/50 text-gray-300 border-gray-700 hover:bg-gray-800 hover:text-gray-100"
+                  : category === tab.value
+                    ? tab.label === "All"
+                      ? "bg-emerald-500 text-white border-emerald-500"
                       : tab.label === "Student Life"
-                        ? "bg-transparent text-blue-300 border-blue-800 hover:bg-blue-900/30"
+                        ? "bg-blue-500 text-white border-blue-500"
                         : tab.label === "Organization"
-                          ? "bg-transparent text-purple-300 border-purple-800 hover:bg-purple-900/30"
+                          ? "bg-purple-500 text-white border-purple-500"
                           : tab.label === "Academics"
-                            ? "bg-transparent text-orange-300 border-orange-800 hover:bg-orange-900/30"
-                            : tab.label === "Campus Services"
-                              ? "bg-transparent text-teal-300 border-teal-800 hover:bg-teal-900/30"
-                              : "bg-transparent text-gray-300 border-gray-700 hover:bg-gray-800/30"
-                : category === tab.value
-                  ? tab.label === "All"
-                    ? "bg-emerald-500 text-white border-emerald-500"
-                    : tab.label === "Student Life"
-                      ? "bg-blue-500 text-white border-blue-500"
-                      : tab.label === "Organization"
-                        ? "bg-purple-500 text-white border-purple-500"
-                        : tab.label === "Academics"
-                          ? "bg-orange-500 text-white border-orange-500"
-                          : tab.label === "Campus Services"
-                            ? "bg-teal-500 text-white border-teal-500"
-                            : "bg-emerald-500 text-white border-emerald-500"
-                  : tab.label === "All"
-                    ? "bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50"
-                    : tab.label === "Student Life"
-                      ? "bg-white text-blue-700 border-blue-200 hover:bg-blue-50"
-                      : tab.label === "Organization"
-                        ? "bg-white text-purple-700 border-purple-200 hover:bg-purple-50"
-                        : tab.label === "Academics"
-                          ? "bg-white text-orange-700 border-orange-200 hover:bg-orange-50"
-                          : tab.label === "Campus Services"
-                            ? "bg-white text-teal-700 border-teal-200 hover:bg-teal-50"
-                            : "bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50"
+                            ? "bg-orange-500 text-white border-orange-500"
+                            : "bg-teal-500 text-white border-teal-500"
+                    : "bg-white text-gray-700 border-gray-200 hover:bg-gray-100 hover:text-gray-900"
               }
             `}
           >
@@ -108,10 +86,9 @@ const Posts = ({ userId = null }) => {
           </button>
         ))}
         </div>
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className={`w-8 h-8 animate-spin ${
-            theme === "dark" ? "text-emerald-500" : "text-teal-500"
-          }`} />
+        <div className={`flex justify-center items-center py-20 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>
+          <Loader2 className="h-8 w-8 animate-spin mr-2" />
+          <span className="font-medium">Loading posts...</span>
         </div>
       </>
     );
@@ -140,17 +117,7 @@ const Posts = ({ userId = null }) => {
                             : tab.label === "Campus Services"
                               ? "bg-teal-900 text-teal-200 border-teal-800"
                               : "bg-gray-800 text-white border-gray-700"
-                    : tab.label === "All"
-                      ? "bg-transparent text-emerald-400 border-emerald-800 hover:bg-emerald-900/30"
-                      : tab.label === "Student Life"
-                        ? "bg-transparent text-blue-300 border-blue-800 hover:bg-blue-900/30"
-                        : tab.label === "Organization"
-                          ? "bg-transparent text-purple-300 border-purple-800 hover:bg-purple-900/30"
-                          : tab.label === "Academics"
-                            ? "bg-transparent text-orange-300 border-orange-800 hover:bg-orange-900/30"
-                            : tab.label === "Campus Services"
-                              ? "bg-transparent text-teal-300 border-teal-800 hover:bg-teal-900/30"
-                              : "bg-transparent text-gray-300 border-gray-700 hover:bg-gray-800/30"
+                    : "bg-gray-800/50 text-gray-300 border-gray-700 hover:bg-gray-800 hover:text-gray-100"
                   : category === tab.value
                     ? tab.label === "All"
                       ? "bg-emerald-500 text-white border-emerald-500"
@@ -160,33 +127,23 @@ const Posts = ({ userId = null }) => {
                           ? "bg-purple-500 text-white border-purple-500"
                           : tab.label === "Academics"
                             ? "bg-orange-500 text-white border-orange-500"
-                            : tab.label === "Campus Services"
-                              ? "bg-teal-500 text-white border-teal-500"
-                              : "bg-emerald-500 text-white border-emerald-500"
-                    : tab.label === "All"
-                      ? "bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50"
-                      : tab.label === "Student Life"
-                        ? "bg-white text-blue-700 border-blue-200 hover:bg-blue-50"
-                        : tab.label === "Organization"
-                          ? "bg-white text-purple-700 border-purple-200 hover:bg-purple-50"
-                          : tab.label === "Academics"
-                            ? "bg-white text-orange-700 border-orange-200 hover:bg-orange-50"
-                            : tab.label === "Campus Services"
-                              ? "bg-white text-teal-700 border-teal-200 hover:bg-teal-50"
-                              : "bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50"
-                }
-              `}
-            >
-              {tab.label}
-            </button>
-          ))}
+                            : "bg-teal-500 text-white border-teal-500"
+                    : "bg-white text-gray-700 border-gray-200 hover:bg-gray-100 hover:text-gray-900"
+              }
+            `}
+          >
+            {tab.label}
+          </button>
+        ))}
         </div>
-        <div className={`text-center py-10 rounded-2xl mt-4 ${
-          theme === "dark" ? "bg-gray-800/60" : "bg-gray-50"
-        }`}>
-          <p className="text-base opacity-70">
-            Something went wrong. Please try again later.
-          </p>
+        <div className={`text-center py-10 rounded-xl ${theme === "dark" ? "bg-red-900/20 text-red-300" : "bg-red-50 text-red-500"}`}>
+          <p className="font-medium">Failed to load posts</p>
+          <button 
+            onClick={() => refetch()} 
+            className={`mt-3 px-4 py-2 rounded-lg ${theme === "dark" ? "bg-gray-800 hover:bg-gray-700" : "bg-gray-100 hover:bg-gray-200"}`}
+          >
+            Try Again
+          </button>
         </div>
       </>
     );
@@ -214,17 +171,7 @@ const Posts = ({ userId = null }) => {
                           : tab.label === "Campus Services"
                             ? "bg-teal-900 text-teal-200 border-teal-800"
                             : "bg-gray-800 text-white border-gray-700"
-                  : tab.label === "All"
-                    ? "bg-transparent text-emerald-400 border-emerald-800 hover:bg-emerald-900/30"
-                    : tab.label === "Student Life"
-                      ? "bg-transparent text-blue-300 border-blue-800 hover:bg-blue-900/30"
-                      : tab.label === "Organization"
-                        ? "bg-transparent text-purple-300 border-purple-800 hover:bg-purple-900/30"
-                        : tab.label === "Academics"
-                          ? "bg-transparent text-orange-300 border-orange-800 hover:bg-orange-900/30"
-                          : tab.label === "Campus Services"
-                            ? "bg-transparent text-teal-300 border-teal-800 hover:bg-teal-900/30"
-                            : "bg-transparent text-gray-300 border-gray-700 hover:bg-gray-800/30"
+                  : "bg-gray-800/50 text-gray-300 border-gray-700 hover:bg-gray-800 hover:text-gray-100"
                 : category === tab.value
                   ? tab.label === "All"
                     ? "bg-emerald-500 text-white border-emerald-500"
@@ -234,20 +181,8 @@ const Posts = ({ userId = null }) => {
                         ? "bg-purple-500 text-white border-purple-500"
                         : tab.label === "Academics"
                           ? "bg-orange-500 text-white border-orange-500"
-                          : tab.label === "Campus Services"
-                            ? "bg-teal-500 text-white border-teal-500"
-                            : "bg-emerald-500 text-white border-emerald-500"
-                  : tab.label === "All"
-                    ? "bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50"
-                    : tab.label === "Student Life"
-                      ? "bg-white text-blue-700 border-blue-200 hover:bg-blue-50"
-                      : tab.label === "Organization"
-                        ? "bg-white text-purple-700 border-purple-200 hover:bg-purple-50"
-                        : tab.label === "Academics"
-                          ? "bg-white text-orange-700 border-orange-200 hover:bg-orange-50"
-                          : tab.label === "Campus Services"
-                            ? "bg-white text-teal-700 border-teal-200 hover:bg-teal-50"
-                            : "bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50"
+                          : "bg-teal-500 text-white border-teal-500"
+                  : "bg-white text-gray-700 border-gray-200 hover:bg-gray-100 hover:text-gray-900"
               }
             `}
           >
@@ -292,6 +227,7 @@ const Posts = ({ userId = null }) => {
 };
 
 export default Posts;
+
 
 
 
