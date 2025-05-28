@@ -194,6 +194,16 @@ const Forum = () => {
     fetchForums();
   }, [currentUser]);
 
+  // Add this near the top of your component to debug the values
+  useEffect(() => {
+    if (forums.length > 0 && currentUser) {
+      console.log("Current user ID:", currentUser.id);
+      console.log("First forum user_id:", forums[0].user_id);
+      console.log("Is admin?", isAdmin);
+      console.log("Should show delete?", currentUser.id === forums[0].user_id || isAdmin);
+    }
+  }, [forums, currentUser, isAdmin]);
+
   return (
     <div className={`min-h-screen ${theme === "dark" ? "bg-gray-900" : "bg-gray-50"} text-gray-900`}>
       <div className="max-w-6xl mx-auto p-2 sm:p-4 md:p-6 lg:p-8">
@@ -487,7 +497,7 @@ const Forum = () => {
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => setPendingDeleteForum(forum.forum_id)}
-                        className={`absolute top-4 right-4 p-2 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-500 transition-all`}
+                        className={`p-2 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-500 transition-all`}
                       >
                         <Trash2 size={18} />
                       </motion.button>
@@ -797,6 +807,10 @@ const Forum = () => {
 };
 
 export default Forum;
+
+
+
+
 
 
 
