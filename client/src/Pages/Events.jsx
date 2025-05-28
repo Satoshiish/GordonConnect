@@ -27,6 +27,24 @@ import { toast } from 'react-hot-toast';
 
 const API_BASE_URL = "https://gordonconnect-production-f2bd.up.railway.app/api";
 
+// Define formatDate function at the top level
+const formatDate = (dateString) => {
+  if (!dateString) return "TBA";
+  
+  // Create a date object
+  const date = new Date(dateString);
+  
+  // Check if date is valid
+  if (isNaN(date.getTime())) return dateString;
+  
+  // Format as Month Day, Year (e.g., "Jan 15, 2023")
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
+  });
+};
+
 const Events = () => {
   const { theme } = useTheme();
   const { currentUser } = useContext(AuthContext);
@@ -276,16 +294,7 @@ const Events = () => {
     return `${hours}:${minutes}`;
   };
 
-  const formatDatePretty = (dateString) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
+  const formatDatePretty = formatDate;
 
   const sendJoinEmail = async () => {
     if (!selectedEvent || !emailInput) return;
@@ -310,7 +319,7 @@ const Events = () => {
       user_name: userName,
       user_email: emailInput,
       event_title: selectedEvent.title,
-      event_date: formatDatePretty(selectedEvent.date),
+      event_date: formatDate(selectedEvent.date),
       event_time: formatTimeToAMPM(getTimeFromISO(selectedEvent.time)),
       event_location: selectedEvent.location,
     };
@@ -416,7 +425,7 @@ const Events = () => {
         const templateParams = {
           user_email: email,
           event_title: updatedEvent.title,
-          event_date: formatDatePretty(updatedEvent.date),
+          event_date: formatDate(updatedEvent.date),
           event_time: formatTimeToAMPM(updatedEvent.time),
           event_location: updatedEvent.location,
           event_description: updatedEvent.description,
@@ -599,7 +608,7 @@ const Events = () => {
                       ? "bg-gray-800/90 text-white" 
                       : "bg-white/90 text-gray-900"
                   }`}>
-                    {formatDate(event.event_date)}
+                    {formatDate(event.date)}
                   </div>
                 </div>
                 
@@ -616,7 +625,7 @@ const Events = () => {
                   <div className={`flex items-center gap-2 text-xs ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>
                     <div className="flex items-center gap-1">
                       <Clock size={14} />
-                      <span>{formatTime(event.event_time)}</span>
+                      <span>{formatTime(event.time)}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <MapPin size={14} />
@@ -1507,6 +1516,9 @@ const Events = () => {
 };
 
 export default Events;
+
+
+
 
 
 
