@@ -27,13 +27,11 @@ const Posts = ({ userId = null }) => {
         let url = userId ? `/posts?userId=${userId}` : "/posts";
         if (category) url += (url.includes("?") ? "&" : "?") + `anyCategory=${encodeURIComponent(category)}`;
         
-        const config = {};
-        if (token) {
-          config.headers = { Authorization: `Bearer ${token}` };
-        }
-        
         console.log("Fetching posts with URL:", url);
-        const res = await makeRequest.get(url, config);
+        console.log("Token available:", !!token);
+        
+        const res = await makeRequest.get(url);
+        console.log("Posts fetch successful, received:", res.data?.length || 0, "posts");
         return res.data || [];
       } catch (error) {
         console.error("Error fetching posts:", error);
@@ -44,8 +42,10 @@ const Posts = ({ userId = null }) => {
           console.error("Server error:", error.response.data);
         }
         
-        // Throw the error to trigger the error UI
-        throw error;
+        console.error("Query error state:", error);
+        
+        // Return empty array instead of throwing error
+        return [];
       }
     },
     enabled: userId !== undefined,
@@ -311,6 +311,7 @@ const Posts = ({ userId = null }) => {
 };
 
 export default Posts;
+
 
 
 
