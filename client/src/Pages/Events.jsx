@@ -479,6 +479,30 @@ const Events = () => {
     return date.toISOString().split('T')[0];
   };
 
+  // Add this function alongside formatDate
+  const formatTime = (timeString) => {
+    if (!timeString) return "TBA";
+    
+    // If it's already in 12-hour format, return as is
+    if (timeString.includes("AM") || timeString.includes("PM")) {
+      return timeString;
+    }
+    
+    // Try to parse the time (assuming HH:MM 24-hour format)
+    try {
+      const [hours, minutes] = timeString.split(':').map(Number);
+      
+      // Convert to 12-hour format
+      const period = hours >= 12 ? 'PM' : 'AM';
+      const hour12 = hours % 12 || 12; // Convert 0 to 12 for 12 AM
+      
+      return `${hour12}:${minutes.toString().padStart(2, '0')} ${period}`;
+    } catch (err) {
+      // If parsing fails, return the original string
+      return timeString;
+    }
+  };
+
   // Filter out past events before rendering
   const upcomingEvents = events.filter(e => !isPastEvent(e.date, e.time));
 
@@ -1483,6 +1507,7 @@ const Events = () => {
 };
 
 export default Events;
+
 
 
 
