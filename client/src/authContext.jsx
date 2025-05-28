@@ -59,7 +59,6 @@ export const AuthContextProvider = ({ children }) => {
 
   const login = async (inputs) => {
     try {
-      console.log("AuthContext: Attempting login for user:", inputs.username);
       const res = await makeRequest.post(
         "/auth/login",
         inputs,
@@ -68,14 +67,12 @@ export const AuthContextProvider = ({ children }) => {
         }
       );
       const userData = res.data;
-      console.log("AuthContext: Login successful, setting user data");
       setCurrentUser(userData);
       localStorage.setItem("user", JSON.stringify(userData));
       localStorage.setItem("token", userData.token);
       return userData;
     } catch (err) {
-      console.error("AuthContext: Login failed:", err);
-      // Rethrow the error so the component can handle it
+      console.error("Login failed:", err);
       throw err;
     }
   };
@@ -121,12 +118,13 @@ export const AuthContextProvider = ({ children }) => {
 
   const isAdmin = () => currentUser?.role === "admin";
   const isGuest = () => currentUser?.role === "guest";
+  const isRegularUser = () => currentUser && !isAdmin() && !isGuest();
 
   // Permission check functions
+  const canPost = () => !isGuest();
   const canComment = () => !isGuest();
   const canLike = () => !isGuest();
   const canBookmark = () => !isGuest();
-  const canPost = () => !isGuest();
   const canEdit = (ownerId) => !isGuest() && (isAdmin() || currentUser?.id === ownerId);
   const canDelete = (ownerId) => !isGuest() && (isAdmin() || currentUser?.id === ownerId);
 
@@ -169,6 +167,7 @@ export const AuthContextProvider = ({ children }) => {
         updateUser,
         isAdmin,
         isGuest,
+        isRegularUser,
         loginAsGuest,
         logout,
         canComment,

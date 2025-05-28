@@ -1,4 +1,4 @@
-import { useContext, useState, useRef } from "react";
+import { useContext, useState, useEffect } from "react";
 import { AuthContext } from "../authContext";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { makeRequest } from "../axios";
@@ -9,8 +9,26 @@ import { Image, X, Send, CheckCircle, Check, UploadCloud } from "lucide-react";
 // Add API_BASE_URL constant
 const API_BASE_URL = process.env.REACT_APP_API_URL || "https://gordonconnect-production-f2bd.up.railway.app/api";
 
-const Share = () => {
+const Share = ({ onPostCreated }) => {
+  const { currentUser, isAdmin, isGuest } = useContext(AuthContext);
   const { theme } = useTheme();
+  const [canPost, setCanPost] = useState(false);
+  
+  // Check if user can post (admin or regular user, not guest)
+  useEffect(() => {
+    if (currentUser) {
+      // Allow posting if user is admin or regular user (not guest)
+      setCanPost(!isGuest());
+    } else {
+      setCanPost(false);
+    }
+  }, [currentUser, isGuest]);
+  
+  // If user can't post, don't render the component
+  if (!canPost) {
+    return null;
+  }
+  
   const [file, setFile] = useState(null);
   const [desc, setDesc] = useState("");
   const [selectedCategories, setSelectedCategories] = useState([]);
@@ -19,8 +37,6 @@ const Share = () => {
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef();
 
-  const { currentUser } = useContext(AuthContext);
-  const isAdmin = currentUser?.role === "admin";
   const queryClient = useQueryClient();
 
   const availableCategories = ["Student Life", "Organization", "Academics", "Campus Services"];
@@ -297,6 +313,7 @@ const Share = () => {
 };
 
 export default Share;
+
 
 
 

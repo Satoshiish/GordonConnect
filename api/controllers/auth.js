@@ -34,48 +34,31 @@ export const login = (req, res) => {
   const q = "SELECT * FROM users WHERE username = ?";
 
   db.query(q, [req.body.username], (err, data) => {
-    if (err) {
-      console.error("Database error during login:", err);
-      return res.status(500).json(err);
-    }
-    
-    if (data.length === 0) {
-      console.log(`User not found: ${req.body.username}`);
-      return res.status(404).json("User not found!");
-    }
+    if (err) return res.status(500).json(err);
+    if (data.length === 0) return res.status(404).json("User not found!");
 
     const user = data[0];
-    console.log(`User found: ${user.username}, attempting password verification`);
 
-    try {
-      // Ensure password verification
-      const checkPassword = bcrypt.compareSync(req.body.password, user.password);
-      if (!checkPassword) {
-        console.log(`Password verification failed for user: ${user.username}`);
-        return res.status(400).json("Wrong password or username!");
-      }
+    // Ensure password verification
+    const checkPassword = bcrypt.compareSync(req.body.password, user.password);
+    if (!checkPassword)
+      return res.status(400).json("Wrong password or username!");
 
-      // Generate JWT token
-      const token = jwt.sign(
-        { id: user.user_id },
-        "secretkey",
-        { expiresIn: "1h" }
-      );
+    // 🛠 Correcting ID reference
+    const token = jwt.sign(
+      { id: user.user_id }, // ✅ Use 'user_id' instead of 'id'
+      "secretkey",
+      { expiresIn: "1h" } // Optional: Set expiration time
+    );
 
-      const { password, ...others } = user;
+    const { password, ...others } = user;
 
-      console.log(`Login successful for user: ${user.username}`);
-      
-      res
-        .cookie("accessToken", token, {
-          httpOnly: true,
-        })
-        .status(200)
-        .json({ ...others, token });
-    } catch (error) {
-      console.error("Error during login process:", error);
-      return res.status(500).json("An error occurred during login");
-    }
+    res
+      .cookie("accessToken", token, {
+        httpOnly: true,
+      })
+      .status(200)
+      .json({ ...others, token }); // Include token in response
   });
 };
 
