@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 import Post from "./Post";
 import { useQuery } from "@tanstack/react-query";
 import { makeRequest } from "../axios";
@@ -329,6 +329,7 @@ const Posts = ({ userId = null }) => {
 };
 
 export default Posts;
+
 
 
 

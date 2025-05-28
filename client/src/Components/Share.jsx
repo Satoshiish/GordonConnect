@@ -1,8 +1,8 @@
-import { useContext, useState, useEffect } from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 import { AuthContext } from "../authContext";
+import { useTheme } from "../ThemeContext";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { makeRequest } from "../axios";
-import { useTheme } from "../ThemeContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { Image, X, Send, CheckCircle, Check, UploadCloud } from "lucide-react";
 
@@ -324,6 +324,7 @@ const Share = ({ onPostCreated }) => {
 };
 
 export default Share;
+
 
 
 
