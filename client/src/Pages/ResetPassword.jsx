@@ -36,19 +36,23 @@ function ResetPassword() {
     }
 
     try {
-      const response = await makeRequest.fetch("/auth/reset-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, newPassword }),
+      // Get email from URL if not already set
+      const params = new URLSearchParams(window.location.search);
+      const emailParam = params.get("email") || email;
+      
+      const response = await makeRequest.post("/auth/reset-password", {
+        username,
+        email: emailParam,
+        newPassword
       });
-      const data = await response.json();
-      if (!response.ok) {
-        setErr(data.error || "Failed to reset password.");
-      } else {
-        setSuccess("Password has been reset successfully!");
-      }
+      
+      setSuccess("Password has been reset successfully!");
+      setTimeout(() => {
+        navigate("/auth");
+      }, 3000);
     } catch (error) {
-      setErr("Failed to reset password. Please try again.");
+      console.error("Reset password error:", error);
+      setErr(error.response?.data?.error || "Failed to reset password. Please try again.");
     } finally {
       setIsLoading(false);
     }
