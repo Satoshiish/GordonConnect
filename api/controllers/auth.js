@@ -102,7 +102,7 @@ export const requestPasswordReset = (req, res) => {
     if (data.length === 0) return res.status(404).json({ error: "User not found." });
 
     // Generate a simple reset link (for demo)
-    const link = `http://localhost:5173/reset-password?email=${encodeURIComponent(email)}`;
+    const link = `https://gordon-connect.vercel.app/reset-password?email=${encodeURIComponent(email)}`;
     return res.json({ link });
   });
 };
