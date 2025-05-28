@@ -47,44 +47,78 @@ const Posts = ({ userId = null }) => {
   if (isPending) {
     return (
       <>
-        {/* Category Filter Tabs */}
-        <div className="mb-5 flex gap-2 flex-wrap">
-          {categoryTabs.map(tab => (
-            <button
-              key={tab.value}
-              onClick={() => setCategory(tab.value)}
-              className={`px-5 py-2 rounded-full font-semibold shadow-sm border-2 transition
-                ${theme === "dark"
-                  ? category === tab.value
-                    ? tab.label === "All"
-                      ? "bg-emerald-600 text-white border-emerald-600"
-                      : tab.label === "Student Life"
-                        ? "bg-blue-900 text-blue-200 border-blue-800"
-                        : tab.label === "Organization"
-                          ? "bg-purple-900 text-purple-200 border-purple-800"
-                          : tab.label === "Academics"
-                            ? "bg-orange-900 text-orange-200 border-orange-800"
-                            : tab.label === "Campus Services"
-                              ? "bg-teal-900 text-teal-200 border-teal-800"
-                              : "bg-gray-800 text-white border-gray-700"
-                    : "bg-gray-800/50 text-gray-300 border-gray-700 hover:bg-gray-800 hover:text-gray-100"
-                  : category === tab.value
-                    ? tab.label === "All"
-                      ? "bg-emerald-500 text-white border-emerald-500"
-                      : tab.label === "Student Life"
-                        ? "bg-blue-500 text-white border-blue-500"
-                        : tab.label === "Organization"
-                          ? "bg-purple-500 text-white border-purple-500"
-                          : tab.label === "Academics"
-                            ? "bg-orange-500 text-white border-orange-500"
-                            : "bg-teal-500 text-white border-teal-500"
-                    : "bg-white text-gray-700 border-gray-200 hover:bg-gray-100 hover:text-gray-900"
-              }
-            `}
-          >
-            {tab.label}
-          </button>
-        ))}
+        {/* Category Filter Tabs with Legend */}
+        <div className="mb-5">
+          {/* Category Legend */}
+          <div className={`mb-3 p-3 rounded-lg flex flex-wrap gap-3 items-center ${
+            theme === "dark" ? "bg-gray-800/70 border border-gray-700" : "bg-gray-50 border border-gray-200"
+          }`}>
+            <span className={`text-sm font-medium ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>
+              Categories:
+            </span>
+            <div className="flex flex-wrap gap-2">
+              <div className="flex items-center gap-1.5">
+                <div className={`w-3 h-3 rounded-full ${theme === "dark" ? "bg-emerald-600" : "bg-emerald-500"}`}></div>
+                <span className="text-xs">All</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className={`w-3 h-3 rounded-full ${theme === "dark" ? "bg-blue-900" : "bg-blue-500"}`}></div>
+                <span className="text-xs">Student Life</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className={`w-3 h-3 rounded-full ${theme === "dark" ? "bg-purple-900" : "bg-purple-500"}`}></div>
+                <span className="text-xs">Organization</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className={`w-3 h-3 rounded-full ${theme === "dark" ? "bg-orange-900" : "bg-orange-500"}`}></div>
+                <span className="text-xs">Academics</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className={`w-3 h-3 rounded-full ${theme === "dark" ? "bg-teal-900" : "bg-teal-500"}`}></div>
+                <span className="text-xs">Campus Services</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Category Filter Buttons */}
+          <div className="flex gap-2 flex-wrap">
+            {categoryTabs.map(tab => (
+              <button
+                key={tab.value}
+                onClick={() => setCategory(tab.value)}
+                className={`px-5 py-2 rounded-full font-semibold shadow-sm border-2 transition
+                  ${theme === "dark"
+                    ? category === tab.value
+                      ? tab.label === "All"
+                        ? "bg-emerald-600 text-white border-emerald-600"
+                        : tab.label === "Student Life"
+                          ? "bg-blue-900 text-blue-200 border-blue-800"
+                          : tab.label === "Organization"
+                            ? "bg-purple-900 text-purple-200 border-purple-800"
+                            : tab.label === "Academics"
+                              ? "bg-orange-900 text-orange-200 border-orange-800"
+                              : tab.label === "Campus Services"
+                                ? "bg-teal-900 text-teal-200 border-teal-800"
+                                : "bg-gray-800 text-white border-gray-700"
+                      : "bg-gray-800/50 text-gray-300 border-gray-700 hover:bg-gray-800 hover:text-gray-100"
+                    : category === tab.value
+                      ? tab.label === "All"
+                        ? "bg-emerald-500 text-white border-emerald-500"
+                        : tab.label === "Student Life"
+                          ? "bg-blue-500 text-white border-blue-500"
+                          : tab.label === "Organization"
+                            ? "bg-purple-500 text-white border-purple-500"
+                            : tab.label === "Academics"
+                              ? "bg-orange-500 text-white border-orange-500"
+                              : "bg-teal-500 text-white border-teal-500"
+                      : "bg-white text-gray-700 border-gray-200 hover:bg-gray-100 hover:text-gray-900"
+                }
+              `}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
         <div className={`flex justify-center items-center py-20 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>
           <Loader2 className="h-8 w-8 animate-spin mr-2" />
@@ -97,44 +131,78 @@ const Posts = ({ userId = null }) => {
   if (error) {
     return (
       <>
-        {/* Category Filter Tabs */}
-        <div className="mb-5 flex gap-2 flex-wrap">
-          {categoryTabs.map(tab => (
-            <button
-              key={tab.value}
-              onClick={() => setCategory(tab.value)}
-              className={`px-5 py-2 rounded-full font-semibold shadow-sm border-2 transition
-                ${theme === "dark"
-                  ? category === tab.value
-                    ? tab.label === "All"
-                      ? "bg-emerald-600 text-white border-emerald-600"
-                      : tab.label === "Student Life"
-                        ? "bg-blue-900 text-blue-200 border-blue-800"
-                        : tab.label === "Organization"
-                          ? "bg-purple-900 text-purple-200 border-purple-800"
-                          : tab.label === "Academics"
-                            ? "bg-orange-900 text-orange-200 border-orange-800"
-                            : tab.label === "Campus Services"
-                              ? "bg-teal-900 text-teal-200 border-teal-800"
-                              : "bg-gray-800 text-white border-gray-700"
-                    : "bg-gray-800/50 text-gray-300 border-gray-700 hover:bg-gray-800 hover:text-gray-100"
-                  : category === tab.value
-                    ? tab.label === "All"
-                      ? "bg-emerald-500 text-white border-emerald-500"
-                      : tab.label === "Student Life"
-                        ? "bg-blue-500 text-white border-blue-500"
-                        : tab.label === "Organization"
-                          ? "bg-purple-500 text-white border-purple-500"
-                          : tab.label === "Academics"
-                            ? "bg-orange-500 text-white border-orange-500"
-                            : "bg-teal-500 text-white border-teal-500"
-                    : "bg-white text-gray-700 border-gray-200 hover:bg-gray-100 hover:text-gray-900"
-              }
-            `}
-          >
-            {tab.label}
-          </button>
-        ))}
+        {/* Category Filter Tabs with Legend */}
+        <div className="mb-5">
+          {/* Category Legend */}
+          <div className={`mb-3 p-3 rounded-lg flex flex-wrap gap-3 items-center ${
+            theme === "dark" ? "bg-gray-800/70 border border-gray-700" : "bg-gray-50 border border-gray-200"
+          }`}>
+            <span className={`text-sm font-medium ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>
+              Categories:
+            </span>
+            <div className="flex flex-wrap gap-2">
+              <div className="flex items-center gap-1.5">
+                <div className={`w-3 h-3 rounded-full ${theme === "dark" ? "bg-emerald-600" : "bg-emerald-500"}`}></div>
+                <span className="text-xs">All</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className={`w-3 h-3 rounded-full ${theme === "dark" ? "bg-blue-900" : "bg-blue-500"}`}></div>
+                <span className="text-xs">Student Life</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className={`w-3 h-3 rounded-full ${theme === "dark" ? "bg-purple-900" : "bg-purple-500"}`}></div>
+                <span className="text-xs">Organization</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className={`w-3 h-3 rounded-full ${theme === "dark" ? "bg-orange-900" : "bg-orange-500"}`}></div>
+                <span className="text-xs">Academics</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className={`w-3 h-3 rounded-full ${theme === "dark" ? "bg-teal-900" : "bg-teal-500"}`}></div>
+                <span className="text-xs">Campus Services</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Category Filter Buttons */}
+          <div className="flex gap-2 flex-wrap">
+            {categoryTabs.map(tab => (
+              <button
+                key={tab.value}
+                onClick={() => setCategory(tab.value)}
+                className={`px-5 py-2 rounded-full font-semibold shadow-sm border-2 transition
+                  ${theme === "dark"
+                    ? category === tab.value
+                      ? tab.label === "All"
+                        ? "bg-emerald-600 text-white border-emerald-600"
+                        : tab.label === "Student Life"
+                          ? "bg-blue-900 text-blue-200 border-blue-800"
+                          : tab.label === "Organization"
+                            ? "bg-purple-900 text-purple-200 border-purple-800"
+                            : tab.label === "Academics"
+                              ? "bg-orange-900 text-orange-200 border-orange-800"
+                              : tab.label === "Campus Services"
+                                ? "bg-teal-900 text-teal-200 border-teal-800"
+                                : "bg-gray-800 text-white border-gray-700"
+                      : "bg-gray-800/50 text-gray-300 border-gray-700 hover:bg-gray-800 hover:text-gray-100"
+                    : category === tab.value
+                      ? tab.label === "All"
+                        ? "bg-emerald-500 text-white border-emerald-500"
+                        : tab.label === "Student Life"
+                          ? "bg-blue-500 text-white border-blue-500"
+                          : tab.label === "Organization"
+                            ? "bg-purple-500 text-white border-purple-500"
+                            : tab.label === "Academics"
+                              ? "bg-orange-500 text-white border-orange-500"
+                              : "bg-teal-500 text-white border-teal-500"
+                      : "bg-white text-gray-700 border-gray-200 hover:bg-gray-100 hover:text-gray-900"
+                }
+              `}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
         <div className={`text-center py-10 rounded-xl ${theme === "dark" ? "bg-red-900/20 text-red-300" : "bg-red-50 text-red-500"}`}>
           <p className="font-medium">Failed to load posts</p>
@@ -151,44 +219,78 @@ const Posts = ({ userId = null }) => {
 
   return (
     <>
-      {/* Category Filter Tabs */}
-      <div className="mb-5 flex gap-2 flex-wrap">
-        {categoryTabs.map(tab => (
-          <button
-            key={tab.value}
-            onClick={() => setCategory(tab.value)}
-            className={`px-5 py-2 rounded-full font-semibold shadow-sm border-2 transition
-              ${theme === "dark"
-                ? category === tab.value
-                  ? tab.label === "All"
-                    ? "bg-emerald-600 text-white border-emerald-600"
-                    : tab.label === "Student Life"
-                      ? "bg-blue-900 text-blue-200 border-blue-800"
-                      : tab.label === "Organization"
-                        ? "bg-purple-900 text-purple-200 border-purple-800"
-                        : tab.label === "Academics"
-                          ? "bg-orange-900 text-orange-200 border-orange-800"
-                          : tab.label === "Campus Services"
-                            ? "bg-teal-900 text-teal-200 border-teal-800"
-                            : "bg-gray-800 text-white border-gray-700"
-                  : "bg-gray-800/50 text-gray-300 border-gray-700 hover:bg-gray-800 hover:text-gray-100"
-                : category === tab.value
-                  ? tab.label === "All"
-                    ? "bg-emerald-500 text-white border-emerald-500"
-                    : tab.label === "Student Life"
-                      ? "bg-blue-500 text-white border-blue-500"
-                      : tab.label === "Organization"
-                        ? "bg-purple-500 text-white border-purple-500"
-                        : tab.label === "Academics"
-                          ? "bg-orange-500 text-white border-orange-500"
-                          : "bg-teal-500 text-white border-teal-500"
-                  : "bg-white text-gray-700 border-gray-200 hover:bg-gray-100 hover:text-gray-900"
+      {/* Category Filter Tabs with Legend */}
+      <div className="mb-5">
+        {/* Category Legend */}
+        <div className={`mb-3 p-3 rounded-lg flex flex-wrap gap-3 items-center ${
+          theme === "dark" ? "bg-gray-800/70 border border-gray-700" : "bg-gray-50 border border-gray-200"
+        }`}>
+          <span className={`text-sm font-medium ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>
+            Categories:
+          </span>
+          <div className="flex flex-wrap gap-2">
+            <div className="flex items-center gap-1.5">
+              <div className={`w-3 h-3 rounded-full ${theme === "dark" ? "bg-emerald-600" : "bg-emerald-500"}`}></div>
+              <span className="text-xs">All</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className={`w-3 h-3 rounded-full ${theme === "dark" ? "bg-blue-900" : "bg-blue-500"}`}></div>
+              <span className="text-xs">Student Life</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className={`w-3 h-3 rounded-full ${theme === "dark" ? "bg-purple-900" : "bg-purple-500"}`}></div>
+              <span className="text-xs">Organization</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className={`w-3 h-3 rounded-full ${theme === "dark" ? "bg-orange-900" : "bg-orange-500"}`}></div>
+              <span className="text-xs">Academics</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className={`w-3 h-3 rounded-full ${theme === "dark" ? "bg-teal-900" : "bg-teal-500"}`}></div>
+              <span className="text-xs">Campus Services</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Category Filter Buttons */}
+        <div className="flex gap-2 flex-wrap">
+          {categoryTabs.map(tab => (
+            <button
+              key={tab.value}
+              onClick={() => setCategory(tab.value)}
+              className={`px-5 py-2 rounded-full font-semibold shadow-sm border-2 transition
+                ${theme === "dark"
+                  ? category === tab.value
+                    ? tab.label === "All"
+                      ? "bg-emerald-600 text-white border-emerald-600"
+                      : tab.label === "Student Life"
+                        ? "bg-blue-900 text-blue-200 border-blue-800"
+                        : tab.label === "Organization"
+                          ? "bg-purple-900 text-purple-200 border-purple-800"
+                          : tab.label === "Academics"
+                            ? "bg-orange-900 text-orange-200 border-orange-800"
+                            : tab.label === "Campus Services"
+                              ? "bg-teal-900 text-teal-200 border-teal-800"
+                              : "bg-gray-800 text-white border-gray-700"
+                    : "bg-gray-800/50 text-gray-300 border-gray-700 hover:bg-gray-800 hover:text-gray-100"
+                  : category === tab.value
+                    ? tab.label === "All"
+                      ? "bg-emerald-500 text-white border-emerald-500"
+                      : tab.label === "Student Life"
+                        ? "bg-blue-500 text-white border-blue-500"
+                        : tab.label === "Organization"
+                          ? "bg-purple-500 text-white border-purple-500"
+                          : tab.label === "Academics"
+                            ? "bg-orange-500 text-white border-orange-500"
+                            : "bg-teal-500 text-white border-teal-500"
+                    : "bg-white text-gray-700 border-gray-200 hover:bg-gray-100 hover:text-gray-900"
               }
             `}
-          >
-            {tab.label}
-          </button>
-        ))}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
       {(!data || !data.length) ? (
         <div className={`text-center py-10 rounded-2xl mt-4 ${
@@ -227,6 +329,8 @@ const Posts = ({ userId = null }) => {
 };
 
 export default Posts;
+
+
 
 
 

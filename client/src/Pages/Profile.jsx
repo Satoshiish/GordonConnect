@@ -432,12 +432,11 @@ function Profile() {
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-6 text-left align-middle shadow-xl transition-all">
-                  <Dialog.Title
-                    as="h3"
-                    className="text-lg font-medium leading-6 text-gray-900 dark:text-white flex justify-between items-center"
-                  >
-                    <span>Followers</span>
+                <Dialog.Panel className={`w-full max-w-md transform overflow-hidden rounded-2xl p-6 text-left align-middle shadow-xl transition-all ${
+                  theme === "dark" ? "bg-gray-800" : "bg-white"
+                }`}>
+                  <Dialog.Title as="h3" className="flex justify-between items-center text-lg font-medium leading-6 text-gray-900 dark:text-white mb-2">
+                    Followers
                     <button
                       onClick={() => setShowFollowers(false)}
                       className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
@@ -459,10 +458,14 @@ function Profile() {
                               src={follower.profilePic ? 
                                 (follower.profilePic.startsWith('http') ? 
                                   follower.profilePic : 
-                                  `${API_BASE_URL}${follower.profilePic.startsWith('/') ? follower.profilePic : `/${follower.profilePic}`}`) 
+                                  `/upload/${follower.profilePic}`) 
                                 : "/default-profile.jpg"}
                               alt={follower.name}
                               className="w-10 h-10 rounded-full object-cover"
+                              onError={(e) => {
+                                console.error("Failed to load image:", follower.profilePic);
+                                e.target.src = "/default-profile.jpg";
+                              }}
                             />
                             <div className="flex-1">
                               <h4 className="font-medium text-gray-900 dark:text-white">{follower.name}</h4>
@@ -520,12 +523,11 @@ function Profile() {
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-6 text-left align-middle shadow-xl transition-all">
-                  <Dialog.Title
-                    as="h3"
-                    className="text-lg font-medium leading-6 text-gray-900 dark:text-white flex justify-between items-center"
-                  >
-                    <span>Following</span>
+                <Dialog.Panel className={`w-full max-w-md transform overflow-hidden rounded-2xl p-6 text-left align-middle shadow-xl transition-all ${
+                  theme === "dark" ? "bg-gray-800" : "bg-white"
+                }`}>
+                  <Dialog.Title as="h3" className="flex justify-between items-center text-lg font-medium leading-6 text-gray-900 dark:text-white mb-2">
+                    Following
                     <button
                       onClick={() => setShowFollowing(false)}
                       className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
@@ -547,10 +549,14 @@ function Profile() {
                               src={following.profilePic ? 
                                 (following.profilePic.startsWith('http') ? 
                                   following.profilePic : 
-                                  `${API_BASE_URL}${following.profilePic.startsWith('/') ? following.profilePic : `/${following.profilePic}`}`) 
+                                  `/upload/${following.profilePic}`) 
                                 : "/default-profile.jpg"}
                               alt={following.name}
                               className="w-10 h-10 rounded-full object-cover"
+                              onError={(e) => {
+                                console.error("Failed to load image:", following.profilePic);
+                                e.target.src = "/default-profile.jpg";
+                              }}
                             />
                             <div className="flex-1">
                               <h4 className="font-medium text-gray-900 dark:text-white">{following.name}</h4>
@@ -585,6 +591,8 @@ function Profile() {
 }
 
 export default Profile;
+
+
 
 
 
