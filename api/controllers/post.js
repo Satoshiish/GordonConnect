@@ -61,14 +61,23 @@ export const getPosts = async (req, res) => {
     // All posts (with optional category filter)
     else {
       // Simplified query that works for both guests and logged-in users
-      q = `
-        SELECT p.*, u.user_id AS userId, u.name, u.profilePic
-        FROM posts AS p 
-        JOIN users AS u ON (u.user_id = p.user_id)
-        ${anyCategory ? "WHERE p.category = ?" : ""}
-        ORDER BY p.createdAt DESC
-      `;
-      values = anyCategory ? [anyCategory] : [];
+      if (anyCategory) {
+        q = `
+          SELECT p.*, u.user_id AS userId, u.name, u.profilePic
+          FROM posts AS p 
+          JOIN users AS u ON (u.user_id = p.user_id)
+          WHERE p.category = ? OR p.category2 = ? OR p.category3 = ? OR p.category4 = ?
+          ORDER BY p.createdAt DESC
+        `;
+        values = [anyCategory, anyCategory, anyCategory, anyCategory];
+      } else {
+        q = `
+          SELECT p.*, u.user_id AS userId, u.name, u.profilePic
+          FROM posts AS p 
+          JOIN users AS u ON (u.user_id = p.user_id)
+          ORDER BY p.createdAt DESC
+        `;
+      }
     }
 
     // Execute the query with proper error handling
@@ -83,11 +92,7 @@ export const getPosts = async (req, res) => {
       }
       
       // Return empty array if no data
-      if (!data) {
-        return res.status(200).json([]);
-      }
-      
-      return res.status(200).json(data);
+      return res.status(200).json(data || []);
     });
   } catch (error) {
     console.error("Error in getPosts:", error);
@@ -204,6 +209,7 @@ export const updatePostVisibility = (req, res) => {
     });
   });
 };
+
 
 
 

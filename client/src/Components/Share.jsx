@@ -93,16 +93,49 @@ const Share = ({ onPostCreated }) => {
       return;
     }
     
-    let imgUrl = "";
-    if (file) imgUrl = await upload();
-    mutation.mutate({ 
-      desc, 
-      img: imgUrl, 
-      category: selectedCategories[0] || null,
-      category2: selectedCategories[1] || null,
-      category3: selectedCategories[2] || null,
-      category4: selectedCategories[3] || null
-    });
+    try {
+      let imgUrl = "";
+      if (file) imgUrl = await upload();
+      
+      const postData = { 
+        desc, 
+        img: imgUrl, 
+        category: selectedCategories[0] || null,
+        category2: selectedCategories[1] || null,
+        category3: selectedCategories[2] || null,
+        category4: selectedCategories[3] || null
+      };
+      
+      console.log("Sending post data:", postData);
+      
+      // Get token from localStorage
+      const token = localStorage.getItem("token");
+      
+      // Send the post data with the token
+      const response = await makeRequest.post("/posts", postData, {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+      
+      console.log("Post created successfully:", response.data);
+      
+      // Clear form and show success animation
+      setDesc("");
+      setFile(null);
+      setSelectedCategories([]);
+      setShowSuccessAnim(true);
+      setTimeout(() => setShowSuccessAnim(false), 1200);
+      
+      // Refresh posts
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+    } catch (error) {
+      console.error("Error creating post:", error);
+      setError(error.response?.data || "Failed to create post");
+    } finally {
+      setIsSharing(false);
+    }
   };
 
   const handleFileChange = (e) => {
@@ -324,6 +357,7 @@ const Share = ({ onPostCreated }) => {
 };
 
 export default Share;
+
 
 
 

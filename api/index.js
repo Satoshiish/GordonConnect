@@ -17,17 +17,20 @@ import { verifyToken } from "./middleware/auth.js";
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Credentials", true);
+  res.header("Access-Control-Allow-Origin", "https://gordon-connect.vercel.app");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  
   next();
 });
-app.use(cookieParser());
 
+app.use(cookieParser());
 app.use(express.json());
-app.use(
-  cors({
-    origin: "https://gordon-connect.vercel.app",
-    credentials: true,
-  })
-);
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -91,6 +94,7 @@ app.use("/api/reports", reportsRoutes);
 app.listen(8800, () => {
   console.log("API is WORKING");
 });
+
 
 
 
