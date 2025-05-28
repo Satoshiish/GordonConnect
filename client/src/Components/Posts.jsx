@@ -32,10 +32,12 @@ const Posts = ({ userId = null }) => {
           config.headers = { Authorization: `Bearer ${token}` };
         }
         
+        console.log("Fetching posts with URL:", url);
         const res = await makeRequest.get(url, config);
         return res.data;
       } catch (error) {
         console.error("Error fetching posts:", error);
+        console.error("Error details:", error.response?.data || "No additional details");
         return []; // Return empty array to prevent error state
       }
     },
@@ -329,6 +331,7 @@ const Posts = ({ userId = null }) => {
 };
 
 export default Posts;
+
 
 
 
