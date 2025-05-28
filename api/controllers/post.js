@@ -104,58 +104,128 @@ export const getPosts = async (req, res) => {
 };
 
 export const addPost = (req, res) => {
-  // Check for token in cookies or Authorization header
-  const cookieToken = req.cookies.accessToken;
-  const headerToken = req.headers.authorization?.split(" ")[1];
-  const token = cookieToken || headerToken;
-  
-  if (!token) return res.status(401).json("Not authenticated!");
+  try {
+    // Check for token in cookies or Authorization header
+    const cookieToken = req.cookies?.accessToken;
+    const headerToken = req.headers.authorization?.split(" ")[1];
+    const token = cookieToken || headerToken;
+    
+    if (!token) return res.status(401).json("Not authenticated!");
 
-  jwt.verify(token, "secretkey", (err, userInfo) => {
-    if (err) return res.status(403).json("Token is not valid!");
+    // Validate required fields
+    const { desc, category } = req.body;
+    
+    if (!desc) {
+      console.log("Missing required field: desc");
+      return res.status(400).json("Post description is required");
+    }
+    
+    if (!category) {
+      console.log("Missing required field: category");
+      return res.status(400).json("At least one category is required");
+    }
+    
+    // Log the request body for debugging
+    console.log("Post creation request:", {
+      desc: req.body.desc,
+      img: req.body.img ? "Image provided" : "No image",
+      category: req.body.category,
+      category2: req.body.category2,
+      category3: req.body.category3,
+      category4: req.body.category4,
+    });
 
-    // Check if user is admin
-    const checkUserQuery = "SELECT role FROM users WHERE user_id = ?";
-    db.query(checkUserQuery, [userInfo.id], (err, userData) => {
+    jwt.verify(token, "secretkey", (err, userInfo) => {
       if (err) {
-        console.error("Database error checking user role:", err);
-        return res.status(500).json("Database error");
+        console.error("Token verification failed:", err);
+        return res.status(403).json("Token is not valid!");
       }
-      
-      if (userData.length === 0) return res.status(404).json("User not found!");
-      
-      const userRole = userData[0].role;
-      
-      // Only allow admins to post
-      if (userRole !== "admin") {
-        return res.status(403).json("Only admin users can create posts!");
-      }
-      
-      // Proceed with post creation
-      const q =
-        "INSERT INTO posts (`desc`, `img`, `createdAt`, `user_id`, `category`, `category2`, `category3`, `category4`, `visible`) VALUES (?)";
 
-      const values = [
-        req.body.desc,
-        req.body.img,
-        moment(Date.now()).format("YYYY-MM-DD HH:mm:ss"),
-        userInfo.id,
-        req.body.category,
-        req.body.category2,
-        req.body.category3,
-        req.body.category4,
-        req.body.visible !== undefined ? req.body.visible : 1,
-      ];
-
-      db.query(q, [values], (err, data) => {
+      // Check if user is admin
+      const checkUserQuery = "SELECT role FROM users WHERE user_id = ?";
+      db.query(checkUserQuery, [userInfo.id], (err, userData) => {
         if (err) {
-          console.error("Database error creating post:", err);
-          return res.status(500).json("Database error");
+          console.error("Database error checking user role:", err);
+          return res.status(500).json({
+            error: "Database error",
+            message: "Failed to verify user role",
+            details: err.message
+          });
         }
-        return res.status(200).json("Post has been created!");
+        
+        if (userData.length === 0) {
+          console.log("User not found:", userInfo.id);
+          return res.status(404).json("User not found!");
+        }
+        
+        const userRole = userData[0].role;
+        
+        // Only allow admins to post
+        if (userRole !== "admin") {
+          console.log("Non-admin attempted to create post:", userInfo.id, userRole);
+          return res.status(403).json("Only admin users can create posts!");
+        }
+        
+        // Proceed with post creation
+        const q =
+          "INSERT INTO posts (`desc`, `img`, `createdAt`, `user_id`, `category`, `category2`, `category3`, `category4`, `visible`) VALUES (?)";
+
+        const values = [
+          req.body.desc,
+          req.body.img || null, // Handle null image
+          moment(Date.now()).format("YYYY-MM-DD HH:mm:ss"),
+          userInfo.id,
+          req.body.category,
+          req.body.category2 || null,
+          req.body.category3 || null,
+          req.body.category4 || null,
+          req.body.visible !== undefined ? req.body.visible : 1,
+        ];
+
+        // Log the SQL values for debugging
+        console.log("Inserting post with values:", JSON.stringify(values));
+
+        db.query(q, [values], (err, data) => {
+          if (err) {
+            console.error("Database error creating post:", err);
+            
+            // Check for specific error types
+            if (err.code === 'ER_NO_REFERENCED_ROW_2') {
+              return res.status(400).json({
+                error: "Invalid reference",
+                message: "One of the referenced values does not exist in the database"
+              });
+            } else if (err.code === 'ER_DATA_TOO_LONG') {
+              return res.status(400).json({
+                error: "Data too long",
+                message: "One of the fields exceeds the maximum allowed length"
+              });
+            } else {
+              return res.status(500).json({
+                error: "Database error",
+                message: "Failed to create post",
+                details: err.message,
+                code: err.code
+              });
+            }
+          }
+          
+          console.log("Post created successfully, ID:", data.insertId);
+          return res.status(200).json({
+            message: "Post has been created!",
+            postId: data.insertId
+          });
+        });
       });
     });
-  });
+  } catch (error) {
+    console.error("Unexpected error in addPost:", error);
+    return res.status(500).json({
+      error: "Server error",
+      message: "An unexpected error occurred",
+      details: error.message
+    });
+  }
 };
 
 export const deletePost = (req, res) => {
@@ -209,6 +279,7 @@ export const updatePostVisibility = (req, res) => {
     });
   });
 };
+
 
 
 
