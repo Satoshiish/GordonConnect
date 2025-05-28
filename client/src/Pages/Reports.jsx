@@ -163,398 +163,480 @@ const Reports = () => {
     }
   };
 
-  if (loading && !isRefreshing && !postModalOpen) {
-    return (
-      <div className={`flex items-center justify-center min-h-[50vh] ${
-        theme === "dark" ? "text-gray-300" : "text-gray-700"
-      }`}>
-        <div className="text-center">
-          <RefreshCw size={40} className="animate-spin mx-auto mb-4 text-emerald-500" />
-          <p className="text-lg font-semibold">Loading reports...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error && !postModalOpen) {
-    return (
-      <div className={`flex items-center justify-center min-h-[50vh] ${
-        theme === "dark" ? "text-red-400" : "text-red-600"
-      }`}>
-        <div className="text-center">
-          <AlertCircle size={40} className="mx-auto mb-4" />
-          <p className="text-lg font-semibold">{error}</p>
-          <button 
-            onClick={handleRefresh}
-            className={`mt-4 px-4 py-2 rounded-lg ${
-              theme === "dark" 
-                ? "bg-gray-800 hover:bg-gray-700 text-white" 
-                : "bg-gray-200 hover:bg-gray-300 text-gray-800"
-            }`}
-          >
-            Try Again
-          </button>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <div className="text-center py-20 text-lg font-semibold">Loading...</div>;
+  if (error) return <div className="text-center py-20 text-red-500 font-semibold">{error}</div>;
 
   return (
     <div className={`p-2 sm:p-4 md:p-6 lg:p-8 ${theme === "dark" ? "bg-gray-900 text-gray-100" : "bg-gray-50 text-gray-900"}`}>
       <div className="max-w-6xl mx-auto">
-        {/* Enhanced Header Card */}
+        {/* Enhanced Header Card - improve padding for smaller screens */}
         <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className={`mb-8 rounded-3xl shadow-xl overflow-hidden relative ${
-              theme === "dark" ? "bg-gray-800" : "bg-white"
+            className={`mb-6 sm:mb-8 rounded-2xl sm:rounded-3xl shadow-xl overflow-hidden relative ${
+                theme === "dark" ? "bg-gray-850 border border-gray-700" : "bg-white"
             }`}
         >
-          {/* Background Pattern */}
-          <div className="absolute inset-0 overflow-hidden opacity-10">
-            <div className="absolute inset-0 bg-repeat" style={{ backgroundImage: "url('/pattern-light.svg')" }}></div>
-          </div>
-          
-          <div className="relative p-6 md:p-8">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className={`p-3 rounded-xl ${
-                  theme === "dark" ? "bg-red-900/30" : "bg-red-100"
-                }`}>
-                  <Flag className={`h-8 w-8 ${
-                    theme === "dark" ? "text-red-400" : "text-red-500"
-                  }`} />
+            {/* Background Pattern */}
+            <div className="absolute inset-0 overflow-hidden opacity-15">
+                <div className="absolute -inset-[10px] bg-[radial-gradient(#4ade80_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)]"></div>
+            </div>
+            
+            <div className="relative p-4 sm:p-6 md:p-8 lg:p-10">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div className="flex items-start gap-3 sm:gap-4">
+                        <div className={`p-2 sm:p-3 rounded-xl sm:rounded-2xl ${
+                            theme === "dark" ? "bg-emerald-500/20" : "bg-emerald-100"
+                        }`}>
+                            <Flag size={24} className={
+                                theme === "dark" ? "text-emerald-400" : "text-emerald-600"
+                            } />
+                        </div>
+                        <div>
+                            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-1 sm:mb-2 bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">
+                                Content Reports
+                            </h1>
+                            <p className={`text-sm sm:text-base ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>
+                                Review and manage reported content
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div className="flex flex-wrap w-full sm:w-auto gap-2 sm:gap-3 mt-3 sm:mt-0">
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={exportAllReports}
+                            className="flex-1 sm:flex-none px-3 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm rounded-full flex items-center justify-center gap-2 shadow-md transition-all bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white"
+                            disabled={reports.length === 0}
+                        >
+                            <FileSpreadsheet size={16} />
+                            Export All
+                        </motion.button>
+                        
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={handleRefresh}
+                            className="flex-1 sm:flex-none px-3 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm rounded-full flex items-center justify-center gap-2 shadow-md transition-all bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white"
+                        >
+                            <RefreshCw 
+                                size={16} 
+                                className={`${isRefreshing ? "animate-spin" : ""}`} 
+                            />
+                            Refresh
+                        </motion.button>
+                    </div>
                 </div>
+                
+                {/* Reports Info - improve padding for smaller screens */}
+                <div className={`mt-4 sm:mt-6 p-3 sm:p-4 rounded-lg sm:rounded-xl text-xs sm:text-sm ${
+                    theme === "dark" ? "bg-gray-800/70 text-gray-200" : "bg-gray-50 text-gray-700"
+                }`}>
+                    <p className="flex items-center gap-2">
+                        <AlertCircle size={14} className={theme === "dark" ? "text-amber-400" : "text-amber-500"} />
+                        <span>Review reported content to maintain community standards and safety.</span>
+                    </p>
+                </div>
+            </div>
+        </motion.div>
+        
+        {/* Improve Mobile Card View spacing and sizing */}
+        <div className="block sm:hidden space-y-3">
+          {reports.map((report) => (
+            <motion.div 
+              key={report.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className={`rounded-xl overflow-hidden border shadow-md ${
+                theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+              }`}
+            >
+              <div className={`px-3 py-2.5 flex justify-between items-center ${
+                theme === "dark" ? "bg-gray-900/50" : "bg-emerald-50"
+              }`}>
+                <div className="flex items-center gap-2">
+                  <div className="h-8 w-8 rounded-full overflow-hidden border-2 border-emerald-200 dark:border-emerald-800 flex-shrink-0">
+                    <img 
+                      src={report.user_profile ? `/upload/${report.user_profile}` : "/default-profile.jpg"} 
+                      alt="User" 
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  <div>
+                    <div className="font-medium text-sm">{report.user_name || `User ${report.user_id}`}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      {new Date(report.created_at).toLocaleDateString()}
+                    </div>
+                  </div>
+                </div>
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  report.reviewed === 0 || report.reviewed === null
+                    ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200' 
+                    : report.reviewed === 1
+                    ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200'
+                    : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200'
+                }`}>
+                  {report.reviewed === 0 || report.reviewed === null ? "Pending" : 
+                   report.reviewed === 1 ? "Resolved" : "Rejected"}
+                </span>
+              </div>
+              
+              <div className="p-3 space-y-2.5">
                 <div>
-                  <h1 className="text-2xl md:text-3xl font-bold">Content Reports</h1>
-                  <p className={`mt-1 ${
-                    theme === "dark" ? "text-gray-400" : "text-gray-500"
-                  }`}>
-                    Review and manage reported content
-                  </p>
+                  <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Report ID</div>
+                  <div className="text-sm font-medium">{report.id}</div>
+                </div>
+                
+                <div>
+                  <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Reason</div>
+                  <div className="text-xs p-2.5 rounded-lg bg-gray-50 dark:bg-gray-700/50">{report.reason}</div>
+                </div>
+                
+                <div>
+                  <button 
+                    onClick={() => handleViewPost(report.post_id)}
+                    className="w-full py-1.5 mt-1 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-800/50 transition-colors font-medium text-xs flex items-center justify-center gap-1.5"
+                  >
+                    <Eye size={14} />
+                    View Reported Post
+                  </button>
                 </div>
               </div>
               
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={handleRefresh}
-                  className={`p-2 rounded-lg transition-all duration-200 ${
-                    theme === "dark" 
-                      ? "hover:bg-gray-700 text-gray-300" 
-                      : "hover:bg-gray-100 text-gray-600"
+              <div className="px-3 py-2.5 bg-gray-50 dark:bg-gray-800/50 flex justify-end space-x-2">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleReview(report.id, 1)}
+                  disabled={report.reviewed === 1}
+                  className={`p-1.5 rounded-full ${
+                    report.reviewed === 0 || report.reviewed === null
+                      ? 'bg-green-100 text-green-600 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-800/50 shadow-sm'
+                      : 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-500'
                   }`}
-                  disabled={isRefreshing}
+                  title="Mark as Resolved"
                 >
-                  <RefreshCw size={20} className={isRefreshing ? "animate-spin text-emerald-500" : ""} />
-                </button>
-                
-                <button
-                  onClick={exportAllReports}
-                  className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-200 ${
-                    theme === "dark" 
-                      ? "bg-gray-700 hover:bg-gray-600 text-white" 
-                      : "bg-gray-200 hover:bg-gray-300 text-gray-800"
+                  <CheckCircle2 className="w-4 h-4" />
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleReview(report.id, 2)}
+                  disabled={report.reviewed === 2}
+                  className={`p-1.5 rounded-full ${
+                    report.reviewed === 0 || report.reviewed === null
+                      ? 'bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-800/50 shadow-sm'
+                      : 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-500'
                   }`}
+                  title="Reject Report"
                 >
-                  <FileSpreadsheet size={18} />
-                  <span className="hidden sm:inline">Export All</span>
-                </button>
+                  <XCircle className="w-4 h-4" />
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleExport(report)}
+                  className="p-1.5 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-800/50 shadow-sm"
+                  title="Export Report"
+                >
+                  <Download className="w-4 h-4" />
+                </motion.button>
               </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Reports Table */}
-        <div className={`rounded-3xl shadow-lg overflow-hidden border ${
-          theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
-        }`}>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className={`text-left ${
-                theme === "dark" ? "bg-gray-900/50" : "bg-gray-50"
-              }`}>
-                <tr>
-                  <th className="px-6 py-4 font-semibold">Report</th>
-                  <th className="px-6 py-4 font-semibold">User</th>
-                  <th className="px-6 py-4 font-semibold">Reason</th>
-                  <th className="px-6 py-4 font-semibold">Date</th>
-                  <th className="px-6 py-4 font-semibold">Status</th>
-                  <th className="px-6 py-4 font-semibold text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {reports.length === 0 ? (
-                  <tr>
-                    <td colSpan="6" className="px-6 py-12 text-center">
-                      <Flag className={`h-12 w-12 mx-auto mb-4 opacity-30 ${
-                        theme === "dark" ? "text-gray-500" : "text-gray-400"
-                      }`} />
-                      <p className="text-lg font-medium">No reports found</p>
-                      <p className={`mt-1 ${
-                        theme === "dark" ? "text-gray-400" : "text-gray-500"
-                      }`}>
-                        There are currently no content reports to review
-                      </p>
-                    </td>
-                  </tr>
-                ) : (
-                  reports.map((report) => (
-                    <tr key={report.id} className={`${
-                      theme === "dark" ? "hover:bg-gray-700/50" : "hover:bg-gray-50"
-                    }`}>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center">
-                          <span className={`font-medium ${
-                            theme === "dark" ? "text-gray-200" : "text-gray-900"
-                          }`}>
-                            #{report.id}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className={`${
-                          theme === "dark" ? "text-gray-300" : "text-gray-700"
-                        }`}>
-                          {report.user_name || `User ${report.user_id}` || "Anonymous"}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className={`max-w-xs truncate ${
-                          theme === "dark" ? "text-gray-300" : "text-gray-700"
-                        }`} title={report.reason}>
-                          {report.reason || "No reason provided"}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className={`${
-                          theme === "dark" ? "text-gray-400" : "text-gray-500"
-                        }`}>
-                          {new Date(report.created_at).toLocaleDateString()}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          report.reviewed === 0 || report.reviewed === null
-                            ? theme === "dark" 
-                              ? "bg-yellow-900/30 text-yellow-400" 
-                              : "bg-yellow-100 text-yellow-800"
-                            : report.reviewed === 1
-                              ? theme === "dark"
-                                ? "bg-green-900/30 text-green-400"
-                                : "bg-green-100 text-green-800"
-                              : theme === "dark"
-                                ? "bg-red-900/30 text-red-400"
-                                : "bg-red-100 text-red-800"
-                        }`}>
-                          {report.reviewed === 0 || report.reviewed === null
-                            ? "Pending"
-                            : report.reviewed === 1
-                              ? "Resolved"
-                              : "Rejected"}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            onClick={() => handleViewPost(report.post_id)}
-                            className={`p-2 rounded-lg transition-all duration-200 ${
-                              theme === "dark" 
-                                ? "hover:bg-gray-700 text-blue-400 hover:text-blue-300" 
-                                : "hover:bg-gray-100 text-blue-600 hover:text-blue-700"
-                            }`}
-                            title="View Post"
-                          >
-                            <Eye size={18} />
-                          </button>
-                          
-                          <button
-                            onClick={() => handleExport(report)}
-                            className={`p-2 rounded-lg transition-all duration-200 ${
-                              theme === "dark" 
-                                ? "hover:bg-gray-700 text-gray-400 hover:text-gray-300" 
-                                : "hover:bg-gray-100 text-gray-600 hover:text-gray-700"
-                            }`}
-                            title="Export Report"
-                          >
-                            <Download size={18} />
-                          </button>
-                          
-                          {(report.reviewed === 0 || report.reviewed === null) && (
-                            <>
-                              <button
-                                onClick={() => handleReview(report.id, 1)}
-                                className={`p-2 rounded-lg transition-all duration-200 ${
-                                  theme === "dark" 
-                                    ? "hover:bg-gray-700 text-green-400 hover:text-green-300" 
-                                    : "hover:bg-gray-100 text-green-600 hover:text-green-700"
-                                }`}
-                                title="Mark as Resolved"
-                              >
-                                <CheckCircle2 size={18} />
-                              </button>
-                              
-                              <button
-                                onClick={() => handleReview(report.id, 2)}
-                                className={`p-2 rounded-lg transition-all duration-200 ${
-                                  theme === "dark" 
-                                    ? "hover:bg-gray-700 text-red-400 hover:text-red-300" 
-                                    : "hover:bg-gray-100 text-red-600 hover:text-red-700"
-                                }`}
-                                title="Mark as Rejected"
-                              >
-                                <XCircle size={18} />
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+            </motion.div>
+          ))}
         </div>
-      </div>
-
-      {/* Post Modal */}
-      {postModalOpen && selectedPost && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div
-            className={`w-full max-w-lg rounded-3xl p-8 shadow-2xl border relative ${
-              theme === "dark" 
-                ? "bg-gray-900 border-gray-800 text-white" 
-                : "bg-white border-gray-100 text-gray-900"
-            }`}
-          >
-            <button
-              className={`absolute top-6 right-6 hover:text-gray-700 text-2xl transition ${
-                theme === "dark" ? "text-gray-300" : "text-gray-600"
+        
+        {/* Improve Desktop Table View responsiveness */}
+        <div className="hidden sm:block overflow-x-auto rounded-xl border shadow-lg">
+          <table className={`w-full min-w-full divide-y ${theme === "dark" ? "bg-gray-850 border-gray-700 divide-gray-700" : "bg-white border-gray-200 divide-gray-200"}`}>
+            <thead className={`${theme === "dark" ? "bg-gray-900/90" : "bg-emerald-50"}`}>
+              <tr>
+                <th className="px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 text-left text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">ID</th>
+                <th className="px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 text-left text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">User</th>
+                <th className="px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 text-left text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">Post</th>
+                <th className="px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 text-left text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">Reason</th>
+                <th className="px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 text-left text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">Date</th>
+                <th className="px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 text-left text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">Status</th>
+                <th className="px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 text-left text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">Actions</th>
+              </tr>
+            </thead>
+            <tbody className={`divide-y ${theme === "dark" ? "divide-gray-800" : "divide-gray-200"}`}>
+              {reports.map((report) => (
+                <tr key={report.id} className={`${theme === "dark" ? "hover:bg-gray-800/70" : "hover:bg-gray-50"} transition-colors`}>
+                  <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-xs sm:text-sm whitespace-nowrap font-medium">{report.id}</td>
+                  <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-xs sm:text-sm whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div className="h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9 rounded-full overflow-hidden border-2 border-emerald-200 dark:border-emerald-800 mr-2 sm:mr-3 flex-shrink-0">
+                        <img 
+                          src={report.user_profile ? `/upload/${report.user_profile}` : "/default-profile.jpg"} 
+                          alt="User" 
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                      <span className="font-medium">{report.user_name || `User ${report.user_id}`}</span>
+                    </div>
+                  </td>
+                  <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-xs sm:text-sm">
+                    <button 
+                      onClick={() => handleViewPost(report.post_id)}
+                      className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-800/50 transition-colors font-medium text-xs flex items-center gap-1.5"
+                    >
+                      <Eye size={14} />
+                      View Post
+                    </button>
+                  </td>
+                  <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-xs sm:text-sm">
+                    <div className="max-w-[120px] sm:max-w-[150px] md:max-w-xs truncate">
+                      {report.reason}
+                    </div>
+                  </td>
+                  <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-xs sm:text-sm whitespace-nowrap">
+                    {new Date(report.created_at).toLocaleDateString()}
+                  </td>
+                  <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-xs sm:text-sm">
+                    <span className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-medium ${
+                      report.reviewed === 0 || report.reviewed === null
+                        ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200' 
+                        : report.reviewed === 1
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200'
+                        : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200'
+                    }`}>
+                      {report.reviewed === 0 || report.reviewed === null ? "Pending" : 
+                       report.reviewed === 1 ? "Resolved" : "Rejected"}
+                    </span>
+                  </td>
+                  <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-xs sm:text-sm whitespace-nowrap">
+                    <div className="flex space-x-1 sm:space-x-2">
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => handleReview(report.id, 1)}
+                        disabled={report.reviewed === 1}
+                        className={`p-1.5 sm:p-2 rounded-full ${
+                          report.reviewed === 0 || report.reviewed === null
+                            ? 'bg-green-100 text-green-600 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-800/50 shadow-sm'
+                            : 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-500'
+                        }`}
+                        title="Mark as Resolved"
+                      >
+                        <CheckCircle2 className="w-5 h-5" />
+                      </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => handleReview(report.id, 2)}
+                        disabled={report.reviewed === 2}
+                        className={`p-1.5 sm:p-2 rounded-full ${
+                          report.reviewed === 0 || report.reviewed === null
+                            ? 'bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-800/50 shadow-sm'
+                            : 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-500'
+                        }`}
+                        title="Reject Report"
+                      >
+                        <XCircle className="w-5 h-5" />
+                      </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => handleExport(report)}
+                        className="p-1.5 sm:p-2 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-800/50 shadow-sm"
+                        title="Export Report"
+                      >
+                        <Download className="w-5 h-5" />
+                      </motion.button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        
+        {/* Empty State */}
+        {reports.length === 0 && (
+          <div className={`text-center py-12 rounded-xl border ${theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"} shadow-lg`}>
+            <div className="mx-auto w-16 h-16 mb-4 flex items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30">
+              <CheckCircle2 className="w-8 h-8 text-emerald-500 dark:text-emerald-400" />
+            </div>
+            <h3 className="text-lg font-medium mb-2">No Reports Found</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+              There are currently no reports to review. All content appears to be following community guidelines.
+            </p>
+          </div>
+        )}
+        
+        {/* Post Modal */}
+        {postModalOpen && selectedPost && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <div
+              className={`w-full max-w-lg rounded-3xl p-8 shadow-2xl border relative ${
+                theme === "dark" 
+                  ? "bg-gray-900 border-gray-800 text-white" 
+                  : "bg-white border-gray-100 text-gray-900"
               }`}
-              onClick={closePostModal}
-              aria-label="Close"
             >
-              <XCircle size={28} strokeWidth={2.5} />
-            </button>
-            <h2 className="text-2xl font-bold mb-1 text-gray-900 dark:text-white">Reported Post</h2>
-            <p className="text-gray-500 dark:text-gray-400 mb-6">This post was reported by a user.</p>
-            
-            {/* Post Content */}
-            <div className="p-5 rounded-xl border bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 mb-6">
-              <div className="flex items-center mb-4">
-                <img 
-                  src={selectedPost.profilePic ? 
-                    (selectedPost.profilePic.startsWith('http') ? 
-                      selectedPost.profilePic : 
-                      `/upload/${selectedPost.profilePic}`) 
-                    : "/default-profile.jpg"} 
-                  alt="User" 
-                  className="w-10 h-10 rounded-full mr-3 border-2 border-emerald-400"
-                  onError={(e) => {
-                    console.error("Failed to load profile image");
-                    e.target.src = "/default-profile.jpg";
-                  }}
-                />
-                <div>
-                  <div className="font-medium text-gray-900 dark:text-white">{selectedPost.name || "Anonymous User"}</div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                    {new Date(selectedPost.createdAt).toLocaleString()}
+              <button
+                className={`absolute top-6 right-6 text-2xl transition ${
+                  theme === "dark" ? "text-gray-400 hover:text-gray-200" : "text-gray-400 hover:text-gray-700"
+                }`}
+                onClick={closePostModal}
+                aria-label="Close"
+              >
+                <XCircle size={28} strokeWidth={2.5} />
+              </button>
+              <h2 className={`text-2xl font-bold mb-1 ${
+                theme === "dark" ? "text-white" : "text-gray-900"
+              }`}>Reported Post</h2>
+              <p className={`mb-6 ${
+                theme === "dark" ? "text-gray-400" : "text-gray-500"
+              }`}>This post was reported by a user.</p>
+              
+              {/* Post Content */}
+              <div className={`p-5 rounded-xl border mb-6 ${
+                theme === "dark" 
+                  ? "bg-gray-800 border-gray-700" 
+                  : "bg-gray-50 border-gray-200"
+              }`}>
+                <div className="flex items-center mb-4">
+                  <img 
+                    src={selectedPost.profilePic ? 
+                      (selectedPost.profilePic.startsWith('http') ? 
+                        selectedPost.profilePic : 
+                        `/upload/${selectedPost.profilePic}`) 
+                      : "/default-profile.jpg"} 
+                    alt="User" 
+                    className="w-10 h-10 rounded-full mr-3 border-2 border-emerald-400"
+                    onError={(e) => {
+                      e.target.src = "/default-profile.jpg";
+                    }}
+                  />
+                  <div>
+                    <div className={`font-medium ${
+                      theme === "dark" ? "text-white" : "text-gray-900"
+                    }`}>{selectedPost.name || "Anonymous User"}</div>
+                    <div className={`text-xs ${
+                      theme === "dark" ? "text-gray-400" : "text-gray-500"
+                    }`}>
+                      {new Date(selectedPost.createdAt).toLocaleString()}
+                    </div>
+                  </div>
+                </div>
+                
+                <p className={`mb-4 ${
+                  theme === "dark" ? "text-gray-200" : "text-gray-800"
+                }`}>{selectedPost.desc}</p>
+                
+                {selectedPost.img && (
+                  <div className="mt-3">
+                    <img 
+                      src={selectedPost.img.startsWith('http') ? 
+                        selectedPost.img : 
+                        `/upload/${selectedPost.img}`} 
+                      alt="Post" 
+                      className={`w-full rounded-lg border shadow-sm ${
+                        theme === "dark" ? "border-gray-700" : "border-gray-200"
+                      }`}
+                      onError={(e) => {
+                        e.target.src = "/placeholder-post.jpg";
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+              
+              {/* Report Information */}
+              <div className="mb-6">
+                <h4 className={`text-sm font-medium mb-2 ${
+                  theme === "dark" ? "text-gray-300" : "text-gray-700"
+                }`}>
+                  Report Information
+                </h4>
+                <div className={`p-4 rounded-xl border ${
+                  theme === "dark" 
+                    ? "bg-red-900/20 border-red-800/30" 
+                    : "bg-red-50 border-red-100"
+                }`}>
+                  <div className="text-sm mb-2">
+                    <span className="font-medium">Reason: </span>
+                    <span className={
+                      theme === "dark" ? "text-gray-300" : "text-gray-700"
+                    }>
+                      {reports.find(r => r.post_id === selectedPost.id || r.post_id === selectedPost.posts_id)?.reason || "No reason provided"}
+                    </span>
+                  </div>
+                  <div className="text-sm">
+                    <span className="font-medium">Reported on: </span>
+                    <span className={
+                      theme === "dark" ? "text-gray-300" : "text-gray-700"
+                    }>
+                      {reports.find(r => r.post_id === selectedPost.id || r.post_id === selectedPost.posts_id)?.created_at 
+                        ? new Date(reports.find(r => r.post_id === selectedPost.id || r.post_id === selectedPost.posts_id).created_at).toLocaleString()
+                        : "Unknown date"}
+                    </span>
+                  </div>
+                  <div className="text-sm mt-2">
+                    <span className="font-medium">Reported by: </span>
+                    <span className={
+                      theme === "dark" ? "text-gray-300" : "text-gray-700"
+                    }>
+                      {reports.find(r => r.post_id === selectedPost.id || r.post_id === selectedPost.posts_id)?.user_name || 
+                       `User ${reports.find(r => r.post_id === selectedPost.id || r.post_id === selectedPost.posts_id)?.user_id}` || 
+                       "Unknown user"}
+                    </span>
                   </div>
                 </div>
               </div>
               
-              <p className="mb-4 text-gray-800 dark:text-gray-200">{selectedPost.desc}</p>
-              
-              {selectedPost.img && (
-                <div className="mt-3">
-                  <img 
-                    src={selectedPost.img.startsWith('http') ? 
-                      selectedPost.img : 
-                      `/upload/${selectedPost.img}`} 
-                    alt="Post" 
-                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm"
-                    onError={(e) => {
-                      console.error("Failed to load post image");
-                      e.target.src = "/placeholder-post.jpg";
-                    }}
-                  />
-                </div>
-              )}
-            </div>
-            
-            {/* Report Information */}
-            <div className="mb-6">
-              <h4 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
-                Report Information
-              </h4>
-              <div className="p-4 rounded-xl border bg-red-50 dark:bg-red-900/20 border-red-100 dark:border-red-800/30">
-                <div className="text-sm mb-2">
-                  <span className="font-medium">Reason: </span>
-                  <span className="text-gray-700 dark:text-gray-300">
-                    {reports.find(r => r.post_id === selectedPost.id || r.post_id === selectedPost.posts_id)?.reason || "No reason provided"}
-                  </span>
-                </div>
-                <div className="text-sm">
-                  <span className="font-medium">Reported on: </span>
-                  <span className="text-gray-700 dark:text-gray-300">
-                    {reports.find(r => r.post_id === selectedPost.id || r.post_id === selectedPost.posts_id)?.created_at 
-                      ? new Date(reports.find(r => r.post_id === selectedPost.id || r.post_id === selectedPost.posts_id).created_at).toLocaleString()
-                      : "Unknown date"}
-                  </span>
-                </div>
-                <div className="text-sm mt-2">
-                  <span className="font-medium">Reported by: </span>
-                  <span className="text-gray-700 dark:text-gray-300">
-                    {reports.find(r => r.post_id === selectedPost.id || r.post_id === selectedPost.posts_id)?.user_name || 
-                     `User ${reports.find(r => r.post_id === selectedPost.id || r.post_id === selectedPost.posts_id)?.user_id}` || 
-                     "Unknown user"}
-                  </span>
-                </div>
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={closePostModal}
+                  className={`px-6 py-2 rounded-xl font-semibold transition ${
+                    theme === "dark" 
+                      ? "bg-gray-800 text-gray-200 hover:bg-gray-700" 
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  Close
+                </button>
+                {reports.find(r => r.post_id === selectedPost.id || r.post_id === selectedPost.posts_id)?.reviewed === 0 && (
+                  <>
+                    <button
+                      onClick={() => {
+                        const report = reports.find(r => r.post_id === selectedPost.id || r.post_id === selectedPost.posts_id);
+                        if (report) handleReview(report.id, 1);
+                        closePostModal();
+                      }}
+                      className="px-6 py-2 rounded-xl bg-green-500 text-white font-semibold hover:bg-green-600 transition"
+                    >
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => {
+                        const report = reports.find(r => r.post_id === selectedPost.id || r.post_id === selectedPost.posts_id);
+                        if (report) handleReview(report.id, 2);
+                        closePostModal();
+                      }}
+                      className="px-6 py-2 rounded-xl bg-red-500 text-white font-semibold hover:bg-red-600 transition"
+                    >
+                      Reject
+                    </button>
+                  </>
+                )}
               </div>
             </div>
-            
-            {/* Action Buttons */}
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={closePostModal}
-                className="px-6 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition"
-              >
-                Close
-              </button>
-              {reports.find(r => r.post_id === selectedPost.id || r.post_id === selectedPost.posts_id)?.reviewed === 0 && (
-                <>
-                  <button
-                    onClick={() => {
-                      const report = reports.find(r => r.post_id === selectedPost.id || r.post_id === selectedPost.posts_id);
-                      if (report) handleReview(report.id, 1);
-                      closePostModal();
-                    }}
-                    className="px-6 py-2 rounded-xl bg-green-500 text-white font-semibold hover:bg-green-600 transition"
-                  >
-                    Approve
-                  </button>
-                  <button
-                    onClick={() => {
-                      const report = reports.find(r => r.post_id === selectedPost.id || r.post_id === selectedPost.posts_id);
-                      if (report) handleReview(report.id, 2);
-                      closePostModal();
-                    }}
-                    className="px-6 py-2 rounded-xl bg-red-500 text-white font-semibold hover:bg-red-600 transition"
-                  >
-                    Reject
-                  </button>
-                </>
-              )}
-            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
 
 export default Reports; 
+
 
 
 
