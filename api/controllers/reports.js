@@ -12,17 +12,11 @@ export const getReports = (req, res) => {
 };
 
 export const createReport = (req, res) => {
-  const { user_id, post_id, reason } = req.body;
-  
-  // Don't allow guest reports
-  if (!user_id) {
-    return res.status(403).json({ error: 'You must be logged in to report content.' });
-  }
-  
+  let { user_id, post_id, reason } = req.body;
+  if (!user_id) user_id = null; // Allow guest reports
   if (!post_id || !reason) {
     return res.status(400).json({ error: 'post_id and reason are required.' });
   }
-  
   console.log('Received report:', { user_id, post_id, reason });
   const q = 'INSERT INTO reports (user_id, post_id, reason, created_at, reviewed) VALUES (?, ?, ?, NOW(), 0)';
   db.query(q, [user_id, post_id, reason], (err, result) => {
