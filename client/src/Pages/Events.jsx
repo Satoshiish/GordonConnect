@@ -287,15 +287,6 @@ const Events = () => {
     });
   };
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric'
-    });
-  };
-
   const sendJoinEmail = async () => {
     if (!selectedEvent || !emailInput) return;
     setJoinError("");
@@ -584,7 +575,7 @@ const Events = () => {
                       ? "bg-gray-800/90 text-white" 
                       : "bg-white/90 text-gray-900"
                   }`}>
-                    {formatDatePretty(event.date)}
+                    {formatDate(event.event_date)}
                   </div>
                 </div>
                 
@@ -1492,7 +1483,6 @@ const Events = () => {
 };
 
 export default Events;
-
 
 
 
