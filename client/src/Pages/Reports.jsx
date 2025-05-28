@@ -96,15 +96,6 @@ const Reports = () => {
         post_id: reportToUpdate?.post_id
       });
       
-      // If rejecting the report (status 2), we don't need to do anything to the post
-      // If approving the report (status 1), we need to ensure the post remains visible
-      if (reviewed === 1) {
-        // Make an additional request to ensure the post remains visible
-        await makeRequest.put(`/posts/${reportToUpdate.post_id}/visibility`, {
-          visible: true
-        });
-      }
-      
       // Refresh the reports list
       await fetchReports();
       
@@ -669,6 +660,7 @@ const Reports = () => {
 };
 
 export default Reports; 
+
 
 
 

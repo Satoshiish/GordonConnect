@@ -31,9 +31,37 @@ export const createReport = (req, res) => {
 export const updateReport = (req, res) => {
   const { reviewed } = req.body;
   const { id } = req.params;
+  const post_id = req.body.post_id;
+
+  // First update the report status
   const q = 'UPDATE reports SET reviewed = ? WHERE id = ?';
   db.query(q, [reviewed, id], (err, result) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ success: true });
+    if (err) {
+      console.error('Error updating report:', err);
+      return res.status(500).json({ error: err.message });
+    }
+    
+    // If we're not handling a post visibility update or if no post_id was provided, just return success
+    if (reviewed !== 1 || !post_id) {
+      return res.json({ success: true });
+    }
+    
+    // If report is approved (reviewed = 1), ensure the post remains visible
+    const postQuery = 'UPDATE posts SET visible = 1 WHERE posts_id = ?';
+    db.query(postQuery, [post_id], (postErr, postResult) => {
+      if (postErr) {
+        console.error('Error updating post visibility:', postErr);
+        // We still mark the report update as successful even if post update fails
+        return res.json({ 
+          success: true, 
+          warning: "Report status updated but post visibility update failed" 
+        });
+      }
+      
+      return res.json({ 
+        success: true, 
+        message: "Report and post status updated successfully" 
+      });
+    });
   });
 }; 
