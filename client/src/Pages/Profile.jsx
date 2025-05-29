@@ -19,6 +19,7 @@ import { Pencil, XCircle, X } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
+import { Shield, CheckCircle } from "lucide-react";
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || "https://gordonconnect-production-f2bd.up.railway.app/api";
 
@@ -185,16 +186,6 @@ function Profile() {
 
       {/* Profile Info Section */}
       <div className="relative px-2 sm:px-4 md:px-6 lg:px-8 -mt-12 sm:-mt-16 md:-mt-20 lg:-mt-24 z-10">
-        <div className="flex items-center gap-2">
-          <h1 className="text-2xl font-bold">{data.username}</h1>
-          {data.role === "admin" && (
-            <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
-              theme === "dark" ? "bg-emerald-600 text-white" : "bg-emerald-500 text-white"
-            }`}>
-              Admin
-            </span>
-          )}
-        </div>
         <div className="max-w-5xl mx-auto">
           <div className={`rounded-xl p-3 sm:p-4 md:p-6 lg:p-8 ${theme === "dark" ? "bg-gray-800/90" : "bg-white/90"} backdrop-blur-lg shadow-xl border ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}>
             {/* Profile content */}
@@ -253,9 +244,14 @@ function Profile() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.4, ease: 'easeOut' }}
-                        className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent"
+                        className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent flex items-center gap-2"
                       >
                         {data?.name || "Unknown User"}
+                        {data?.role === "admin" && (
+                          <span className="inline-flex items-center" title="Admin">
+                            <Shield size={18} className="text-emerald-500 fill-emerald-500" />
+                          </span>
+                        )}
                       </motion.h1>
 
                       {/* Stats Section */}
@@ -601,7 +597,6 @@ function Profile() {
 }
 
 export default Profile;
-
 
 
 

@@ -618,7 +618,11 @@ const Forum = () => {
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.4, delay: 0.2 }}
-                            className="text-gray-700 dark:text-gray-300 leading-relaxed mb-6"
+                            className={`leading-relaxed mb-6 ${
+                              theme === "dark" 
+                                ? "text-gray-300" 
+                                : "text-black"
+                            }`}
                           >
                             {forum.description}
                           </motion.p>
@@ -1008,6 +1012,7 @@ const Forum = () => {
 };
 
 export default Forum;
+
 
 
 
