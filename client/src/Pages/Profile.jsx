@@ -19,7 +19,7 @@ import { Pencil, XCircle, X } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
-import { Shield, CheckCircle } from "lucide-react";
+import { BadgeCheck } from "lucide-react";
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || "https://gordonconnect-production-f2bd.up.railway.app/api";
 
@@ -249,7 +249,7 @@ function Profile() {
                         {data?.name || "Unknown User"}
                         {data?.role === "admin" && (
                           <span className="inline-flex items-center" title="Admin">
-                            <Shield size={18} className="text-emerald-500 fill-emerald-500" />
+                            <BadgeCheck size={20} className="text-emerald-500 fill-emerald-500" />
                           </span>
                         )}
                       </motion.h1>
@@ -597,6 +597,8 @@ function Profile() {
 }
 
 export default Profile;
+
+
 
 
 
