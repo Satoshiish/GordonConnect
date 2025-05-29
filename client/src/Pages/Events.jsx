@@ -531,6 +531,38 @@ const Events = () => {
   // Filter out past events before rendering
   const upcomingEvents = events.filter(e => !isPastEvent(e.date, e.time));
 
+  // Add these state variables to your component
+  const [showJoinedUsersModal, setShowJoinedUsersModal] = useState(false);
+  const [joinedUsers, setJoinedUsers] = useState([]);
+  const [loadingJoinedUsers, setLoadingJoinedUsers] = useState(false);
+  const [selectedEventForJoins, setSelectedEventForJoins] = useState(null);
+
+  // Add this function to fetch joined users
+  const fetchJoinedUsers = async (eventId) => {
+    try {
+      setLoadingJoinedUsers(true);
+      const token = localStorage.getItem("token");
+      const response = await makeRequest.get(`events/${eventId}/emails`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      setJoinedUsers(response.data);
+    } catch (err) {
+      console.error("Failed to fetch joined users:", err);
+      toast.error("Failed to load joined users");
+    } finally {
+      setLoadingJoinedUsers(false);
+    }
+  };
+
+  // Add this function to handle opening the joined users modal
+  const handleViewJoinedUsers = (event) => {
+    setSelectedEventForJoins(event);
+    setShowJoinedUsersModal(true);
+    fetchJoinedUsers(event.id);
+  };
+
   return (
     <div className={`min-h-screen ${theme === "dark" ? "bg-gray-900" : "bg-gray-50"} text-gray-900`}>
       <div className="max-w-7xl mx-auto p-2 sm:p-4 md:p-6 lg:p-8">
@@ -670,11 +702,24 @@ const Events = () => {
                     </div>
                   )}
                 </div>
-                {/* Show join count */}
-                <div className="flex items-center gap-2 mt-2">
+                {/* Show join count - make clickable for admins */}
+                <div 
+                  className={`flex items-center gap-2 mt-2 ${
+                    currentUser?.role === "admin" ? "cursor-pointer hover:underline" : ""
+                  }`}
+                  onClick={(e) => {
+                    if (currentUser?.role === "admin") {
+                      e.stopPropagation();
+                      handleViewJoinedUsers(event);
+                    }
+                  }}
+                >
                   <Users size={16} className={theme === "dark" ? "text-emerald-400" : "text-teal-500"} />
                   <span className={theme === "dark" ? "text-gray-300" : "text-gray-600"}>
                     {event.join_count} {event.join_count === 1 ? "person has" : "people have"} joined
+                    {currentUser?.role === "admin" && event.join_count > 0 && (
+                      <span className="ml-1 text-xs opacity-70">(click to view)</span>
+                    )}
                   </span>
                 </div>
                 
@@ -1596,12 +1641,127 @@ const Events = () => {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Joined Users Modal (Admin Only) */}
+        <AnimatePresence>
+          {showJoinedUsersModal && selectedEventForJoins && currentUser?.role === "admin" && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+              onClick={() => setShowJoinedUsersModal(false)}
+            >
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 20, opacity: 0 }}
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                className={`w-full max-w-md rounded-xl overflow-hidden shadow-xl ${
+                  theme === "dark" ? "bg-gray-900" : "bg-white"
+                }`}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Header */}
+                <div className="p-5 border-b border-gray-200 dark:border-gray-800">
+                  <div className="flex justify-between items-center">
+                    <h3 className={`text-xl font-bold ${
+                      theme === "dark" ? "text-white" : "text-gray-900"
+                    }`}>
+                      Joined Users
+                    </h3>
+                    <button
+                      onClick={() => setShowJoinedUsersModal(false)}
+                      className={`p-1 rounded-full ${
+                        theme === "dark" ? "text-gray-400 hover:text-white" : "text-gray-500 hover:text-gray-900"
+                      }`}
+                    >
+                      <XCircle size={20} />
+                    </button>
+                  </div>
+                  <p className={`mt-1 text-sm ${
+                    theme === "dark" ? "text-gray-400" : "text-gray-500"
+                  }`}>
+                    Event: {selectedEventForJoins.title}
+                  </p>
+                </div>
+                
+                {/* Content */}
+                <div className="p-5">
+                  {loadingJoinedUsers ? (
+                    <div className="flex justify-center items-center py-8">
+                      <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
+                    </div>
+                  ) : joinedUsers.length === 0 ? (
+                    <div className={`text-center py-8 ${
+                      theme === "dark" ? "text-gray-400" : "text-gray-500"
+                    }`}>
+                      No users have joined this event yet.
+                    </div>
+                  ) : (
+                    <div className="max-h-[50vh] overflow-y-auto">
+                      <table className="w-full">
+                        <thead className={`text-left text-sm ${
+                          theme === "dark" ? "text-gray-400" : "text-gray-500"
+                        }`}>
+                          <tr>
+                            <th className="pb-2">#</th>
+                            <th className="pb-2">Email</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {joinedUsers.map((email, index) => (
+                            <tr 
+                              key={index}
+                              className={`border-t ${
+                                theme === "dark" ? "border-gray-800" : "border-gray-100"
+                              }`}
+                            >
+                              <td className={`py-3 pr-4 ${
+                                theme === "dark" ? "text-gray-400" : "text-gray-500"
+                              }`}>
+                                {index + 1}
+                              </td>
+                              <td className={`py-3 ${
+                                theme === "dark" ? "text-gray-200" : "text-gray-700"
+                              }`}>
+                                {email}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Footer */}
+                <div className="p-4 border-t border-gray-200 dark:border-gray-800 flex justify-end">
+                  <button
+                    onClick={() => setShowJoinedUsersModal(false)}
+                    className={`px-4 py-2 rounded-lg font-medium ${
+                      theme === "dark" 
+                        ? "bg-gray-800 text-gray-300 hover:bg-gray-700" 
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
+                  >
+                    Close
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
 };
 
 export default Events;
+
+
+
 
 
 
