@@ -583,7 +583,11 @@ const Forum = () => {
                           initial={{ opacity: 0, scale: 0.95, y: 10 }}
                           animate={{ opacity: 1, scale: 1, y: 0 }}
                           transition={{ duration: 0.4, delay: 0.1 }}
-                          className="text-2xl font-bold mb-3 cursor-pointer group-hover:text-emerald-500 dark:text-white dark:group-hover:text-teal-400 transition-colors"
+                          className={`text-2xl font-bold mb-3 cursor-pointer transition-colors ${
+                            theme === "dark" 
+                              ? "text-white group-hover:text-teal-400" 
+                              : "text-gray-900 group-hover:text-emerald-500"
+                          }`}
                           onClick={() => toggleForumExpansion(forum.forum_id)}
                         >
                           {forum.title}
@@ -1004,5 +1008,8 @@ const Forum = () => {
 };
 
 export default Forum;
+
+
+
 
 
