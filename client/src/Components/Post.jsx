@@ -231,13 +231,18 @@ const Post = ({ post }) => {
 
   // Add state for predefined report reasons
   const [reportReasons] = useState([
-    "It is inappropriate",
-    "Spam",
-    "Harassment",
-    "False information",
-    "Hate speech",
-    "Violence",
-    "Copyright violation",
+    "Contains inaccurate or outdated information",
+    "Irrelevant to my program or department",
+    "Not clearly explained or confusing",
+    "Unprofessional tone or wording",
+    "Too many repetitive posts",
+    "Announced too late or last-minute",
+    "Disrespectful or inconsiderate messaging",
+    "Not accessible (e.g., unclear for PWDs or non-English speakers)",
+    "Fails to follow official GC communication standards",
+    "Triggers anxiety or unnecessary pressure",
+    "Unfair to certain groups or students",
+    "Violates school values or community standards",
     "Other"
   ]);
 
@@ -514,7 +519,7 @@ const Post = ({ post }) => {
                     <XCircle size={28} strokeWidth={2.5} />
                   </button>
                   <h2 className="text-2xl font-bold mb-1 text-gray-900 dark:text-white">Report Post</h2>
-                  <p className="text-gray-500 dark:text-gray-400 mb-6">Fill in the details to report this post to the admin.</p>
+                  <p className="text-gray-500 dark:text-gray-400 mb-6">Please select a reason for reporting this post.</p>
                   {alreadyReported ? (
                     <motion.div 
                       initial={{ opacity: 0, y: -20 }}
@@ -528,20 +533,25 @@ const Post = ({ post }) => {
                     </motion.div>
                   ) : (
                     <>
-                      <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300" htmlFor="report-reason">Reason</label>
-                      <select
-                        id="report-reason"
-                        className="w-full p-4 rounded-xl border-0 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white mb-6 shadow-sm focus:ring-2 focus:ring-emerald-400 transition"
-                        value={reportReason}
-                        onChange={e => setReportReason(e.target.value)}
-                        disabled={reportLoading}
-                      >
-                        <option value="">Select a reason</option>
-                        {reportReasons.map((reason, index) => (
-                          <option key={index} value={reason}>{reason}</option>
-                        ))}
-                      </select>
-                      <div className="flex justify-end gap-3 mt-2">
+                      <div className="mb-6">
+                        <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300" htmlFor="report-reason">
+                          What's the issue with this post?
+                        </label>
+                        <select
+                          id="report-reason"
+                          className="w-full p-4 rounded-xl border-0 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm focus:ring-2 focus:ring-emerald-400 transition"
+                          value={reportReason}
+                          onChange={e => setReportReason(e.target.value)}
+                          disabled={reportLoading}
+                        >
+                          <option value="">Select a reason</option>
+                          {reportReasons.map((reason, index) => (
+                            <option key={index} value={reason}>{reason}</option>
+                          ))}
+                        </select>
+                      </div>
+                      
+                      <div className="flex justify-end gap-3">
                         <button
                           className="px-6 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition"
                           onClick={() => setShowReportModal(false)}
@@ -550,11 +560,15 @@ const Post = ({ post }) => {
                           Cancel
                         </button>
                         <button
-                          className="px-6 py-2 rounded-xl bg-red-500 text-white font-semibold hover:bg-red-600 transition shadow"
+                          className={`px-6 py-2 rounded-xl font-semibold transition shadow ${
+                            !reportReason 
+                              ? "bg-red-300 cursor-not-allowed" 
+                              : "bg-red-500 hover:bg-red-600 text-white"
+                          }`}
                           onClick={handleReport}
-                          disabled={reportLoading}
+                          disabled={reportLoading || !reportReason}
                         >
-                          {reportLoading ? "Reporting..." : "Report"}
+                          {reportLoading ? "Submitting..." : "Submit Report"}
                         </button>
                       </div>
                     </>
@@ -582,6 +596,7 @@ const Post = ({ post }) => {
 };
 
 export default Post;
+
 
 
 
