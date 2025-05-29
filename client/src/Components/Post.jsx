@@ -266,23 +266,29 @@ const Post = ({ post }) => {
       toast.error("Please select a reason for reporting.");
       return;
     }
+    
     setReportLoading(true);
     try {
+      // Make sure we're passing the correct data to the API
       await makeRequest.post("/reports", {
         user_id: currentUser?.id || currentUser?.user_id || null,
         post_id: post.posts_id,
         reason: reportReason,
       });
+      
       toast.success("Report submitted. Thank you!");
       setShowReportModal(false);
       setReportReason("");
       setAlreadyReported(true);
     } catch (err) {
-      if (err.response && err.response.data && err.response.data.error && err.response.data.error.toLowerCase().includes("duplicate")) {
+      console.error("Report submission error:", err);
+      
+      if (err.response && err.response.data && err.response.data.error && 
+          err.response.data.error.toLowerCase().includes("duplicate")) {
         setAlreadyReported(true);
         toast.error("You have already reported this post.");
       } else {
-        toast.error("Failed to submit report.");
+        toast.error("Failed to submit report. Please try again.");
       }
     } finally {
       setReportLoading(false);
@@ -572,7 +578,6 @@ const Post = ({ post }) => {
             {showReportModal && (
               <ReportModal 
                 setShowReportModal={setShowReportModal}
-                handleReport={handleReport}
                 reportLoading={reportLoading}
                 alreadyReported={alreadyReported}
               />
@@ -597,7 +602,7 @@ const Post = ({ post }) => {
 };
 
 // Report modal component
-const ReportModal = ({ setShowReportModal, handleReport, reportLoading, alreadyReported }) => {
+const ReportModal = ({ setShowReportModal, reportLoading, alreadyReported }) => {
   const [reportReason, setReportReason] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -629,11 +634,22 @@ const ReportModal = ({ setShowReportModal, handleReport, reportLoading, alreadyR
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Local submit handler that uses the parent component's handleReport
+  const submitReport = () => {
+    if (!reportReason) {
+      toast.error("Please select a reason for reporting.");
+      return;
+    }
+    
+    // Set the report reason in the parent component and call handleReport
+    handleReport();
+  };
+
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="w-full max-w-lg bg-[#1a2235] text-white rounded-3xl overflow-visible shadow-2xl relative">
-        {/* Header with subtle gradient */}
-        <div className="p-6 pb-4 bg-gradient-to-r from-[#1e2638] to-[#1a2235]">
+        {/* Header */}
+        <div className="p-6 pb-4">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-red-900/40">
               <Flag size={20} className="text-red-400" />
@@ -643,13 +659,13 @@ const ReportModal = ({ setShowReportModal, handleReport, reportLoading, alreadyR
           <p className="text-gray-300 text-sm mt-2 ml-9">Let us know what concerns you about this post.</p>
         </div>
         
-        {/* Content - note the overflow-visible to allow dropdown to extend outside */}
+        {/* Content */}
         <div className="p-6 pt-3 overflow-visible">
           <label className="block text-gray-200 mb-3 font-medium">
             Please select a reason:
           </label>
           
-          {/* Enhanced custom dropdown with overflow handling */}
+          {/* Custom dropdown */}
           <div className="relative mb-6" ref={dropdownRef}>
             <div 
               className={`w-full p-4 rounded-full bg-[#2a3447] text-gray-200 flex justify-between items-center cursor-pointer border ${
@@ -668,7 +684,7 @@ const ReportModal = ({ setShowReportModal, handleReport, reportLoading, alreadyR
               />
             </div>
             
-            {/* Dropdown options positioned with higher z-index */}
+            {/* Dropdown options */}
             {isDropdownOpen && (
               <div className="absolute z-[100] w-full mt-2 bg-[#2a3447] rounded-xl shadow-xl border border-gray-700 py-2 max-h-60 overflow-y-auto">
                 {reportReasons.map((reason, index) => (
@@ -700,7 +716,7 @@ const ReportModal = ({ setShowReportModal, handleReport, reportLoading, alreadyR
               Cancel
             </button>
             <button
-              onClick={() => handleReport(reportReason)}
+              onClick={submitReport}
               disabled={reportLoading || !reportReason}
               className={`px-6 py-2.5 rounded-full font-medium transition ${
                 !reportReason || reportLoading
@@ -727,6 +743,7 @@ const ReportModal = ({ setShowReportModal, handleReport, reportLoading, alreadyR
 };
 
 export default Post;
+
 
 
 
