@@ -21,7 +21,7 @@ import {
   MoreHoriz,
 } from "@mui/icons-material";
 import { toast } from 'react-hot-toast';
-import { Image as ImageIcon, XCircle, Heart, HeartOff, Bookmark as BookmarkIcon, BookmarkMinus, MessageCircle, Share2, MoreVertical, Loader2, Flag, ExternalLink } from 'lucide-react';
+import { Image as ImageIcon, XCircle, Heart, HeartOff, Bookmark as BookmarkIcon, BookmarkMinus, MessageCircle, Share2, MoreVertical, Loader2, Flag, ExternalLink, ChevronDown, AlertTriangle } from 'lucide-react';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || "https://gordonconnect-production-f2bd.up.railway.app/api";
 
@@ -509,70 +509,100 @@ const Post = ({ post }) => {
                   initial={{ scale: 0.95, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   exit={{ scale: 0.95, opacity: 0 }}
-                  className="w-full max-w-lg rounded-3xl p-8 bg-white dark:bg-gray-900 shadow-2xl border border-gray-100 dark:border-gray-800 relative"
+                  className="w-full max-w-lg overflow-hidden shadow-2xl relative"
                 >
-                  <button
-                    className="absolute top-6 right-6 text-gray-400 hover:text-gray-700 dark:hover:text-white text-2xl transition"
-                    onClick={() => setShowReportModal(false)}
-                    aria-label="Close"
-                  >
-                    <XCircle size={28} strokeWidth={2.5} />
-                  </button>
-                  <h2 className="text-2xl font-bold mb-1 text-gray-900 dark:text-white">Report Post</h2>
-                  <p className="text-gray-500 dark:text-gray-400 mb-6">Please select a reason for reporting this post.</p>
-                  {alreadyReported ? (
-                    <motion.div 
-                      initial={{ opacity: 0, y: -20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      className="flex flex-col items-center justify-center p-6 rounded-xl bg-red-100/90 dark:bg-red-900/30 text-red-600 dark:text-red-400 shadow-lg border border-red-200 dark:border-red-800/50"
+                  <div className="bg-gradient-to-br from-gray-900 to-gray-800 text-white rounded-t-3xl p-6">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="p-2 rounded-lg bg-red-500/20">
+                        <Flag size={20} className="text-red-400" />
+                      </div>
+                      <h2 className="text-2xl font-bold text-white">Report Content</h2>
+                    </div>
+                    <p className="text-gray-300 text-sm ml-9">Help us understand why this post is problematic</p>
+                  </div>
+                  
+                  <div className="bg-white dark:bg-gray-800 p-6 rounded-b-3xl">
+                    {alreadyReported ? (
+                      <motion.div 
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="flex flex-col items-center justify-center p-6 rounded-xl bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 shadow-lg border border-amber-100 dark:border-amber-800/50"
+                      >
+                        <AlertTriangle size={48} className="mb-3" />
+                        <p className="text-lg font-semibold mb-2 text-center">You've already reported this post</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 text-center">Our team will review your previous report. Thank you for helping maintain community standards.</p>
+                      </motion.div>
+                    ) : (
+                      <>
+                        <div className="mb-6">
+                          <label className="block text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">
+                            Please select a reason:
+                          </label>
+                          
+                          <div className="relative">
+                            <select
+                              id="report-reason"
+                              className="w-full p-4 rounded-xl border-0 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 appearance-none transition"
+                              value={reportReason}
+                              onChange={e => setReportReason(e.target.value)}
+                              disabled={reportLoading}
+                            >
+                              <option value="">Select a reason</option>
+                              {reportReasons.map((reason, index) => (
+                                <option key={index} value={reason} className="py-2">{reason}</option>
+                              ))}
+                            </select>
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                              <ChevronDown size={18} className="text-gray-500 dark:text-gray-400" />
+                            </div>
+                          </div>
+                          
+                          {!reportReason && (
+                            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                              <AlertTriangle size={12} />
+                              Please select a reason to continue
+                            </p>
+                          )}
+                        </div>
+                        
+                        <div className="flex justify-between items-center gap-3 mt-8">
+                          <button
+                            onClick={() => setShowReportModal(false)}
+                            className="px-5 py-2.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition flex-1"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={handleReport}
+                            disabled={reportLoading || !reportReason}
+                            className={`px-5 py-2.5 rounded-lg font-medium transition flex-1 flex justify-center items-center gap-2 ${
+                              !reportReason || reportLoading
+                                ? "bg-red-300 dark:bg-red-800/50 cursor-not-allowed text-white/80" 
+                                : "bg-red-500 hover:bg-red-600 text-white shadow-md"
+                            }`}
+                          >
+                            {reportLoading ? (
+                              <>
+                                <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
+                                <span>Processing...</span>
+                              </>
+                            ) : (
+                              "Submit Report"
+                            )}
+                          </button>
+                        </div>
+                      </>
+                    )}
+                    
+                    <button
+                      className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-white transition rounded-full p-1 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      onClick={() => setShowReportModal(false)}
+                      aria-label="Close"
                     >
-                      <XCircle size={48} className="mb-2" />
-                      <p className="text-lg font-semibold mb-2">You have already reported this post.</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Thank you for helping us keep the community safe.</p>
-                    </motion.div>
-                  ) : (
-                    <>
-                      <div className="mb-6">
-                        <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300" htmlFor="report-reason">
-                          What's the issue with this post?
-                        </label>
-                        <select
-                          id="report-reason"
-                          className="w-full p-4 rounded-xl border-0 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm focus:ring-2 focus:ring-emerald-400 transition"
-                          value={reportReason}
-                          onChange={e => setReportReason(e.target.value)}
-                          disabled={reportLoading}
-                        >
-                          <option value="">Select a reason</option>
-                          {reportReasons.map((reason, index) => (
-                            <option key={index} value={reason}>{reason}</option>
-                          ))}
-                        </select>
-                      </div>
-                      
-                      <div className="flex justify-end gap-3">
-                        <button
-                          className="px-6 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition"
-                          onClick={() => setShowReportModal(false)}
-                          disabled={reportLoading}
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          className={`px-6 py-2 rounded-xl font-semibold transition shadow ${
-                            !reportReason 
-                              ? "bg-red-300 cursor-not-allowed" 
-                              : "bg-red-500 hover:bg-red-600 text-white"
-                          }`}
-                          onClick={handleReport}
-                          disabled={reportLoading || !reportReason}
-                        >
-                          {reportLoading ? "Submitting..." : "Submit Report"}
-                        </button>
-                      </div>
-                    </>
-                  )}
+                      <XCircle size={24} strokeWidth={2} />
+                    </button>
+                  </div>
                 </motion.div>
               </motion.div>
             )}
@@ -596,6 +626,7 @@ const Post = ({ post }) => {
 };
 
 export default Post;
+
 
 
 
