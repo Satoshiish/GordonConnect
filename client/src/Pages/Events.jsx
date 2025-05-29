@@ -21,7 +21,8 @@ import {
   ArrowRight,
   CheckCircle2,
   AlertCircle,
-  Loader2
+  Loader2,
+  X
 } from "lucide-react";
 import { toast } from 'react-hot-toast';
 
@@ -1143,7 +1144,7 @@ const Events = () => {
                   }`}
                   aria-label="Close"
                 >
-                  <X size={18} />
+                  <XCircle size={18} />
                 </button>
               </motion.div>
             </motion.div>
@@ -1272,7 +1273,7 @@ const Events = () => {
                   className="absolute top-4 right-4 p-2 rounded-full bg-black/50 text-white hover:bg-white/20 transition-colors"
                   aria-label="Close preview"
                 >
-                  <X size={24} />
+                  <XCircle size={24} />
                 </button>
               </motion.div>
             </motion.div>
@@ -1601,6 +1602,8 @@ const Events = () => {
 };
 
 export default Events;
+
+
 
 
 
