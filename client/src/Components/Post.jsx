@@ -261,8 +261,8 @@ const Post = ({ post }) => {
     "Violates school values or community standards"
   ]);
 
-  const handleReport = async () => {
-    if (!reportReason) {
+  const handleReport = async (reason) => {
+    if (!reason) {
       toast.error("Please select a reason for reporting.");
       return;
     }
@@ -273,7 +273,7 @@ const Post = ({ post }) => {
       await makeRequest.post("/reports", {
         user_id: currentUser?.id || currentUser?.user_id || null,
         post_id: post.posts_id,
-        reason: reportReason,
+        reason: reason,
       });
       
       toast.success("Report submitted. Thank you!");
@@ -580,6 +580,7 @@ const Post = ({ post }) => {
                 setShowReportModal={setShowReportModal}
                 reportLoading={reportLoading}
                 alreadyReported={alreadyReported}
+                handleReport={handleReport}
               />
             )}
           </AnimatePresence>
@@ -602,7 +603,7 @@ const Post = ({ post }) => {
 };
 
 // Report modal component
-const ReportModal = ({ setShowReportModal, reportLoading, alreadyReported }) => {
+const ReportModal = ({ setShowReportModal, reportLoading, alreadyReported, handleReport }) => {
   const [reportReason, setReportReason] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -641,8 +642,8 @@ const ReportModal = ({ setShowReportModal, reportLoading, alreadyReported }) => 
       return;
     }
     
-    // Set the report reason in the parent component and call handleReport
-    handleReport();
+    // Call the handleReport function from props with the selected reason
+    handleReport(reportReason);
   };
 
   return (
@@ -743,6 +744,9 @@ const ReportModal = ({ setShowReportModal, reportLoading, alreadyReported }) => 
 };
 
 export default Post;
+
+
+
 
 
 
