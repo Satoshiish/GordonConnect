@@ -1043,7 +1043,7 @@ const Events = () => {
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
-                className={`w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl border ${
+                className={`w-full max-w-2xl max-h-[90vh] overflow-auto rounded-3xl shadow-2xl border ${
                   theme === "dark"
                     ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border-gray-800" 
                     : "bg-gradient-to-br from-white via-gray-50 to-white border-gray-100"
@@ -1052,7 +1052,7 @@ const Events = () => {
                 {eventDetails.image && (
                   <div className="relative h-64 cursor-pointer group" onClick={() => handleImageClick(eventDetails.image)}>
                     <img
-                      src={eventDetails.image}
+                      src={formatImageUrl(eventDetails.image)}
                       alt={eventDetails.title}
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
@@ -1080,28 +1080,28 @@ const Events = () => {
                     </motion.button>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-                    <div className={`flex items-center gap-3 p-3 rounded-xl ${theme === "dark" ? "bg-gray-800/60" : "bg-gray-100"}`}>
-                      <Calendar size={22} className={theme === "dark" ? "text-emerald-400" : "text-teal-500"} />
-                      <span className={`text-base font-medium ${theme === "dark" ? "text-gray-200" : "text-gray-700"}`}>
-                        {new Date(eventDetails.date).toLocaleDateString('en-US', { 
-                          weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
-                        })}
-                      </span>
+                    <div className={`flex items-center gap-2 p-3 rounded-xl ${
+                      theme === "dark" ? "bg-gray-800/70" : "bg-gray-100"
+                    }`}>
+                      <Calendar className={theme === "dark" ? "text-emerald-400" : "text-teal-500"} />
+                      <span>{formatDate(eventDetails.date)}</span>
                     </div>
-                    <div className={`flex items-center gap-3 p-3 rounded-xl ${theme === "dark" ? "bg-gray-800/60" : "bg-gray-100"}`}>
-                      <Clock size={22} className={theme === "dark" ? "text-emerald-400" : "text-teal-500"} />
-                      <span className={`text-base font-medium ${theme === "dark" ? "text-gray-200" : "text-gray-700"}`}>
-                        {formatTimeToAMPM(eventDetails.time)}
-                      </span>
+                    <div className={`flex items-center gap-2 p-3 rounded-xl ${
+                      theme === "dark" ? "bg-gray-800/70" : "bg-gray-100"
+                    }`}>
+                      <Clock className={theme === "dark" ? "text-emerald-400" : "text-teal-500"} />
+                      <span>{formatTimeToAMPM(getTimeFromISO(eventDetails.time))}</span>
                     </div>
-                    <div className={`flex items-center gap-3 p-3 rounded-xl ${theme === "dark" ? "bg-gray-800/60" : "bg-gray-100"}`}>
-                      <MapPin size={22} className={theme === "dark" ? "text-emerald-400" : "text-teal-500"} />
-                      <span className={`text-base font-medium ${theme === "dark" ? "text-gray-200" : "text-gray-700"}`}>
-                        {eventDetails.location}
-                      </span>
+                    <div className={`flex items-center gap-2 p-3 rounded-xl ${
+                      theme === "dark" ? "bg-gray-800/70" : "bg-gray-100"
+                    }`}>
+                      <MapPin className={theme === "dark" ? "text-emerald-400" : "text-teal-500"} />
+                      <span>{eventDetails.location}</span>
                     </div>
                   </div>
-                  <p className={`text-lg ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>{eventDetails.description}</p>
+                  <div className={`max-h-[30vh] overflow-y-auto pr-2 ${theme === "dark" ? "scrollbar-dark" : "scrollbar-light"}`}>
+                    <p className={`text-lg ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>{eventDetails.description}</p>
+                  </div>
                   <div className="flex justify-end pt-2">
                     <motion.button
                       whileHover={{ scale: 1.04 }}
@@ -1244,7 +1244,7 @@ const Events = () => {
                 <div className="max-w-[90vw] max-h-[90vh] overflow-auto flex items-center justify-center">
                   <img
                     src={previewImage}
-                    alt="Preview"
+                    alt="Event image"
                     className="w-auto h-auto max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
                     style={{ display: 'block' }}
                     onError={(e) => {
@@ -1580,6 +1580,82 @@ const Events = () => {
 };
 
 export default Events;
+                        onChange={handleEditImageChange}
+                        className="hidden"
+                      />
+                      <label
+                        htmlFor="edit-event-image"
+                        className={`flex items-center gap-2 px-5 py-2 rounded-xl cursor-pointer border transition-all duration-200 font-medium shadow-sm
+                          ${theme === "dark"
+                            ? "bg-gray-800 text-gray-200 border-gray-700 hover:bg-gray-700"
+                            : "bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200"}
+                        `}
+                      >
+                        <ImageIcon size={20} />
+                        <span>Choose Image</span>
+                      </label>
+                      {editImagePreview && (
+                        <div className="relative w-20 h-20">
+                          <img
+                            src={editImagePreview}
+                            alt="Preview"
+                            className="w-full h-full object-cover rounded-lg"
+                          />
+                          <button
+                            onClick={() => {
+                              setEditImage(null);
+                              setEditImagePreview(null);
+                            }}
+                            className="absolute -top-2 -right-2 p-1 rounded-full bg-red-500 text-white"
+                          >
+                            <XCircle size={32} strokeWidth={2.5} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                    <div className={`mt-2 text-xs ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>
+                      Maximum file size: 5MB. Supported formats: JPG, PNG, GIF
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-4 pt-4">
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setShowEditForm(false)}
+                      className={`px-4 py-2 rounded-lg font-medium transition-all duration-200
+                        ${theme === "dark"
+                          ? "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        }`}
+                    >
+                      Cancel
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={handleUpdate}
+                      className={`px-4 py-2 rounded-lg font-medium transition-all duration-200
+                        ${theme === "dark"
+                          ? "bg-emerald-500 hover:bg-emerald-600 text-white"
+                          : "bg-teal-500 hover:bg-teal-600 text-white"
+                        }`}
+                    >
+                      Update Event
+                    </motion.button>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+};
+
+export default Events;
+
 
 
 
