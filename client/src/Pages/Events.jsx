@@ -315,9 +315,42 @@ const Events = () => {
   const sendJoinEmail = async () => {
     if (!selectedEvent || !emailInput) return;
     setJoinError("");
-    // 1. Save join in backend
+    
     try {
-      await makeRequest.post(`events/${selectedEvent.id}/avail`, { email: emailInput });
+      // Get the current admin's information
+      const adminInfo = currentUser?.name || currentUser?.username || "Admin";
+      
+      // Save join in backend with admin information
+      await makeRequest.post(`events/${selectedEvent.id}/avail`, { 
+        email: emailInput,
+        sentBy: adminInfo,
+        sentAt: new Date().toISOString()
+      });
+      
+      // Rest of the email sending code...
+      const userName = emailInput.split("@")[0]; // basic name fallback
+      const templateParams = {
+        user_name: userName,
+        user_email: emailInput,
+        event_title: selectedEvent.title,
+        event_date: formatDate(selectedEvent.date),
+        event_time: formatTimeToAMPM(getTimeFromISO(selectedEvent.time)),
+        event_location: selectedEvent.location,
+      };
+
+      emailjs
+        .send("service_r276hri", "template_w24leai", templateParams, "VciD--jXYRWjpdqNe")
+        .then(() => {
+          toast.success("You've successfully joined the event! A confirmation email has been sent.");
+          setShowEmailModal(false);
+          setEmailInput("");
+          setShowSuccessModal(true);
+          fetchEvents(); // Refresh join count after joining
+        })
+        .catch((err) => {
+          console.error("Email sending failed:", err);
+          toast.error("Failed to send confirmation email.");
+        });
     } catch (err) {
       if (err.response && err.response.status === 409) {
         setJoinError("This email has already joined this event.");
@@ -326,33 +359,7 @@ const Events = () => {
         setJoinError("Failed to record your join. Please try again.");
         toast.error("Failed to record your join. Please try again.");
       }
-      return;
     }
-
-    // 2. Send email
-    const userName = emailInput.split("@")[0]; // basic name fallback
-    const templateParams = {
-      user_name: userName,
-      user_email: emailInput,
-      event_title: selectedEvent.title,
-      event_date: formatDate(selectedEvent.date),
-      event_time: formatTimeToAMPM(getTimeFromISO(selectedEvent.time)),
-      event_location: selectedEvent.location,
-    };
-
-    emailjs
-      .send("service_r276hri", "template_w24leai", templateParams, "VciD--jXYRWjpdqNe")
-      .then(() => {
-        toast.success("You've successfully joined the event! A confirmation email has been sent.");
-        setShowEmailModal(false);
-        setEmailInput("");
-        setShowSuccessModal(true);
-        fetchEvents(); // Refresh join count after joining
-      })
-      .catch((err) => {
-        console.error("Email sending failed:", err);
-        toast.error("Failed to send confirmation email.");
-      });
   };
 
   const handleEventClick = (event) => {
@@ -1817,6 +1824,8 @@ const Events = () => {
 };
 
 export default Events;
+
+
 
 
 
