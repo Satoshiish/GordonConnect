@@ -631,35 +631,35 @@ const ReportModal = ({ setShowReportModal, handleReport, reportLoading, alreadyR
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="w-full max-w-lg bg-gradient-to-b from-[#1a2235] to-[#151d2e] text-white rounded-3xl overflow-hidden shadow-2xl relative animate-fadeIn">
+      <div className="w-full max-w-lg bg-[#1a2235] text-white rounded-3xl overflow-visible shadow-2xl relative">
         {/* Header with subtle gradient */}
-        <div className="p-7 pb-4 bg-gradient-to-r from-[#1e2638] to-[#1a2235]">
-          <div className="flex items-center gap-4">
-            <div className="p-2.5 rounded-lg bg-red-900/40 shadow-inner shadow-red-900/20">
-              <Flag size={22} className="text-red-400" />
+        <div className="p-6 pb-4 bg-gradient-to-r from-[#1e2638] to-[#1a2235]">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-red-900/40">
+              <Flag size={20} className="text-red-400" />
             </div>
-            <h2 className="text-2xl font-bold tracking-tight">Report Content</h2>
+            <h2 className="text-2xl font-bold">Report Content</h2>
           </div>
-          <p className="text-gray-300 text-sm mt-2.5 ml-12">Let us know what concerns you about this post.</p>
+          <p className="text-gray-300 text-sm mt-2 ml-9">Let us know what concerns you about this post.</p>
         </div>
         
-        {/* Content with improved spacing */}
-        <div className="p-7 pt-4">
-          <label className="block text-gray-200 mb-3.5 font-medium text-base">
+        {/* Content - note the overflow-visible to allow dropdown to extend outside */}
+        <div className="p-6 pt-3 overflow-visible">
+          <label className="block text-gray-200 mb-3 font-medium">
             Please select a reason:
           </label>
           
-          {/* Enhanced custom dropdown - using ChevronDown instead of ChevronUp */}
-          <div className="relative mb-7" ref={dropdownRef}>
+          {/* Enhanced custom dropdown with overflow handling */}
+          <div className="relative mb-6" ref={dropdownRef}>
             <div 
               className={`w-full p-4 rounded-full bg-[#2a3447] text-gray-200 flex justify-between items-center cursor-pointer border ${
                 isDropdownOpen 
-                  ? "border-blue-500 shadow-[0_0_0_1px_rgba(59,130,246,0.5)]" 
-                  : "border-gray-700 hover:border-gray-500"
+                  ? "border-blue-500" 
+                  : "border-gray-700 hover:border-gray-600"
               } transition-all duration-200`}
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             >
-              <span className={reportReason ? "text-white font-medium" : "text-gray-400"}>
+              <span className={reportReason ? "text-white" : "text-gray-400"}>
                 {reportReason || "Select a reason"}
               </span>
               <ChevronDown 
@@ -668,15 +668,15 @@ const ReportModal = ({ setShowReportModal, handleReport, reportLoading, alreadyR
               />
             </div>
             
-            {/* Dropdown options with improved styling */}
+            {/* Dropdown options positioned with higher z-index */}
             {isDropdownOpen && (
-              <div className="absolute z-50 w-full mt-2 bg-[#2a3447] rounded-2xl shadow-xl border border-gray-700 py-2 max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 animate-fadeIn">
+              <div className="absolute z-[100] w-full mt-2 bg-[#2a3447] rounded-xl shadow-xl border border-gray-700 py-2 max-h-60 overflow-y-auto">
                 {reportReasons.map((reason, index) => (
                   <div
                     key={index}
-                    className={`px-5 py-3.5 cursor-pointer transition-colors duration-150 ${
+                    className={`px-4 py-3 cursor-pointer ${
                       reportReason === reason 
-                        ? "bg-blue-600 text-white font-medium" 
+                        ? "bg-blue-600 text-white" 
                         : "text-gray-200 hover:bg-[#3a4357]"
                     }`}
                     onClick={() => {
@@ -691,41 +691,31 @@ const ReportModal = ({ setShowReportModal, handleReport, reportLoading, alreadyR
             )}
           </div>
           
-          {/* Improved buttons with better spacing and hover effects */}
-          <div className="flex justify-end gap-3 mt-8">
+          {/* Buttons */}
+          <div className="flex justify-end gap-3 mt-6">
             <button
               onClick={() => setShowReportModal(false)}
-              className="px-7 py-3 rounded-full bg-gray-700/80 text-gray-200 font-medium hover:bg-gray-600 active:bg-gray-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-[#1a2235]"
+              className="px-6 py-2.5 rounded-full bg-gray-700 text-gray-200 font-medium hover:bg-gray-600 transition"
             >
               Cancel
             </button>
             <button
               onClick={() => handleReport(reportReason)}
               disabled={reportLoading || !reportReason}
-              className={`px-7 py-3 rounded-full font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#1a2235] ${
+              className={`px-6 py-2.5 rounded-full font-medium transition ${
                 !reportReason || reportLoading
-                  ? "bg-red-500/50 cursor-not-allowed text-white/70 focus:ring-red-400/50" 
-                  : "bg-red-500 hover:bg-red-600 active:bg-red-700 text-white focus:ring-red-500"
+                  ? "bg-red-500/50 cursor-not-allowed text-white/70" 
+                  : "bg-red-500 hover:bg-red-600 text-white"
               }`}
             >
-              {reportLoading ? (
-                <span className="flex items-center gap-2">
-                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Submitting...
-                </span>
-              ) : (
-                "Submit Report"
-              )}
+              {reportLoading ? "Submitting..." : "Submit Report"}
             </button>
           </div>
         </div>
         
-        {/* Improved close button with hover effect */}
+        {/* Close button */}
         <button
-          className="absolute top-5 right-5 text-gray-400 hover:text-white transition-colors p-1 rounded-full hover:bg-gray-700/50"
+          className="absolute top-4 right-4 text-gray-400 hover:text-white transition"
           onClick={() => setShowReportModal(false)}
           aria-label="Close"
         >
@@ -737,6 +727,7 @@ const ReportModal = ({ setShowReportModal, handleReport, reportLoading, alreadyR
 };
 
 export default Post;
+
 
 
 
