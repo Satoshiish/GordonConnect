@@ -317,7 +317,7 @@ const Events = () => {
     setJoinError("");
     
     try {
-      // Get the current admin's information
+      // Get the current user's information
       const adminInfo = currentUser?.name || currentUser?.username || "Admin";
       
       // Save join in backend with admin information
@@ -1660,7 +1660,7 @@ const Events = () => {
           )}
         </AnimatePresence>
 
-        {/* Enhanced Joined Users Modal with Sender Information */}
+        {/* Enhanced Joined Users Modal with Login Account Information */}
         <AnimatePresence>
           {showJoinedUsersModal && selectedEventForJoins && currentUser?.role === "admin" && (
             <motion.div
@@ -1782,7 +1782,7 @@ const Events = () => {
                               <td className={`py-4 px-4 ${
                                 theme === "dark" ? "text-gray-300" : "text-gray-600"
                               }`}>
-                                {typeof user === 'string' ? 'Self-joined' : (user.sentBy || 'Self-joined')}
+                                {typeof user === 'string' ? 'System' : (user.sentBy || 'System')}
                               </td>
                               <td className={`py-4 px-4 ${
                                 theme === "dark" ? "text-gray-400" : "text-gray-500"
@@ -1824,6 +1824,9 @@ const Events = () => {
 };
 
 export default Events;
+
+
+
 
 
 
