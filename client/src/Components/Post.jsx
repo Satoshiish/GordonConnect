@@ -570,88 +570,12 @@ const Post = ({ post }) => {
           {/* Report Modal */}
           <AnimatePresence>
             {showReportModal && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-              >
-                <motion.div
-                  initial={{ scale: 0.95, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.95, opacity: 0 }}
-                  className="w-full max-w-lg overflow-hidden shadow-2xl relative"
-                >
-                  <div className="bg-gradient-to-br from-gray-900 to-gray-800 text-white rounded-t-3xl p-6">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="p-2 rounded-lg bg-red-500/20">
-                        <Flag size={20} className="text-red-400" />
-                      </div>
-                      <h2 className="text-2xl font-bold text-white">Report Content</h2>
-                    </div>
-                    <p className="text-gray-300 text-sm ml-9">Let us know what concerns you about this post.</p>
-                  </div>
-                  
-                  <div className="bg-white dark:bg-gray-800 p-6 rounded-b-3xl">
-                    {alreadyReported ? (
-                      <motion.div 
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        className="flex flex-col items-center justify-center p-6 rounded-xl bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 shadow-lg border border-amber-100 dark:border-amber-800/50"
-                      >
-                        <AlertTriangle size={48} className="mb-3" />
-                        <p className="text-lg font-semibold mb-2 text-center">You've already reported this post</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 text-center">Our team will review your previous report. Thank you for helping maintain community standards.</p>
-                      </motion.div>
-                    ) : (
-                      <>
-                        <div className="mb-6">
-                          <label className="block text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">
-                            Please select a reason:
-                          </label>
-                          <ReportReasonDropdown />
-                        </div>
-                        
-                        <div className="flex justify-between items-center gap-3 mt-8">
-                          <button
-                            onClick={() => setShowReportModal(false)}
-                            className="px-5 py-2.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition flex-1"
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            onClick={handleReport}
-                            disabled={reportLoading || !reportReason}
-                            className={`px-5 py-2.5 rounded-lg font-medium transition flex-1 flex justify-center items-center gap-2 ${
-                              !reportReason || reportLoading
-                                ? "bg-red-300 dark:bg-red-800/50 cursor-not-allowed text-white/80" 
-                                : "bg-red-500 hover:bg-red-600 text-white shadow-md"
-                            }`}
-                          >
-                            {reportLoading ? (
-                              <>
-                                <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
-                                <span>Processing...</span>
-                              </>
-                            ) : (
-                              "Submit Report"
-                            )}
-                          </button>
-                        </div>
-                      </>
-                    )}
-                    
-                    <button
-                      className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-white transition rounded-full p-1 hover:bg-gray-100 dark:hover:bg-gray-700"
-                      onClick={() => setShowReportModal(false)}
-                      aria-label="Close"
-                    >
-                      <XCircle size={24} strokeWidth={2} />
-                    </button>
-                  </div>
-                </motion.div>
-              </motion.div>
+              <ReportModal 
+                setShowReportModal={setShowReportModal}
+                handleReport={handleReport}
+                reportLoading={reportLoading}
+                alreadyReported={alreadyReported}
+              />
             )}
           </AnimatePresence>
         </motion.div>
@@ -672,7 +596,148 @@ const Post = ({ post }) => {
   );
 };
 
+// Report modal component
+const ReportModal = ({ setShowReportModal, handleReport, reportLoading, alreadyReported }) => {
+  const [reportReason, setReportReason] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  
+  const reportReasons = [
+    "Contains inaccurate or outdated information",
+    "Irrelevant to my program or department",
+    "Not clearly explained or confusing",
+    "Unprofessional tone or wording",
+    "Too many repetitive posts",
+    "Announced too late or last-minute",
+    "Disrespectful or inconsiderate messaging",
+    "Not accessible (e.g., unclear for PWDs or non-English speakers)",
+    "Fails to follow official GC communication standards",
+    "Triggers anxiety or unnecessary pressure",
+    "Unfair to certain groups or students",
+    "Violates school values or community standards"
+  ];
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="w-full max-w-lg bg-gradient-to-b from-[#1a2235] to-[#151d2e] text-white rounded-3xl overflow-hidden shadow-2xl relative animate-fadeIn">
+        {/* Header with subtle gradient */}
+        <div className="p-7 pb-4 bg-gradient-to-r from-[#1e2638] to-[#1a2235]">
+          <div className="flex items-center gap-4">
+            <div className="p-2.5 rounded-lg bg-red-900/40 shadow-inner shadow-red-900/20">
+              <Flag size={22} className="text-red-400" />
+            </div>
+            <h2 className="text-2xl font-bold tracking-tight">Report Content</h2>
+          </div>
+          <p className="text-gray-300 text-sm mt-2.5 ml-12">Let us know what concerns you about this post.</p>
+        </div>
+        
+        {/* Content with improved spacing */}
+        <div className="p-7 pt-4">
+          <label className="block text-gray-200 mb-3.5 font-medium text-base">
+            Please select a reason:
+          </label>
+          
+          {/* Enhanced custom dropdown */}
+          <div className="relative mb-7" ref={dropdownRef}>
+            <div 
+              className={`w-full p-4 rounded-full bg-[#2a3447] text-gray-200 flex justify-between items-center cursor-pointer border ${
+                isDropdownOpen 
+                  ? "border-blue-500 shadow-[0_0_0_1px_rgba(59,130,246,0.5)]" 
+                  : "border-gray-700 hover:border-gray-500"
+              } transition-all duration-200`}
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            >
+              <span className={reportReason ? "text-white font-medium" : "text-gray-400"}>
+                {reportReason || "Select a reason"}
+              </span>
+              <ChevronUp 
+                size={20} 
+                className={`text-gray-400 transition-transform duration-300 ${isDropdownOpen ? "" : "transform rotate-180"}`} 
+              />
+            </div>
+            
+            {/* Dropdown options with improved styling */}
+            {isDropdownOpen && (
+              <div className="absolute z-50 w-full mt-2 bg-[#2a3447] rounded-2xl shadow-xl border border-gray-700 py-2 max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 animate-fadeIn">
+                {reportReasons.map((reason, index) => (
+                  <div
+                    key={index}
+                    className={`px-5 py-3.5 cursor-pointer transition-colors duration-150 ${
+                      reportReason === reason 
+                        ? "bg-blue-600 text-white font-medium" 
+                        : "text-gray-200 hover:bg-[#3a4357]"
+                    }`}
+                    onClick={() => {
+                      setReportReason(reason);
+                      setIsDropdownOpen(false);
+                    }}
+                  >
+                    {reason}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          
+          {/* Improved buttons with better spacing and hover effects */}
+          <div className="flex justify-end gap-3 mt-8">
+            <button
+              onClick={() => setShowReportModal(false)}
+              className="px-7 py-3 rounded-full bg-gray-700/80 text-gray-200 font-medium hover:bg-gray-600 active:bg-gray-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-[#1a2235]"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => handleReport(reportReason)}
+              disabled={reportLoading || !reportReason}
+              className={`px-7 py-3 rounded-full font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#1a2235] ${
+                !reportReason || reportLoading
+                  ? "bg-red-500/50 cursor-not-allowed text-white/70 focus:ring-red-400/50" 
+                  : "bg-red-500 hover:bg-red-600 active:bg-red-700 text-white focus:ring-red-500"
+              }`}
+            >
+              {reportLoading ? (
+                <span className="flex items-center gap-2">
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Submitting...
+                </span>
+              ) : (
+                "Submit Report"
+              )}
+            </button>
+          </div>
+        </div>
+        
+        {/* Improved close button with hover effect */}
+        <button
+          className="absolute top-5 right-5 text-gray-400 hover:text-white transition-colors p-1 rounded-full hover:bg-gray-700/50"
+          onClick={() => setShowReportModal(false)}
+          aria-label="Close"
+        >
+          <XCircle size={24} />
+        </button>
+      </div>
+    </div>
+  );
+};
+
 export default Post;
+
 
 
 
