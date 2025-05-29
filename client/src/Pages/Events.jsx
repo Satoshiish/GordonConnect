@@ -1714,7 +1714,7 @@ const Events = () => {
                   </p>
                 </div>
                 
-                {/* Content with better table styling */}
+                {/* Content with better table styling - removed date column completely */}
                 <div className={`p-5 ${
                   theme === "dark" ? "bg-gray-900" : "bg-white"
                 }`}>
@@ -1752,11 +1752,6 @@ const Events = () => {
                             }`}>
                               Invited By
                             </th>
-                            <th className={`text-left py-3 px-4 font-semibold text-sm ${
-                              theme === "dark" ? "text-gray-300" : "text-gray-600"
-                            }`}>
-                              Date
-                            </th>
                           </tr>
                         </thead>
                         <tbody>
@@ -1787,11 +1782,6 @@ const Events = () => {
                                 {typeof user === 'object' && user.invitedBy ? user.invitedBy : 
                                  (currentUser?.name && currentUser?.email ? 
                                   `${currentUser.name} (${currentUser.email})` : 'System')}
-                              </td>
-                              <td className={`py-4 px-4 ${
-                                theme === "dark" ? "text-gray-400" : "text-gray-500"
-                              }`}>
-                                {typeof user === 'object' && user.date ? user.date : '-'}
                               </td>
                             </tr>
                           ))}
@@ -1828,6 +1818,7 @@ const Events = () => {
 };
 
 export default Events;
+
 
 
 
