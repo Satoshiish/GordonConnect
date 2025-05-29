@@ -21,8 +21,23 @@ import {
   MoreHoriz,
 } from "@mui/icons-material";
 import { toast } from 'react-hot-toast';
-import { Image as ImageIcon, XCircle, Heart, HeartOff, Bookmark as BookmarkIcon, BookmarkMinus, MessageCircle, Share2, MoreVertical, Loader2, Flag, ExternalLink, ChevronDown, AlertTriangle } from 'lucide-react';
-import { ChevronDown, Check } from 'lucide-react';
+import { 
+  Image as ImageIcon, 
+  XCircle, 
+  Heart, 
+  HeartOff, 
+  Bookmark as BookmarkIcon, 
+  BookmarkMinus, 
+  MessageCircle, 
+  Share2, 
+  MoreVertical, 
+  Loader2, 
+  Flag, 
+  ExternalLink, 
+  ChevronDown, 
+  AlertTriangle,
+  Check 
+} from 'lucide-react';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || "https://gordonconnect-production-f2bd.up.railway.app/api";
 
@@ -282,21 +297,61 @@ const Post = ({ post }) => {
     setShowReportModal(true);
   };
 
-  // Add state for custom dropdown
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null);
+  // Custom dropdown component to replace the native select
+  const ReportReasonDropdown = () => {
+    const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = useRef(null);
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsDropdownOpen(false);
+    // Close dropdown when clicking outside
+    useEffect(() => {
+      function handleClickOutside(event) {
+        if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+          setIsOpen(false);
+        }
       }
-    }
-    
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+      
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    return (
+      <div className="relative" ref={dropdownRef}>
+        {/* Custom dropdown trigger */}
+        <div 
+          className="w-full p-4 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 shadow-sm border border-gray-200 dark:border-gray-700 flex justify-between items-center cursor-pointer"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          <span className={reportReason ? "" : "text-gray-400 dark:text-gray-500"}>
+            {reportReason || "Select a reason"}
+          </span>
+          <ChevronDown size={20} className={`transition-transform duration-200 ${isOpen ? "transform rotate-180" : ""}`} />
+        </div>
+        
+        {/* Dropdown options */}
+        {isOpen && (
+          <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-2 max-h-80 overflow-y-auto">
+            {reportReasons.map((reason, index) => (
+              <div
+                key={index}
+                className={`px-4 py-3 cursor-pointer flex items-center justify-between ${
+                  reportReason === reason 
+                    ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" 
+                    : "hover:bg-gray-50 dark:hover:bg-gray-700/50 text-gray-700 dark:text-gray-200"
+                }`}
+                onClick={() => {
+                  setReportReason(reason);
+                  setIsOpen(false);
+                }}
+              >
+                <span className="pr-2">{reason}</span>
+                {reportReason === reason && <Check size={18} />}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <>
@@ -555,49 +610,7 @@ const Post = ({ post }) => {
                           <label className="block text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">
                             Please select a reason:
                           </label>
-                          
-                          <div className="relative" ref={dropdownRef}>
-                            {/* Custom dropdown trigger */}
-                            <div 
-                              className="w-full p-4 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 shadow-sm border border-gray-200 dark:border-gray-700 flex justify-between items-center cursor-pointer"
-                              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                            >
-                              <span className={reportReason ? "" : "text-gray-400 dark:text-gray-500"}>
-                                {reportReason || "Select a reason"}
-                              </span>
-                              <ChevronDown size={20} className={`transition-transform duration-200 ${isDropdownOpen ? "transform rotate-180" : ""}`} />
-                            </div>
-                            
-                            {/* Dropdown options */}
-                            {isDropdownOpen && (
-                              <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-2 max-h-80 overflow-y-auto">
-                                {reportReasons.map((reason, index) => (
-                                  <div
-                                    key={index}
-                                    className={`px-4 py-3 cursor-pointer flex items-center justify-between ${
-                                      reportReason === reason 
-                                        ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" 
-                                        : "hover:bg-gray-50 dark:hover:bg-gray-700/50 text-gray-700 dark:text-gray-200"
-                                    }`}
-                                    onClick={() => {
-                                      setReportReason(reason);
-                                      setIsDropdownOpen(false);
-                                    }}
-                                  >
-                                    <span className="pr-2">{reason}</span>
-                                    {reportReason === reason && <Check size={18} />}
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                          
-                          {!reportReason && (
-                            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                              <AlertTriangle size={12} />
-                              Please select a reason to continue
-                            </p>
-                          )}
+                          <ReportReasonDropdown />
                         </div>
                         
                         <div className="flex justify-between items-center gap-3 mt-8">
@@ -660,6 +673,8 @@ const Post = ({ post }) => {
 };
 
 export default Post;
+
+
 
 
 
