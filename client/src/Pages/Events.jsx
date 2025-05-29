@@ -547,7 +547,18 @@ const Events = () => {
           Authorization: `Bearer ${token}`
         }
       });
-      setJoinedUsers(response.data);
+      
+      // Handle both formats - simple array of emails or enhanced objects with sender info
+      const userData = response.data.map(item => {
+        if (typeof item === 'string') {
+          // If the API still returns just email strings
+          return { email: item, sentBy: 'System', sentAt: null };
+        }
+        // If the API returns enhanced objects
+        return item;
+      });
+      
+      setJoinedUsers(userData);
     } catch (err) {
       console.error("Failed to fetch joined users:", err);
       toast.error("Failed to load joined users");
@@ -1014,8 +1025,8 @@ const Events = () => {
                         className={`flex items-center gap-2 px-5 py-2 rounded-xl cursor-pointer border transition-all duration-200 font-medium shadow-sm
                           ${theme === "dark"
                             ? "bg-gray-800 text-gray-200 border-gray-700 hover:bg-gray-700"
-                            : "bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200"}
-                        `}
+                            : "bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200"
+                          }`}
                       >
                         <ImageIcon size={20} />
                         <span>Choose Image</span>
@@ -1580,8 +1591,8 @@ const Events = () => {
                         className={`flex items-center gap-2 px-5 py-2 rounded-xl cursor-pointer border transition-all duration-200 font-medium shadow-sm
                           ${theme === "dark"
                             ? "bg-gray-800 text-gray-200 border-gray-700 hover:bg-gray-700"
-                            : "bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200"}
-                        `}
+                            : "bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200"
+                          }`}
                       >
                         <ImageIcon size={20} />
                         <span>Choose Image</span>
@@ -1642,7 +1653,7 @@ const Events = () => {
           )}
         </AnimatePresence>
 
-        {/* Enhanced Joined Users Modal (Admin Only) */}
+        {/* Enhanced Joined Users Modal with Sender Information */}
         <AnimatePresence>
           {showJoinedUsersModal && selectedEventForJoins && currentUser?.role === "admin" && (
             <motion.div
@@ -1658,7 +1669,7 @@ const Events = () => {
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: 20, opacity: 0 }}
                 transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                className={`w-full max-w-md rounded-xl overflow-hidden shadow-xl ${
+                className={`w-full max-w-3xl rounded-xl overflow-hidden shadow-xl ${
                   theme === "dark" 
                     ? "bg-gray-900 border border-gray-800" 
                     : "bg-white border border-gray-200"
@@ -1727,10 +1738,20 @@ const Events = () => {
                             }`}>
                               Email
                             </th>
+                            <th className={`text-left py-3 px-4 font-semibold text-sm ${
+                              theme === "dark" ? "text-gray-300" : "text-gray-600"
+                            }`}>
+                              Invited By
+                            </th>
+                            <th className={`text-left py-3 px-4 font-semibold text-sm ${
+                              theme === "dark" ? "text-gray-300" : "text-gray-600"
+                            }`}>
+                              Date
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
-                          {joinedUsers.map((email, index) => (
+                          {joinedUsers.map((user, index) => (
                             <tr 
                               key={index}
                               className={`border-b ${
@@ -1749,7 +1770,17 @@ const Events = () => {
                               <td className={`py-4 px-4 font-medium ${
                                 theme === "dark" ? "text-gray-200" : "text-gray-700"
                               }`}>
-                                {email}
+                                {typeof user === 'string' ? user : user.email}
+                              </td>
+                              <td className={`py-4 px-4 ${
+                                theme === "dark" ? "text-gray-300" : "text-gray-600"
+                              }`}>
+                                {typeof user === 'string' ? 'Self-joined' : (user.sentBy || 'Self-joined')}
+                              </td>
+                              <td className={`py-4 px-4 ${
+                                theme === "dark" ? "text-gray-400" : "text-gray-500"
+                              }`}>
+                                {typeof user === 'string' ? '-' : (user.sentAt ? new Date(user.sentAt).toLocaleDateString() : '-')}
                               </td>
                             </tr>
                           ))}
@@ -1786,6 +1817,8 @@ const Events = () => {
 };
 
 export default Events;
+
+
 
 
 
