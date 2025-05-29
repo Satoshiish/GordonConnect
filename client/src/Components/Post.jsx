@@ -649,7 +649,7 @@ const ReportModal = ({ setShowReportModal, handleReport, reportLoading, alreadyR
             Please select a reason:
           </label>
           
-          {/* Enhanced custom dropdown */}
+          {/* Enhanced custom dropdown - using ChevronDown instead of ChevronUp */}
           <div className="relative mb-7" ref={dropdownRef}>
             <div 
               className={`w-full p-4 rounded-full bg-[#2a3447] text-gray-200 flex justify-between items-center cursor-pointer border ${
@@ -662,9 +662,9 @@ const ReportModal = ({ setShowReportModal, handleReport, reportLoading, alreadyR
               <span className={reportReason ? "text-white font-medium" : "text-gray-400"}>
                 {reportReason || "Select a reason"}
               </span>
-              <ChevronUp 
+              <ChevronDown 
                 size={20} 
-                className={`text-gray-400 transition-transform duration-300 ${isDropdownOpen ? "" : "transform rotate-180"}`} 
+                className={`text-gray-400 transition-transform duration-300 ${isDropdownOpen ? "transform rotate-180" : ""}`} 
               />
             </div>
             
@@ -737,6 +737,7 @@ const ReportModal = ({ setShowReportModal, handleReport, reportLoading, alreadyR
 };
 
 export default Post;
+
 
 
 
