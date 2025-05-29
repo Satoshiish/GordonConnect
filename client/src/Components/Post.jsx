@@ -242,8 +242,7 @@ const Post = ({ post }) => {
     "Fails to follow official GC communication standards",
     "Triggers anxiety or unnecessary pressure",
     "Unfair to certain groups or students",
-    "Violates school values or community standards",
-    "Other"
+    "Violates school values or community standards"
   ]);
 
   const handleReport = async () => {
@@ -518,7 +517,7 @@ const Post = ({ post }) => {
                       </div>
                       <h2 className="text-2xl font-bold text-white">Report Content</h2>
                     </div>
-                    <p className="text-gray-300 text-sm ml-9">Help us understand why this post is problematic</p>
+                    <p className="text-gray-300 text-sm ml-9">Let us know what concerns you about this post.</p>
                   </div>
                   
                   <div className="bg-white dark:bg-gray-800 p-6 rounded-b-3xl">
@@ -543,14 +542,20 @@ const Post = ({ post }) => {
                           <div className="relative">
                             <select
                               id="report-reason"
-                              className="w-full p-4 rounded-xl border-0 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 appearance-none transition"
+                              className="w-full p-4 rounded-xl border-0 bg-gray-50 dark:bg-gray-700/80 text-gray-900 dark:text-white shadow-md ring-1 ring-inset ring-gray-300 dark:ring-gray-600/50 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 appearance-none transition-all font-medium"
                               value={reportReason}
                               onChange={e => setReportReason(e.target.value)}
                               disabled={reportLoading}
                             >
-                              <option value="">Select a reason</option>
+                              <option value="" className="text-gray-500 dark:text-gray-400">Select a reason</option>
                               {reportReasons.map((reason, index) => (
-                                <option key={index} value={reason} className="py-2">{reason}</option>
+                                <option 
+                                  key={index} 
+                                  value={reason} 
+                                  className="py-3 font-medium text-gray-800 dark:text-gray-200"
+                                >
+                                  {reason}
+                                </option>
                               ))}
                             </select>
                             <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
@@ -626,6 +631,8 @@ const Post = ({ post }) => {
 };
 
 export default Post;
+
+
 
 
 
