@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useTheme } from "../ThemeContext";
 import Comments from "../Components/Comments";
@@ -22,6 +22,7 @@ import {
 } from "@mui/icons-material";
 import { toast } from 'react-hot-toast';
 import { Image as ImageIcon, XCircle, Heart, HeartOff, Bookmark as BookmarkIcon, BookmarkMinus, MessageCircle, Share2, MoreVertical, Loader2, Flag, ExternalLink, ChevronDown, AlertTriangle } from 'lucide-react';
+import { ChevronDown, Check } from 'lucide-react';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || "https://gordonconnect-production-f2bd.up.railway.app/api";
 
@@ -281,6 +282,22 @@ const Post = ({ post }) => {
     setShowReportModal(true);
   };
 
+  // Add state for custom dropdown
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
     <>
       {post && !post.deleted && (post.visible === undefined || post.visible === 1) ? (
@@ -539,28 +556,40 @@ const Post = ({ post }) => {
                             Please select a reason:
                           </label>
                           
-                          <div className="relative">
-                            <select
-                              id="report-reason"
-                              className="w-full p-4 rounded-xl border-0 bg-gray-50 dark:bg-gray-700/80 text-gray-900 dark:text-white shadow-md ring-1 ring-inset ring-gray-300 dark:ring-gray-600/50 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 appearance-none transition-all font-medium"
-                              value={reportReason}
-                              onChange={e => setReportReason(e.target.value)}
-                              disabled={reportLoading}
+                          <div className="relative" ref={dropdownRef}>
+                            {/* Custom dropdown trigger */}
+                            <div 
+                              className="w-full p-4 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 shadow-sm border border-gray-200 dark:border-gray-700 flex justify-between items-center cursor-pointer"
+                              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                             >
-                              <option value="" className="text-gray-500 dark:text-gray-400">Select a reason</option>
-                              {reportReasons.map((reason, index) => (
-                                <option 
-                                  key={index} 
-                                  value={reason} 
-                                  className="py-3 font-medium text-gray-800 dark:text-gray-200"
-                                >
-                                  {reason}
-                                </option>
-                              ))}
-                            </select>
-                            <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                              <ChevronDown size={18} className="text-gray-500 dark:text-gray-400" />
+                              <span className={reportReason ? "" : "text-gray-400 dark:text-gray-500"}>
+                                {reportReason || "Select a reason"}
+                              </span>
+                              <ChevronDown size={20} className={`transition-transform duration-200 ${isDropdownOpen ? "transform rotate-180" : ""}`} />
                             </div>
+                            
+                            {/* Dropdown options */}
+                            {isDropdownOpen && (
+                              <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-2 max-h-80 overflow-y-auto">
+                                {reportReasons.map((reason, index) => (
+                                  <div
+                                    key={index}
+                                    className={`px-4 py-3 cursor-pointer flex items-center justify-between ${
+                                      reportReason === reason 
+                                        ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" 
+                                        : "hover:bg-gray-50 dark:hover:bg-gray-700/50 text-gray-700 dark:text-gray-200"
+                                    }`}
+                                    onClick={() => {
+                                      setReportReason(reason);
+                                      setIsDropdownOpen(false);
+                                    }}
+                                  >
+                                    <span className="pr-2">{reason}</span>
+                                    {reportReason === reason && <Check size={18} />}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
                           
                           {!reportReason && (
@@ -631,6 +660,7 @@ const Post = ({ post }) => {
 };
 
 export default Post;
+
 
 
 
