@@ -317,20 +317,22 @@ const Events = () => {
     setJoinError("");
     
     try {
-      // Get the current user's information
-      const adminInfo = currentUser?.name || currentUser?.username || "Admin";
+      // Get the current user's information - use both name and email
+      const userName = currentUser?.name || "Unknown";
+      const userEmail = currentUser?.email || "Unknown";
       
-      // Save join in backend with admin information
-      await makeRequest.post(`events/${selectedEvent.id}/avail`, { 
+      console.log("Current user sending invitation:", userName, userEmail);
+      
+      // Save join in backend with user information
+      await makeRequest.post(`/events/${selectedEvent.id}/avail`, { 
         email: emailInput,
-        sentBy: adminInfo,
-        sentAt: new Date().toISOString()
+        invitedBy: `${userName} (${userEmail})` // Include both name and email
       });
       
       // Rest of the email sending code...
-      const userName = emailInput.split("@")[0]; // basic name fallback
+      const recipientName = emailInput.split("@")[0];
       const templateParams = {
-        user_name: userName,
+        user_name: recipientName,
         user_email: emailInput,
         event_title: selectedEvent.title,
         event_date: formatDate(selectedEvent.date),
@@ -1777,17 +1779,19 @@ const Events = () => {
                               <td className={`py-4 px-4 font-medium ${
                                 theme === "dark" ? "text-gray-200" : "text-gray-700"
                               }`}>
-                                {typeof user === 'string' ? user : user.email}
+                                {typeof user === 'string' ? user : (user.email || user)}
                               </td>
                               <td className={`py-4 px-4 ${
                                 theme === "dark" ? "text-gray-300" : "text-gray-600"
                               }`}>
-                                {typeof user === 'string' ? 'System' : (user.sentBy || 'System')}
+                                {typeof user === 'object' && user.invitedBy ? user.invitedBy : 
+                                 (currentUser?.name && currentUser?.email ? 
+                                  `${currentUser.name} (${currentUser.email})` : 'System')}
                               </td>
                               <td className={`py-4 px-4 ${
                                 theme === "dark" ? "text-gray-400" : "text-gray-500"
                               }`}>
-                                {typeof user === 'string' ? '-' : (user.sentAt ? new Date(user.sentAt).toLocaleDateString() : '-')}
+                                {typeof user === 'object' && user.date ? user.date : '-'}
                               </td>
                             </tr>
                           ))}
@@ -1824,6 +1828,9 @@ const Events = () => {
 };
 
 export default Events;
+
+
+
 
 
 
