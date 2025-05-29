@@ -185,6 +185,17 @@ function Profile() {
 
       {/* Profile Info Section */}
       <div className="relative px-2 sm:px-4 md:px-6 lg:px-8 -mt-12 sm:-mt-16 md:-mt-20 lg:-mt-24 z-10">
+        {/* Add admin badge display here */}
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-bold">{data.username}</h1>
+          {data.role === "admin" && (
+            <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
+              theme === "dark" ? "bg-emerald-600 text-white" : "bg-emerald-500 text-white"
+            }`}>
+              Admin
+            </span>
+          )}
+        </div>
         <div className="max-w-5xl mx-auto">
           <div className={`rounded-xl p-3 sm:p-4 md:p-6 lg:p-8 ${theme === "dark" ? "bg-gray-800/90" : "bg-white/90"} backdrop-blur-lg shadow-xl border ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}>
             {/* Profile content */}
@@ -591,6 +602,8 @@ function Profile() {
 }
 
 export default Profile;
+
+
 
 
 
