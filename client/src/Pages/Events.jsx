@@ -1030,94 +1030,121 @@ const Events = () => {
           )}
         </AnimatePresence>
 
-        {/* Enhanced Event Details Modal */}
+        {/* Modern Minimalist Event Details Modal */}
         <AnimatePresence>
           {showEventDetails && eventDetails && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+              transition={{ duration: 0.3 }}
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 sm:p-6"
+              onClick={() => setShowEventDetails(false)}
             >
               <motion.div
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.95, opacity: 0 }}
-                className={`w-full max-w-2xl max-h-[90vh] overflow-auto rounded-3xl shadow-2xl border ${
-                  theme === "dark"
-                    ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border-gray-800" 
-                    : "bg-gradient-to-br from-white via-gray-50 to-white border-gray-100"
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 20, opacity: 0 }}
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                className={`w-full max-w-lg rounded-2xl overflow-hidden shadow-xl ${
+                  theme === "dark" 
+                    ? "bg-gray-900" 
+                    : "bg-white"
                 }`}
+                onClick={(e) => e.stopPropagation()}
               >
+                {/* Optional Image Section */}
                 {eventDetails.image && (
-                  <div className="relative h-64 cursor-pointer group" onClick={() => handleImageClick(eventDetails.image)}>
+                  <div className="w-full h-56 sm:h-64 overflow-hidden">
                     <img
                       src={formatImageUrl(eventDetails.image)}
                       alt={eventDetails.title}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-700"
+                      onClick={() => handleImageClick(eventDetails.image)}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                      <Maximize2 className="text-white w-10 h-10" />
-                    </div>
                   </div>
                 )}
-                <div className="p-8 space-y-6">
-                  <div className="flex items-center justify-between mb-2">
-                    <h2 className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-teal-500 bg-clip-text text-transparent">
-                      {eventDetails.title}
-                    </h2>
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.95 }}
+                
+                {/* Content Container */}
+                <div className="p-6 sm:p-8">
+                  {/* Title */}
+                  <h2 className={`text-2xl sm:text-3xl font-bold mb-4 ${
+                    theme === "dark" ? "text-white" : "text-gray-900"
+                  }`}>
+                    {eventDetails.title}
+                  </h2>
+                  
+                  {/* Event Metadata */}
+                  <div className="flex flex-wrap gap-4 mb-6">
+                    <div className="flex items-center gap-2">
+                      <Calendar className={`${theme === "dark" ? "text-emerald-400" : "text-emerald-500"}`} size={18} />
+                      <span className={`${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>
+                        {formatDate(eventDetails.date)}
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <Clock className={`${theme === "dark" ? "text-emerald-400" : "text-emerald-500"}`} size={18} />
+                      <span className={`${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>
+                        {eventDetails.time}
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <MapPin className={`${theme === "dark" ? "text-emerald-400" : "text-emerald-500"}`} size={18} />
+                      <span className={`${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>
+                        {eventDetails.location}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Description - Scrollable if too long */}
+                  <div className="max-h-[40vh] overflow-y-auto pr-2 mb-6">
+                    <p className={`leading-relaxed ${
+                      theme === "dark" ? "text-gray-300" : "text-gray-700"
+                    }`}>
+                      {eventDetails.description}
+                    </p>
+                  </div>
+                  
+                  {/* Action Button */}
+                  <div className="flex justify-between items-center">
+                    <button
                       onClick={() => setShowEventDetails(false)}
-                      className={`p-2 rounded-full transition-colors duration-200 shadow ${
-                        theme === "dark"
-                          ? "bg-gray-800 text-gray-400 hover:text-white hover:bg-gray-700" 
-                          : "bg-gray-100 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
+                      className={`px-4 py-2 rounded-lg transition-colors ${
+                        theme === "dark" 
+                          ? "text-gray-300 hover:text-white" 
+                          : "text-gray-500 hover:text-gray-900"
                       }`}
                     >
-                      <XCircle size={28} strokeWidth={2.5} />
-                    </motion.button>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-                    <div className={`flex items-center gap-2 p-3 rounded-xl ${
-                      theme === "dark" ? "bg-gray-800/70" : "bg-gray-100"
-                    }`}>
-                      <Calendar className={theme === "dark" ? "text-emerald-400" : "text-teal-500"} />
-                      <span>{formatDate(eventDetails.date)}</span>
-                    </div>
-                    <div className={`flex items-center gap-2 p-3 rounded-xl ${
-                      theme === "dark" ? "bg-gray-800/70" : "bg-gray-100"
-                    }`}>
-                      <Clock className={theme === "dark" ? "text-emerald-400" : "text-teal-500"} />
-                      <span>{formatTimeToAMPM(getTimeFromISO(eventDetails.time))}</span>
-                    </div>
-                    <div className={`flex items-center gap-2 p-3 rounded-xl ${
-                      theme === "dark" ? "bg-gray-800/70" : "bg-gray-100"
-                    }`}>
-                      <MapPin className={theme === "dark" ? "text-emerald-400" : "text-teal-500"} />
-                      <span>{eventDetails.location}</span>
-                    </div>
-                  </div>
-                  <div className={`max-h-[30vh] overflow-y-auto pr-2 ${theme === "dark" ? "scrollbar-dark" : "scrollbar-light"}`}>
-                    <p className={`text-lg ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>{eventDetails.description}</p>
-                  </div>
-                  <div className="flex justify-end pt-2">
-                    <motion.button
-                      whileHover={{ scale: 1.04 }}
-                      whileTap={{ scale: 0.98 }}
+                      Close
+                    </button>
+                    
+                    <button
                       onClick={() => handleAvailClick(eventDetails)}
-                      className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-base transition-all duration-200 shadow-lg ${
-                        theme === "dark"
-                          ? "bg-emerald-500 hover:bg-emerald-600 text-white" 
-                          : "bg-teal-500 hover:bg-teal-600 text-white"
+                      className={`px-6 py-2.5 rounded-lg font-medium text-white transition-colors ${
+                        theme === "dark" 
+                          ? "bg-emerald-500 hover:bg-emerald-600" 
+                          : "bg-emerald-500 hover:bg-emerald-600"
                       }`}
                     >
-                      <Mail size={20} />
-                      <span>Join Event</span>
-                    </motion.button>
+                      Join Event
+                    </button>
                   </div>
                 </div>
+                
+                {/* Close Button */}
+                <button
+                  onClick={() => setShowEventDetails(false)}
+                  className={`absolute top-4 right-4 p-1.5 rounded-full ${
+                    theme === "dark" 
+                      ? "bg-gray-800 text-gray-400 hover:text-white" 
+                      : "bg-gray-100 text-gray-500 hover:text-gray-900"
+                  }`}
+                  aria-label="Close"
+                >
+                  <X size={18} />
+                </button>
               </motion.div>
             </motion.div>
           )}
@@ -1216,43 +1243,37 @@ const Events = () => {
           )}
         </AnimatePresence>
 
-        {/* Enhanced Image Preview Modal */}
+        {/* Minimalist Image Preview Modal */}
         <AnimatePresence>
           {showImagePreview && previewImage && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[999] flex items-center justify-center p-4"
+              transition={{ duration: 0.3 }}
+              className="fixed inset-0 bg-black/90 z-[999] flex items-center justify-center p-4"
               onClick={() => setShowImagePreview(false)}
             >
               <motion.div
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.95, opacity: 0 }}
-                className="relative w-full h-full flex items-center justify-center"
-                onClick={e => e.stopPropagation()}
+                initial={{ scale: 0.9 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0.9 }}
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                className="relative max-w-4xl max-h-[90vh]"
               >
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
+                <img
+                  src={previewImage}
+                  alt="Preview"
+                  className="max-w-full max-h-[90vh] object-contain"
+                />
+                
+                <button
                   onClick={() => setShowImagePreview(false)}
-                  className="absolute top-4 right-4 w-12 h-12 flex items-center justify-center rounded-full bg-black/70 text-white hover:bg-emerald-500 hover:text-white shadow-lg transition-all duration-200 z-10"
+                  className="absolute top-4 right-4 p-2 rounded-full bg-black/50 text-white hover:bg-white/20 transition-colors"
+                  aria-label="Close preview"
                 >
-                  <XCircle size={32} strokeWidth={2.5} />
-                </motion.button>
-                <div className="max-w-[90vw] max-h-[90vh] overflow-auto flex items-center justify-center">
-                  <img
-                    src={previewImage}
-                    alt="Event image"
-                    className="w-auto h-auto max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
-                    style={{ display: 'block' }}
-                    onError={(e) => {
-                      console.error("Failed to load preview image:", previewImage);
-                      e.target.src = "/event-placeholder.jpg";
-                    }}
-                  />
-                </div>
+                  <X size={24} />
+                </button>
               </motion.div>
             </motion.div>
           )}
@@ -1505,81 +1526,6 @@ const Events = () => {
                         type="file"
                         id="edit-event-image"
                         accept="image/jpeg,image/png,image/gif,image/*"
-                        onChange={handleEditImageChange}
-                        className="hidden"
-                      />
-                      <label
-                        htmlFor="edit-event-image"
-                        className={`flex items-center gap-2 px-5 py-2 rounded-xl cursor-pointer border transition-all duration-200 font-medium shadow-sm
-                          ${theme === "dark"
-                            ? "bg-gray-800 text-gray-200 border-gray-700 hover:bg-gray-700"
-                            : "bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200"}
-                        `}
-                      >
-                        <ImageIcon size={20} />
-                        <span>Choose Image</span>
-                      </label>
-                      {editImagePreview && (
-                        <div className="relative w-20 h-20">
-                          <img
-                            src={editImagePreview}
-                            alt="Preview"
-                            className="w-full h-full object-cover rounded-lg"
-                          />
-                          <button
-                            onClick={() => {
-                              setEditImage(null);
-                              setEditImagePreview(null);
-                            }}
-                            className="absolute -top-2 -right-2 p-1 rounded-full bg-red-500 text-white"
-                          >
-                            <XCircle size={32} strokeWidth={2.5} />
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                    <div className={`mt-2 text-xs ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>
-                      Maximum file size: 5MB. Supported formats: JPG, PNG, GIF
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end gap-4 pt-4">
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => setShowEditForm(false)}
-                      className={`px-4 py-2 rounded-lg font-medium transition-all duration-200
-                        ${theme === "dark"
-                          ? "bg-gray-800 text-gray-300 hover:bg-gray-700"
-                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                        }`}
-                    >
-                      Cancel
-                    </motion.button>
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={handleUpdate}
-                      className={`px-4 py-2 rounded-lg font-medium transition-all duration-200
-                        ${theme === "dark"
-                          ? "bg-emerald-500 hover:bg-emerald-600 text-white"
-                          : "bg-teal-500 hover:bg-teal-600 text-white"
-                        }`}
-                    >
-                      Update Event
-                    </motion.button>
-                  </div>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </div>
-  );
-};
-
-export default Events;
                         onChange={handleEditImageChange}
                         className="hidden"
                       />
