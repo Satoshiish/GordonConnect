@@ -44,21 +44,44 @@ router.get('/:id/emails', verifyToken, (req, res) => {
   console.log(`Fetching emails for event ID: ${eventId}`);
   
   try {
-    // Remove the invitedBy field from the query since it doesn't exist
+    // First get the event creator's information
     db.query(
-      `SELECT ea.email, u.user_id, u.username, u.name 
-       FROM event_avails ea 
-       LEFT JOIN users u ON ea.email = u.email 
-       WHERE ea.event_id = ?`,
+      `SELECT e.user_id, u.name as creator_name, u.username as creator_username
+       FROM events e
+       JOIN users u ON e.user_id = u.user_id
+       WHERE e.id = ?`,
       [eventId],
-      (err, results) => {
+      (err, eventData) => {
         if (err) {
-          console.error("Database error:", err);
-          return res.status(500).json({ message: "Failed to fetch emails", error: err.message });
+          console.error("Error fetching event creator:", err);
+          return res.status(500).json({ message: "Failed to fetch event creator", error: err.message });
         }
         
-        console.log(`Found ${results.length} results for event ${eventId}`);
-        res.json(results);
+        const creatorInfo = eventData[0] || { creator_name: "Unknown", creator_username: "Unknown" };
+        
+        // Now get the joined users
+        db.query(
+          `SELECT ea.email, u.user_id, u.username, u.name 
+           FROM event_avails ea 
+           LEFT JOIN users u ON ea.email = u.email 
+           WHERE ea.event_id = ?`,
+          [eventId],
+          (err, results) => {
+            if (err) {
+              console.error("Database error:", err);
+              return res.status(500).json({ message: "Failed to fetch emails", error: err.message });
+            }
+            
+            // Add the creator info to each result
+            const enhancedResults = results.map(user => ({
+              ...user,
+              invitedBy: `${creatorInfo.creator_name} (${creatorInfo.creator_username})`
+            }));
+            
+            console.log(`Found ${results.length} results for event ${eventId}`);
+            res.json(enhancedResults);
+          }
+        );
       }
     );
   } catch (error) {
@@ -68,6 +91,7 @@ router.get('/:id/emails', verifyToken, (req, res) => {
 });
 
 export default router;
+
 
 
 

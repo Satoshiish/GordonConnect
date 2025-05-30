@@ -647,7 +647,7 @@ const Events = () => {
                 <td className="py-3 px-4">{user?.email || "N/A"}</td>
                 <td className="py-3 px-4">{user?.username || "N/A"}</td>
                 <td className="py-3 px-4">{user?.name || "N/A"}</td>
-                <td className="py-3 px-4">N/A</td>
+                <td className="py-3 px-4">{user?.invitedBy || "N/A"}</td>
               </tr>
             ))}
           </tbody>
@@ -1821,6 +1821,7 @@ const Events = () => {
 };
 
 export default Events;
+
 
 
 
