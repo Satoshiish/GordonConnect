@@ -560,6 +560,8 @@ const Events = () => {
         }
       });
       
+      console.log("Joined users response:", response.data);
+      
       if (Array.isArray(response.data)) {
         // Set joined users directly from the enhanced response
         setJoinedUsers(response.data);
@@ -1818,5 +1820,9 @@ const Events = () => {
 };
 
 export default Events;
+
+
+
+
 
 

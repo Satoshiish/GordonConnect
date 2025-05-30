@@ -36,17 +36,38 @@ router.get("/:id/joins", getEventJoins);
 // Add this route for joining an event
 router.post("/:id/avail", availEvent);
 
-// Get all emails who joined a specific event
+// Get all emails who joined a specific event with user details
 router.get('/:id/emails', verifyToken, (req, res) => {
   const eventId = req.params.id;
+  
+  // Debug log
+  console.log(`Fetching joined users for event ID: ${eventId}`);
+  
   db.query(
-    "SELECT email FROM event_avails WHERE event_id = ?",
+    `SELECT ea.email, ea.invitedBy, u.username, u.name, u.profilePic 
+     FROM event_avails ea 
+     LEFT JOIN users u ON LOWER(ea.email) = LOWER(u.email) 
+     WHERE ea.event_id = ?`,
     [eventId],
     (err, results) => {
-      if (err) return res.status(500).json({ message: "Failed to fetch emails" });
-      res.json(results.map(e => e.email));
+      if (err) {
+        console.error("Error fetching joined users:", err);
+        return res.status(500).json({ message: "Failed to fetch emails" });
+      }
+      
+      console.log(`Found ${results.length} joined users:`, results);
+      
+      // Map results to include isRegistered flag
+      const enhancedResults = results.map(user => ({
+        ...user,
+        isRegistered: user.username !== null
+      }));
+      
+      res.json(enhancedResults);
     }
   );
 });
 
 export default router;
+
+
