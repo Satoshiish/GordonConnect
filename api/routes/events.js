@@ -40,34 +40,34 @@ router.post("/:id/avail", availEvent);
 router.get('/:id/emails', verifyToken, (req, res) => {
   const eventId = req.params.id;
   
-  // Debug log
-  console.log(`Fetching joined users for event ID: ${eventId}`);
+  // Add debugging
+  console.log(`Fetching emails for event ID: ${eventId}`);
   
-  db.query(
-    `SELECT ea.email, ea.invitedBy, u.username, u.name, u.profilePic 
-     FROM event_avails ea 
-     LEFT JOIN users u ON LOWER(ea.email) = LOWER(u.email) 
-     WHERE ea.event_id = ?`,
-    [eventId],
-    (err, results) => {
-      if (err) {
-        console.error("Error fetching joined users:", err);
-        return res.status(500).json({ message: "Failed to fetch emails" });
+  try {
+    db.query(
+      `SELECT ea.email, ea.invitedBy, u.user_id, u.username, u.name 
+       FROM event_avails ea 
+       LEFT JOIN users u ON ea.email = u.email 
+       WHERE ea.event_id = ?`,
+      [eventId],
+      (err, results) => {
+        if (err) {
+          console.error("Database error:", err);
+          return res.status(500).json({ message: "Failed to fetch emails", error: err.message });
+        }
+        
+        console.log(`Found ${results.length} results for event ${eventId}`);
+        res.json(results);
       }
-      
-      console.log(`Found ${results.length} joined users:`, results);
-      
-      // Map results to include isRegistered flag
-      const enhancedResults = results.map(user => ({
-        ...user,
-        isRegistered: user.username !== null
-      }));
-      
-      res.json(enhancedResults);
-    }
-  );
+    );
+  } catch (error) {
+    console.error("Unexpected error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
 });
 
 export default router;
+
+
 
 

@@ -547,13 +547,15 @@ const Events = () => {
   const [selectedEventForJoins, setSelectedEventForJoins] = useState(null);
   const [userDetails, setUserDetails] = useState({});
 
-  // Add this function to fetch joined users
+  // Add this function to fetch joined users with better error handling
   const fetchJoinedUsers = async (eventId) => {
     try {
       setLoadingJoinedUsers(true);
       const token = localStorage.getItem("token");
       
-      // Get joined users with their details in a single request
+      console.log(`Fetching joined users for event ID: ${eventId}`);
+      
+      // Make sure we're using the correct endpoint and passing the token
       const response = await makeRequest.get(`/events/${eventId}/emails`, {
         headers: {
           Authorization: `Bearer ${token}`
@@ -562,33 +564,23 @@ const Events = () => {
       
       console.log("Joined users response:", response.data);
       
-      if (Array.isArray(response.data)) {
-        // Set joined users directly from the enhanced response
+      // Handle different response formats safely
+      if (response.data && Array.isArray(response.data)) {
         setJoinedUsers(response.data);
-        
-        // Create a map of user details for easy lookup
-        const detailsMap = {};
-        response.data.forEach(user => {
-          if (user.email) {
-            detailsMap[user.email] = {
-              username: user.username || 'N/A',
-              name: user.name || 'N/A',
-              profilePic: user.profilePic,
-              isRegistered: user.isRegistered
-            };
-          }
-        });
-        
-        setUserDetails(detailsMap);
+      } else if (response.data && typeof response.data === 'object') {
+        // If it's an object with emails property
+        const emailsArray = response.data.emails || [];
+        setJoinedUsers(emailsArray.map(email => ({ email })));
       } else {
+        console.warn("Unexpected response format:", response.data);
         setJoinedUsers([]);
-        setUserDetails({});
       }
     } catch (err) {
       console.error("Failed to fetch joined users:", err);
+      console.error("Error response:", err.response?.data);
+      console.error("Error status:", err.response?.status);
       toast.error("Failed to load joined users");
       setJoinedUsers([]);
-      setUserDetails({});
     } finally {
       setLoadingJoinedUsers(false);
     }
@@ -1722,7 +1714,7 @@ const Events = () => {
                       }`}
                       aria-label="Close"
                     >
-                      <XCircle size={20} />
+                      <X size={20} />
                     </button>
                   </div>
                   <p className={`mt-1 text-sm ${
@@ -1732,65 +1724,11 @@ const Events = () => {
                   </p>
                 </div>
                 
-                {/* Content with better table styling - removed date column completely */}
+                {/* Content with better table styling */}
                 <div className={`p-5 ${
                   theme === "dark" ? "bg-gray-900" : "bg-white"
                 }`}>
-                  {loadingJoinedUsers ? (
-                    <div className="flex justify-center items-center py-8">
-                      <Loader2 className={`w-8 h-8 animate-spin ${
-                        theme === "dark" ? "text-emerald-400" : "text-emerald-500"
-                      }`} />
-                    </div>
-                  ) : joinedUsers.length === 0 ? (
-                    <div className={`text-center py-8 ${
-                      theme === "dark" ? "text-gray-400" : "text-gray-500"
-                    }`}>
-                      No users have joined this event yet.
-                    </div>
-                  ) : (
-                    <div className="max-h-[50vh] overflow-y-auto custom-scrollbar">
-                      <table className={`w-full border-collapse ${
-                        theme === "dark" ? "text-gray-300" : "text-gray-700"
-                      }`}>
-                        <thead>
-                          <tr className={`border-b ${
-                            theme === "dark" ? "border-gray-700" : "border-gray-200"
-                          }`}>
-                            <th className="py-3 px-4 text-left font-medium">#</th>
-                            <th className="py-3 px-4 text-left font-medium">Email</th>
-                            <th className="py-3 px-4 text-left font-medium">Username</th>
-                            <th className="py-3 px-4 text-left font-medium">Full Name</th>
-                            <th className="py-3 px-4 text-left font-medium">Invited By</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {joinedUsers.map((user, index) => (
-                            <tr 
-                              key={index}
-                              className={`border-b ${
-                                theme === "dark" ? "border-gray-800" : "border-gray-100"
-                              } ${
-                                index % 2 === 0 
-                                  ? theme === "dark" ? "bg-gray-800/30" : "bg-gray-50/60" 
-                                  : ""
-                              }`}
-                            >
-                              <td className="py-3 px-4">{index + 1}</td>
-                              <td className="py-3 px-4">{user.email}</td>
-                              <td className="py-3 px-4">
-                                {userDetails[user.email]?.username || "N/A"}
-                              </td>
-                              <td className="py-3 px-4">
-                                {userDetails[user.email]?.name || "N/A"}
-                              </td>
-                              <td className="py-3 px-4">{user.invitedBy || "N/A"}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
+                  {renderJoinedUsersTable()}
                 </div>
                 
                 {/* Footer with improved button */}
@@ -1820,6 +1758,11 @@ const Events = () => {
 };
 
 export default Events;
+
+
+
+
+
 
 
 
