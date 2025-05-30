@@ -475,7 +475,7 @@ function Profile() {
                             />
                             <div className="flex-1">
                               <h4 className="font-medium text-gray-900 dark:text-white">{follower.name}</h4>
-                              <p className="text-sm text-gray-500 dark:text-gray-400">{follower.city || "No location"}</p>
+                              <p className={`text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>{follower.city || "No location"}</p>
                             </div>
                             {follower.id !== currentUser?.user_id && (
                               <button
@@ -566,12 +566,16 @@ function Profile() {
                             />
                             <div className="flex-1">
                               <h4 className="font-medium text-gray-900 dark:text-white">{following.name}</h4>
-                              <p className="text-sm text-gray-500 dark:text-gray-400">{following.city || "No location"}</p>
+                              <p className={`text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>{following.city || "No location"}</p>
                             </div>
                             {following.id !== currentUser?.user_id && (
                               <button
                                 onClick={() => mutation.mutate(following.id)}
-                                className="px-4 py-1.5 rounded-full text-sm font-medium transition-colors bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-red-500 hover:text-white cursor-pointer"
+                                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                                  theme === "dark"
+                                    ? "bg-gray-800 text-white font-medium border border-gray-700"
+                                    : "bg-gray-800 text-white font-medium"
+                                }`}
                                 title="Unfollow"
                                 onMouseOver={e => e.currentTarget.textContent = 'Unfollow'}
                                 onMouseOut={e => e.currentTarget.textContent = 'Following'}
@@ -597,6 +601,7 @@ function Profile() {
 }
 
 export default Profile;
+
 
 
 
