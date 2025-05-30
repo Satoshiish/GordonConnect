@@ -152,51 +152,32 @@ export const deleteEvent = (req, res) => {
 
 export const availEvent = (req, res) => {
   const eventId = req.params.id;
-  const { email, invitedBy } = req.body;
-  
+  const { email } = req.body;
   if (!email) return res.status(400).json({ error: "Email is required" });
 
-  try {
-    // Check if already joined
-    db.query(
-      "SELECT id FROM event_avails WHERE event_id = ? AND email = ?",
-      [eventId, email],
-      (err, results) => {
-        if (err) {
-          console.error("Database error checking existing join:", err);
-          return res.status(500).json({ error: "Database error", details: err.message });
-        }
-        
-        if (results.length > 0) {
-          return res.status(409).json({ error: "This email has already joined this event." });
-        }
-        
-        // Insert if not already joined
-        const insertQuery = invitedBy 
-          ? "INSERT INTO event_avails (event_id, email, invitedBy) VALUES (?, ?, ?)"
-          : "INSERT INTO event_avails (event_id, email) VALUES (?, ?)";
-        
-        const insertValues = invitedBy 
-          ? [eventId, email, invitedBy]
-          : [eventId, email];
-        
-        db.query(insertQuery, insertValues, (insertErr, result) => {
-          if (insertErr) {
-            console.error("Database error inserting join:", insertErr);
-            return res.status(500).json({ 
-              error: "Failed to save avail", 
-              details: insertErr.message 
-            });
-          }
-          
-          return res.status(200).json({ message: "Avail saved" });
-        });
+  // Check if already joined
+  db.query(
+    "SELECT id FROM event_avails WHERE event_id = ? AND email = ?",
+    [eventId, email],
+    (err, results) => {
+      if (err) return res.status(500).json({ error: "Database error", details: err });
+      if (results.length > 0) {
+        return res.status(409).json({ error: "This email has already joined this event." });
       }
-    );
-  } catch (error) {
-    console.error("Error in availEvent:", error);
-    return res.status(500).json({ error: "Server error", details: error.message });
-  }
+      // Insert if not already joined
+      db.query(
+        "INSERT INTO event_avails (event_id, email) VALUES (?, ?)",
+        [eventId, email],
+        (err, result) => {
+          if (err)
+            return res
+              .status(500)
+              .json({ error: "Failed to save avail", details: err });
+          return res.status(200).json({ message: "Avail saved" });
+        }
+      );
+    }
+  );
 };
 
 export const getEventJoins = (req, res) => {
@@ -215,7 +196,6 @@ export const getEventJoins = (req, res) => {
     }
   );
 };
-
 
 
 
