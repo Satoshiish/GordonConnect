@@ -1,3 +1,4 @@
+
 import React, { useContext, useState } from "react";
 import { useTheme } from "../ThemeContext";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -439,13 +440,17 @@ function Profile() {
                 leaveTo="opacity-0 scale-95"
               >
                 <Dialog.Panel className={`w-full max-w-md transform overflow-hidden rounded-2xl p-6 text-left align-middle shadow-xl transition-all ${
-                  theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-900 font-bold"
+                  theme === "dark" ? "bg-gray-800" : "bg-white"
                 }`}>
-                  <Dialog.Title as="h3" className="flex justify-between items-center text-lg font-medium leading-6 text-gray-900 dark:text-white mb-2">
+                  <Dialog.Title as="h3" className={`flex justify-between items-center text-lg font-medium leading-6 mb-2 ${
+                    theme === "dark" ? "text-white" : "text-gray-900"
+                  }`}>
                     Followers
                     <button
                       onClick={() => setShowFollowers(false)}
-                      className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                      className={`p-1 rounded-full transition-colors ${
+                        theme === "dark" ? "hover:bg-gray-700 text-gray-300" : "hover:bg-gray-100 text-gray-500"
+                      }`}
                     >
                       <X size={20} />
                     </button>
@@ -458,7 +463,9 @@ function Profile() {
                             key={follower.id}
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                            className={`flex items-center gap-3 p-2 rounded-lg transition-colors ${
+                              theme === "dark" ? "hover:bg-gray-700/50" : "hover:bg-gray-50"
+                            }`}
                           >
                             <img
                               src={follower.profilePic ? 
@@ -469,20 +476,25 @@ function Profile() {
                               alt={follower.name}
                               className="w-10 h-10 rounded-full object-cover"
                               onError={(e) => {
-                                console.error("Failed to load image:", follower.profilePic);
                                 e.target.src = "/default-profile.jpg";
                               }}
                             />
                             <div className="flex-1">
-                              <h4 className="font-medium text-gray-900 dark:text-white">{follower.name}</h4>
-                              <p className={`text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>{follower.city || "No location"}</p>
+                              <h4 className={`font-medium ${theme === "dark" ? "text-white" : "text-gray-900"}`}>
+                                {follower.name}
+                              </h4>
+                              <p className={`text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>
+                                {follower.city || "No location"}
+                              </p>
                             </div>
                             {follower.id !== currentUser?.user_id && (
                               <button
                                 onClick={() => mutation.mutate(follower.id)}
                                 className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                                   relationshipData?.users?.includes(follower.id)
-                                    ? "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+                                    ? theme === "dark" 
+                                      ? "bg-gray-700 text-white hover:bg-gray-600" 
+                                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                                     : "bg-emerald-500 text-white hover:bg-emerald-600"
                                 }`}
                               >
@@ -493,7 +505,9 @@ function Profile() {
                         ))}
                       </div>
                     ) : (
-                      <p className="text-center text-gray-500 dark:text-gray-400 py-4">No followers yet</p>
+                      <p className={`text-center py-4 ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>
+                        No followers yet
+                      </p>
                     )}
                   </div>
                 </Dialog.Panel>
@@ -530,13 +544,17 @@ function Profile() {
                 leaveTo="opacity-0 scale-95"
               >
                 <Dialog.Panel className={`w-full max-w-md transform overflow-hidden rounded-2xl p-6 text-left align-middle shadow-xl transition-all ${
-                  theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-900 font-bold"
+                  theme === "dark" ? "bg-gray-800" : "bg-white"
                 }`}>
-                  <Dialog.Title as="h3" className="flex justify-between items-center text-lg font-medium leading-6 text-gray-900 dark:text-white mb-2">
+                  <Dialog.Title as="h3" className={`flex justify-between items-center text-lg font-medium leading-6 mb-2 ${
+                    theme === "dark" ? "text-white" : "text-gray-900"
+                  }`}>
                     Following
                     <button
                       onClick={() => setShowFollowing(false)}
-                      className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                      className={`p-1 rounded-full transition-colors ${
+                        theme === "dark" ? "hover:bg-gray-700 text-gray-300" : "hover:bg-gray-100 text-gray-500"
+                      }`}
                     >
                       <X size={20} />
                     </button>
@@ -549,7 +567,9 @@ function Profile() {
                             key={following.id}
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                            className={`flex items-center gap-3 p-2 rounded-lg transition-colors ${
+                              theme === "dark" ? "hover:bg-gray-700/50" : "hover:bg-gray-50"
+                            }`}
                           >
                             <img
                               src={following.profilePic ? 
@@ -560,21 +580,24 @@ function Profile() {
                               alt={following.name}
                               className="w-10 h-10 rounded-full object-cover"
                               onError={(e) => {
-                                console.error("Failed to load image:", following.profilePic);
                                 e.target.src = "/default-profile.jpg";
                               }}
                             />
                             <div className="flex-1">
-                              <h4 className="font-medium text-gray-900 dark:text-white">{following.name}</h4>
-                              <p className={`text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>{following.city || "No location"}</p>
+                              <h4 className={`font-medium ${theme === "dark" ? "text-white" : "text-gray-900"}`}>
+                                {following.name}
+                              </h4>
+                              <p className={`text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>
+                                {following.city || "No location"}
+                              </p>
                             </div>
                             {following.id !== currentUser?.user_id && (
                               <button
                                 onClick={() => mutation.mutate(following.id)}
                                 className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                                   theme === "dark"
-                                    ? "bg-gray-800 text-white font-medium border border-gray-700"
-                                    : "bg-gray-800 text-white font-medium"
+                                    ? "bg-gray-700 text-white border border-gray-600 hover:bg-gray-600"
+                                    : "bg-gray-800 text-white hover:bg-gray-700"
                                 }`}
                                 title="Unfollow"
                                 onMouseOver={e => e.currentTarget.textContent = 'Unfollow'}
@@ -587,7 +610,9 @@ function Profile() {
                         ))}
                       </div>
                     ) : (
-                      <p className="text-center text-gray-500 dark:text-gray-400 py-4">Not following anyone yet</p>
+                      <p className={`text-center py-4 ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>
+                        Not following anyone yet
+                      </p>
                     )}
                   </div>
                 </Dialog.Panel>
@@ -601,6 +626,8 @@ function Profile() {
 }
 
 export default Profile;
+
+
 
 
 
