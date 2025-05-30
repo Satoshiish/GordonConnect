@@ -439,7 +439,7 @@ function Profile() {
                 leaveTo="opacity-0 scale-95"
               >
                 <Dialog.Panel className={`w-full max-w-md transform overflow-hidden rounded-2xl p-6 text-left align-middle shadow-xl transition-all ${
-                  theme === "dark" ? "bg-gray-800" : "bg-white"
+                  theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-900 font-bold"
                 }`}>
                   <Dialog.Title as="h3" className="flex justify-between items-center text-lg font-medium leading-6 text-gray-900 dark:text-white mb-2">
                     Followers
@@ -530,7 +530,7 @@ function Profile() {
                 leaveTo="opacity-0 scale-95"
               >
                 <Dialog.Panel className={`w-full max-w-md transform overflow-hidden rounded-2xl p-6 text-left align-middle shadow-xl transition-all ${
-                  theme === "dark" ? "bg-gray-800" : "bg-white"
+                  theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-900 font-bold"
                 }`}>
                   <Dialog.Title as="h3" className="flex justify-between items-center text-lg font-medium leading-6 text-gray-900 dark:text-white mb-2">
                     Following
@@ -601,6 +601,7 @@ function Profile() {
 }
 
 export default Profile;
+
 
 
 
