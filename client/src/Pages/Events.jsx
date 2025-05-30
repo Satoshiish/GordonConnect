@@ -553,46 +553,40 @@ const Events = () => {
       setLoadingJoinedUsers(true);
       const token = localStorage.getItem("token");
       
-      // First get the emails from event_avails
-      const response = await makeRequest.get(`${API_BASE_URL}/events/${eventId}/emails`, {
+      // Get joined users with their details in a single request
+      const response = await makeRequest.get(`/events/${eventId}/emails`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
       
-      // Process the response data - handle both simple email arrays and enhanced objects
-      const userData = Array.isArray(response.data) 
-        ? response.data.map(item => {
-            if (typeof item === 'string') {
-              return { email: item, invitedBy: 'System' };
-            }
-            return item;
-          })
-        : [];
-      
-      setJoinedUsers(userData);
-      
-      // Fetch user details for each email
-      const userDetailsMap = {};
-      
-      for (const user of userData) {
-        try {
-          const userResponse = await makeRequest.get(`${API_BASE_URL}/users/findByEmail/${encodeURIComponent(user.email)}`, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          
-          if (userResponse.data) {
-            userDetailsMap[user.email] = userResponse.data;
+      if (Array.isArray(response.data)) {
+        // Set joined users directly from the enhanced response
+        setJoinedUsers(response.data);
+        
+        // Create a map of user details for easy lookup
+        const detailsMap = {};
+        response.data.forEach(user => {
+          if (user.email) {
+            detailsMap[user.email] = {
+              username: user.username || 'N/A',
+              name: user.name || 'N/A',
+              profilePic: user.profilePic,
+              isRegistered: user.isRegistered
+            };
           }
-        } catch (err) {
-          console.log(`User not found for email: ${user.email}`);
-        }
+        });
+        
+        setUserDetails(detailsMap);
+      } else {
+        setJoinedUsers([]);
+        setUserDetails({});
       }
-      
-      setUserDetails(userDetailsMap);
     } catch (err) {
       console.error("Failed to fetch joined users:", err);
       toast.error("Failed to load joined users");
+      setJoinedUsers([]);
+      setUserDetails({});
     } finally {
       setLoadingJoinedUsers(false);
     }
@@ -1783,10 +1777,10 @@ const Events = () => {
                               <td className="py-3 px-4">{index + 1}</td>
                               <td className="py-3 px-4">{user.email}</td>
                               <td className="py-3 px-4">
-                                {userDetails[user.email]?.username || "N/A"}
+                                {user.username || (user.isRegistered ? "N/A" : "Not registered")}
                               </td>
                               <td className="py-3 px-4">
-                                {userDetails[user.email]?.name || "N/A"}
+                                {user.name || (user.isRegistered ? "N/A" : "Not registered")}
                               </td>
                               <td className="py-3 px-4">{user.invitedBy || "N/A"}</td>
                             </tr>
@@ -1824,4 +1818,6 @@ const Events = () => {
 };
 
 export default Events;
+
+
 
