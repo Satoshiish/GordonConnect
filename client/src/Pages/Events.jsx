@@ -545,6 +545,7 @@ const Events = () => {
   const [joinedUsers, setJoinedUsers] = useState([]);
   const [loadingJoinedUsers, setLoadingJoinedUsers] = useState(false);
   const [selectedEventForJoins, setSelectedEventForJoins] = useState(null);
+  const [userDetails, setUserDetails] = useState({});
 
   // Add this function to fetch joined users
   const fetchJoinedUsers = async (eventId) => {
@@ -560,14 +561,33 @@ const Events = () => {
       // Handle both formats - simple array of emails or enhanced objects with sender info
       const userData = response.data.map(item => {
         if (typeof item === 'string') {
-          // If the API still returns just email strings
           return { email: item, sentBy: 'System', sentAt: null };
         }
-        // If the API returns enhanced objects
         return item;
       });
       
       setJoinedUsers(userData);
+      
+      // Fetch user details for each email
+      const userDetailsPromises = userData.map(async (user) => {
+        try {
+          const userResponse = await makeRequest.get(`/users/findByEmail/${encodeURIComponent(user.email)}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          return { email: user.email, details: userResponse.data };
+        } catch (err) {
+          console.log(`User not found for email: ${user.email}`);
+          return { email: user.email, details: null };
+        }
+      });
+      
+      const userDetailsResults = await Promise.all(userDetailsPromises);
+      const userDetailsMap = {};
+      userDetailsResults.forEach(result => {
+        userDetailsMap[result.email] = result.details;
+      });
+      
+      setUserDetails(userDetailsMap);
     } catch (err) {
       console.error("Failed to fetch joined users:", err);
       toast.error("Failed to load joined users");
@@ -1732,26 +1752,18 @@ const Events = () => {
                     </div>
                   ) : (
                     <div className="max-h-[50vh] overflow-y-auto custom-scrollbar">
-                      <table className="w-full border-collapse">
+                      <table className={`w-full border-collapse ${
+                        theme === "dark" ? "text-gray-300" : "text-gray-700"
+                      }`}>
                         <thead>
                           <tr className={`border-b ${
-                            theme === "dark" ? "border-gray-800" : "border-gray-200"
+                            theme === "dark" ? "border-gray-700" : "border-gray-200"
                           }`}>
-                            <th className={`text-left py-3 px-4 font-semibold text-sm ${
-                              theme === "dark" ? "text-gray-300" : "text-gray-600"
-                            }`}>
-                              #
-                            </th>
-                            <th className={`text-left py-3 px-4 font-semibold text-sm ${
-                              theme === "dark" ? "text-gray-300" : "text-gray-600"
-                            }`}>
-                              Email
-                            </th>
-                            <th className={`text-left py-3 px-4 font-semibold text-sm ${
-                              theme === "dark" ? "text-gray-300" : "text-gray-600"
-                            }`}>
-                              Invited By
-                            </th>
+                            <th className="py-3 px-4 text-left font-medium">#</th>
+                            <th className="py-3 px-4 text-left font-medium">Email</th>
+                            <th className="py-3 px-4 text-left font-medium">Username</th>
+                            <th className="py-3 px-4 text-left font-medium">Full Name</th>
+                            <th className="py-3 px-4 text-left font-medium">Invited By</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -1759,30 +1771,22 @@ const Events = () => {
                             <tr 
                               key={index}
                               className={`border-b ${
-                                theme === "dark" ? "border-gray-800" : "border-gray-200"
+                                theme === "dark" ? "border-gray-800" : "border-gray-100"
                               } ${
                                 index % 2 === 0 
                                   ? theme === "dark" ? "bg-gray-800/30" : "bg-gray-50/60" 
                                   : ""
                               }`}
                             >
-                              <td className={`py-4 px-4 ${
-                                theme === "dark" ? "text-gray-400" : "text-gray-500"
-                              }`}>
-                                {index + 1}
+                              <td className="py-3 px-4">{index + 1}</td>
+                              <td className="py-3 px-4">{user.email}</td>
+                              <td className="py-3 px-4">
+                                {userDetails[user.email]?.username || "N/A"}
                               </td>
-                              <td className={`py-4 px-4 font-medium ${
-                                theme === "dark" ? "text-gray-200" : "text-gray-700"
-                              }`}>
-                                {typeof user === 'string' ? user : (user.email || user)}
+                              <td className="py-3 px-4">
+                                {userDetails[user.email]?.name || "N/A"}
                               </td>
-                              <td className={`py-4 px-4 ${
-                                theme === "dark" ? "text-gray-300" : "text-gray-600"
-                              }`}>
-                                {typeof user === 'object' && user.invitedBy ? user.invitedBy : 
-                                 (currentUser?.name && currentUser?.email ? 
-                                  `${currentUser.name} (${currentUser.email})` : 'System')}
-                              </td>
+                              <td className="py-3 px-4">{user.invitedBy || "N/A"}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -1818,6 +1822,8 @@ const Events = () => {
 };
 
 export default Events;
+
+
 
 
 
