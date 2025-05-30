@@ -552,40 +552,42 @@ const Events = () => {
     try {
       setLoadingJoinedUsers(true);
       const token = localStorage.getItem("token");
-      const response = await makeRequest.get(`events/${eventId}/emails`, {
+      
+      // First get the emails from event_avails
+      const response = await makeRequest.get(`${API_BASE_URL}/events/${eventId}/emails`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
       
-      // Handle both formats - simple array of emails or enhanced objects with sender info
-      const userData = response.data.map(item => {
-        if (typeof item === 'string') {
-          return { email: item, sentBy: 'System', sentAt: null };
-        }
-        return item;
-      });
+      // Process the response data - handle both simple email arrays and enhanced objects
+      const userData = Array.isArray(response.data) 
+        ? response.data.map(item => {
+            if (typeof item === 'string') {
+              return { email: item, invitedBy: 'System' };
+            }
+            return item;
+          })
+        : [];
       
       setJoinedUsers(userData);
       
       // Fetch user details for each email
-      const userDetailsPromises = userData.map(async (user) => {
+      const userDetailsMap = {};
+      
+      for (const user of userData) {
         try {
-          const userResponse = await makeRequest.get(`/users/findByEmail/${encodeURIComponent(user.email)}`, {
+          const userResponse = await makeRequest.get(`${API_BASE_URL}/users/findByEmail/${encodeURIComponent(user.email)}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
-          return { email: user.email, details: userResponse.data };
+          
+          if (userResponse.data) {
+            userDetailsMap[user.email] = userResponse.data;
+          }
         } catch (err) {
           console.log(`User not found for email: ${user.email}`);
-          return { email: user.email, details: null };
         }
-      });
-      
-      const userDetailsResults = await Promise.all(userDetailsPromises);
-      const userDetailsMap = {};
-      userDetailsResults.forEach(result => {
-        userDetailsMap[result.email] = result.details;
-      });
+      }
       
       setUserDetails(userDetailsMap);
     } catch (err) {
@@ -1822,28 +1824,4 @@ const Events = () => {
 };
 
 export default Events;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
