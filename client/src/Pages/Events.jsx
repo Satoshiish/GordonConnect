@@ -593,6 +593,69 @@ const Events = () => {
     fetchJoinedUsers(event.id);
   };
 
+  // Define the renderJoinedUsersTable function
+  const renderJoinedUsersTable = () => {
+    if (loadingJoinedUsers) {
+      return (
+        <div className="flex justify-center items-center py-8">
+          <Loader2 className={`w-8 h-8 animate-spin ${
+            theme === "dark" ? "text-emerald-400" : "text-emerald-500"
+          }`} />
+        </div>
+      );
+    }
+    
+    if (!joinedUsers || joinedUsers.length === 0) {
+      return (
+        <div className={`text-center py-8 ${
+          theme === "dark" ? "text-gray-400" : "text-gray-500"
+        }`}>
+          No users have joined this event yet.
+        </div>
+      );
+    }
+    
+    return (
+      <div className="max-h-[50vh] overflow-y-auto custom-scrollbar">
+        <table className={`w-full border-collapse ${
+          theme === "dark" ? "text-gray-300" : "text-gray-700"
+        }`}>
+          <thead>
+            <tr className={`border-b ${
+              theme === "dark" ? "border-gray-700" : "border-gray-200"
+            }`}>
+              <th className="py-3 px-4 text-left font-medium">#</th>
+              <th className="py-3 px-4 text-left font-medium">Email</th>
+              <th className="py-3 px-4 text-left font-medium">Username</th>
+              <th className="py-3 px-4 text-left font-medium">Full Name</th>
+              <th className="py-3 px-4 text-left font-medium">Invited By</th>
+            </tr>
+          </thead>
+          <tbody>
+            {joinedUsers.map((user, index) => (
+              <tr 
+                key={index}
+                className={`border-b ${
+                  theme === "dark" ? "border-gray-800" : "border-gray-100"
+                } ${
+                  index % 2 === 0 
+                    ? theme === "dark" ? "bg-gray-800/30" : "bg-gray-50/60" 
+                    : ""
+                }`}
+              >
+                <td className="py-3 px-4">{index + 1}</td>
+                <td className="py-3 px-4">{user?.email || "N/A"}</td>
+                <td className="py-3 px-4">{user?.username || "N/A"}</td>
+                <td className="py-3 px-4">{user?.name || "N/A"}</td>
+                <td className="py-3 px-4">N/A</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
   return (
     <div className={`min-h-screen ${theme === "dark" ? "bg-gray-900" : "bg-gray-50"} text-gray-900`}>
       <div className="max-w-7xl mx-auto p-2 sm:p-4 md:p-6 lg:p-8">
@@ -1758,6 +1821,7 @@ const Events = () => {
 };
 
 export default Events;
+
 
 
 

@@ -44,8 +44,9 @@ router.get('/:id/emails', verifyToken, (req, res) => {
   console.log(`Fetching emails for event ID: ${eventId}`);
   
   try {
+    // Remove the invitedBy field from the query since it doesn't exist
     db.query(
-      `SELECT ea.email, ea.invitedBy, u.user_id, u.username, u.name 
+      `SELECT ea.email, u.user_id, u.username, u.name 
        FROM event_avails ea 
        LEFT JOIN users u ON ea.email = u.email 
        WHERE ea.event_id = ?`,
@@ -67,6 +68,7 @@ router.get('/:id/emails', verifyToken, (req, res) => {
 });
 
 export default router;
+
 
 
 
