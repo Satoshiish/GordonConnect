@@ -354,11 +354,13 @@ const Events = () => {
           toast.error("Failed to send confirmation email.");
         });
     } catch (err) {
+      console.error("Join error:", err);
+      
       if (err.response && err.response.status === 409) {
         setJoinError("This email has already joined this event.");
         toast.error("This email has already joined this event.");
       } else {
-        setJoinError("Failed to record your join. Please try again.");
+        setJoinError(`Failed to record your join: ${err.response?.data?.error || err.message}`);
         toast.error("Failed to record your join. Please try again.");
       }
     }
@@ -553,6 +555,8 @@ const Events = () => {
       setLoadingJoinedUsers(true);
       const token = localStorage.getItem("token");
       
+      console.log(`Fetching joined users for event ${eventId}...`);
+      
       // Get joined users with their details in a single request
       const response = await makeRequest.get(`/events/${eventId}/emails`, {
         headers: {
@@ -560,33 +564,19 @@ const Events = () => {
         }
       });
       
+      console.log("Joined users response:", response.data);
+      
       if (Array.isArray(response.data)) {
         // Set joined users directly from the enhanced response
         setJoinedUsers(response.data);
-        
-        // Create a map of user details for easy lookup
-        const detailsMap = {};
-        response.data.forEach(user => {
-          if (user.email) {
-            detailsMap[user.email] = {
-              username: user.username || 'N/A',
-              name: user.name || 'N/A',
-              profilePic: user.profilePic,
-              isRegistered: user.isRegistered
-            };
-          }
-        });
-        
-        setUserDetails(detailsMap);
       } else {
+        console.warn("Unexpected response format:", response.data);
         setJoinedUsers([]);
-        setUserDetails({});
       }
     } catch (err) {
       console.error("Failed to fetch joined users:", err);
       toast.error("Failed to load joined users");
       setJoinedUsers([]);
-      setUserDetails({});
     } finally {
       setLoadingJoinedUsers(false);
     }
@@ -1818,6 +1808,7 @@ const Events = () => {
 };
 
 export default Events;
+
 
 
 
