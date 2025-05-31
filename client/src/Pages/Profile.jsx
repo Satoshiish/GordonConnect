@@ -254,9 +254,6 @@ function Profile() {
                             <span className="relative flex items-center justify-center bg-gray-900 dark:bg-gray-800 rounded-full p-1 border-2 border-emerald-400">
                               <BadgeCheck size={16} className="text-emerald-400" />
                             </span>
-                            <span className="absolute -top-1 -right-1 bg-blue-500 rounded-full p-0.5 border border-white dark:border-gray-800 shadow-md">
-                              <Shield size={8} className="text-white" />
-                            </span>
                           </span>
                         )}
                       </motion.h1>
@@ -632,9 +629,6 @@ function Profile() {
 }
 
 export default Profile;
-
-
-
 
 
 
