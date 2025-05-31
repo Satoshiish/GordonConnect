@@ -762,13 +762,7 @@ const ReportModal = ({ setShowReportModal, reportLoading, alreadyReported, handl
         </div>
         
         {/* Content */}
-        <div className="p-6 pt-3 overflow-y-auto max-h-[60vh] relative">
-          <div className="absolute right-0 top-0 bottom-0 w-2 bg-transparent">
-            <div className="absolute top-0 right-0 w-2 h-full bg-gray-800/50 rounded-full">
-              <div className="absolute top-0 right-0 w-2 h-24 bg-emerald-500/50 rounded-full transition-all duration-300 hover:bg-emerald-500/70" style={{ top: '0%' }}></div>
-            </div>
-          </div>
-          
+        <div className="p-6 pt-3 overflow-y-auto max-h-[60vh] scrollbar scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-rounded-full scrollbar-thumb-emerald-500/50 scrollbar-track-gray-800/50 hover:scrollbar-thumb-emerald-500/70">
           {!selectedCategory ? (
             // Step 1: Show categories
             <>
