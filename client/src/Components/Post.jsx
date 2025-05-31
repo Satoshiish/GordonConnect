@@ -604,46 +604,144 @@ const Post = ({ post }) => {
 
 // Report modal component
 const ReportModal = ({ setShowReportModal, reportLoading, alreadyReported, handleReport }) => {
+  const [selectedCategory, setSelectedCategory] = useState(null);
   const [reportReason, setReportReason] = useState("");
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null);
+  const { theme } = useTheme();
   
-  const reportReasons = [
-    "Contains inaccurate or outdated information",
-    "Irrelevant to my program or department",
-    "Not clearly explained or confusing",
-    "Unprofessional tone or wording",
-    "Too many repetitive posts",
-    "Announced too late or last-minute",
-    "Disrespectful or inconsiderate messaging",
-    "Not accessible (e.g., unclear for PWDs or non-English speakers)",
-    "Fails to follow official GC communication standards",
-    "Triggers anxiety or unnecessary pressure",
-    "Unfair to certain groups or students",
-    "Violates school values or community standards"
+  // Define comprehensive report categories with subcategories
+  const reportCategories = [
+    {
+      id: 'inappropriate',
+      label: 'Inappropriate Content',
+      icon: 'alert-triangle',
+      reasons: [
+        "Sexual content",
+        "Nudity or pornography",
+        "Violence or graphic content",
+        "Hate speech or symbols",
+        "Promotes illegal activities"
+      ]
+    },
+    {
+      id: 'harassment',
+      label: 'Harassment or Bullying',
+      icon: 'message-square-off',
+      reasons: [
+        "Targeted harassment",
+        "Threatening language",
+        "Cyberbullying",
+        "Encouraging others to harass"
+      ]
+    },
+    {
+      id: 'misinformation',
+      label: 'False Information',
+      icon: 'ban',
+      reasons: [
+        "Contains inaccurate or outdated information",
+        "Misleading content",
+        "Health misinformation",
+        "Manipulated media"
+      ]
+    },
+    {
+      id: 'spam',
+      label: 'Spam or Misleading',
+      icon: 'mail',
+      reasons: [
+        "Repetitive posting",
+        "Fake engagement",
+        "Scams or fraud",
+        "Misleading claims or clickbait"
+      ]
+    },
+    {
+      id: 'intellectual',
+      label: 'Intellectual Property',
+      icon: 'copyright',
+      reasons: [
+        "Copyright infringement",
+        "Trademark violation",
+        "Unauthorized use of content"
+      ]
+    },
+    {
+      id: 'privacy',
+      label: 'Privacy Violation',
+      icon: 'eye-off',
+      reasons: [
+        "Shares personal information without consent",
+        "Doxxing",
+        "Impersonation"
+      ]
+    },
+    {
+      id: 'academic',
+      label: 'Academic Integrity',
+      icon: 'graduation-cap',
+      reasons: [
+        "Cheating or plagiarism",
+        "Selling academic materials",
+        "Unauthorized sharing of exam content"
+      ]
+    },
+    {
+      id: 'campus',
+      label: 'Campus Policy Violation',
+      icon: 'building',
+      reasons: [
+        "Violates school values or community standards",
+        "Fails to follow official GC communication standards",
+        "Unfair to certain groups or students",
+        "Triggers anxiety or unnecessary pressure"
+      ]
+    },
+    {
+      id: 'other',
+      label: 'Something Else',
+      icon: 'more-horizontal',
+      reasons: [
+        "Not accessible (e.g., unclear for PWDs)",
+        "Announced too late or last-minute",
+        "Irrelevant to my program or department",
+        "Other concern not listed"
+      ]
+    }
   ];
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsDropdownOpen(false);
-      }
-    }
+  // Get icon component based on name
+  const getIcon = (iconName) => {
+    const icons = {
+      'alert-triangle': AlertTriangle,
+      'message-square-off': MessageCircle,
+      'ban': AlertCircle,
+      'mail': MessageCircle,
+      'copyright': AlertCircle,
+      'eye-off': Eye,
+      'graduation-cap': BookmarkIcon,
+      'building': Flag,
+      'more-horizontal': MoreVertical
+    };
     
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    const IconComponent = icons[iconName] || AlertTriangle;
+    return <IconComponent size={18} />;
+  };
 
-  // Local submit handler that uses the parent component's handleReport
-  const submitReport = () => {
-    if (!reportReason) {
-      toast.error("Please select a reason for reporting.");
-      return;
-    }
-    
-    // Call the handleReport function from props with the selected reason
-    handleReport(reportReason);
+  // Handle category selection
+  const selectCategory = (category) => {
+    setSelectedCategory(category);
+    setReportReason(""); // Clear any previously selected reason
+  };
+
+  // Handle reason selection
+  const selectReason = (reason) => {
+    setReportReason(reason);
+  };
+
+  // Handle back button to return to categories
+  const handleBack = () => {
+    setSelectedCategory(null);
+    setReportReason("");
   };
 
   return (
@@ -661,89 +759,115 @@ const ReportModal = ({ setShowReportModal, reportLoading, alreadyReported, handl
         </div>
         
         {/* Content */}
-        <div className="p-6 pt-3 overflow-visible">
-          <label className="block text-gray-200 mb-3 font-medium">
-            Please select a reason:
-          </label>
-          
-          {/* Custom dropdown */}
-          <div className="relative mb-6" ref={dropdownRef}>
-            <div 
-              className={`w-full p-4 rounded-full bg-[#2a3447] text-gray-200 flex justify-between items-center cursor-pointer border ${
-                isDropdownOpen 
-                  ? "border-blue-500" 
-                  : "border-gray-700 hover:border-gray-600"
-              } transition-all duration-200`}
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            >
-              <span className={reportReason ? "text-white" : "text-gray-400"}>
-                {reportReason || "Select a reason"}
-              </span>
-              <ChevronDown 
-                size={20} 
-                className={`text-gray-400 transition-transform duration-300 ${isDropdownOpen ? "transform rotate-180" : ""}`} 
-              />
-            </div>
-            
-            {/* Dropdown options */}
-            {isDropdownOpen && (
-              <div className="absolute z-[100] w-full mt-2 bg-[#2a3447] rounded-xl shadow-xl border border-gray-700 py-2 max-h-60 overflow-y-auto">
-                {reportReasons.map((reason, index) => (
-                  <div
-                    key={index}
-                    className={`px-4 py-3 cursor-pointer ${
-                      reportReason === reason 
-                        ? "bg-blue-600 text-white" 
-                        : "text-gray-200 hover:bg-[#3a4357]"
-                    }`}
-                    onClick={() => {
-                      setReportReason(reason);
-                      setIsDropdownOpen(false);
-                    }}
+        <div className="p-6 pt-3 overflow-y-auto max-h-[60vh]">
+          {!selectedCategory ? (
+            // Step 1: Show categories
+            <>
+              <label className="block text-gray-200 mb-3 font-medium">
+                Please select a category:
+              </label>
+              <div className="space-y-2">
+                {reportCategories.map((category) => (
+                  <button
+                    key={category.id}
+                    onClick={() => selectCategory(category)}
+                    className="w-full text-left p-3 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors flex items-center justify-between"
                   >
-                    {reason}
-                  </div>
+                    <div className="flex items-center gap-3">
+                      <div className="p-1.5 rounded-full bg-gray-700">
+                        {getIcon(category.icon)}
+                      </div>
+                      <span>{category.label}</span>
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
+                      <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                  </button>
                 ))}
               </div>
-            )}
-          </div>
-          
-          {/* Buttons */}
-          <div className="flex justify-end gap-3 mt-6">
-            <button
-              onClick={() => setShowReportModal(false)}
-              className="px-6 py-2.5 rounded-full bg-gray-700 text-gray-200 font-medium hover:bg-gray-600 transition"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={submitReport}
-              disabled={reportLoading || !reportReason}
-              className={`px-6 py-2.5 rounded-full font-medium transition ${
-                !reportReason || reportLoading
-                  ? "bg-red-500/50 cursor-not-allowed text-white/70" 
-                  : "bg-red-500 hover:bg-red-600 text-white"
-              }`}
-            >
-              {reportLoading ? "Submitting..." : "Submit Report"}
-            </button>
-          </div>
+            </>
+          ) : (
+            // Step 2: Show reasons within selected category
+            <>
+              <div className="flex items-center mb-4">
+                <button 
+                  onClick={handleBack}
+                  className="p-2 rounded-full hover:bg-gray-700 mr-2"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                  </svg>
+                </button>
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded-full bg-gray-700">
+                    {getIcon(selectedCategory.icon)}
+                  </div>
+                  <span className="font-medium">{selectedCategory.label}</span>
+                </div>
+              </div>
+              
+              <label className="block text-gray-200 mb-3 font-medium">
+                Please select a specific reason:
+              </label>
+              <div className="space-y-2">
+                {selectedCategory.reasons.map((reason) => (
+                  <button
+                    key={reason}
+                    onClick={() => selectReason(reason)}
+                    className={`w-full text-left p-3 rounded-lg transition-colors flex items-center justify-between ${
+                      reportReason === reason 
+                        ? "bg-blue-900/50 border border-blue-500" 
+                        : "bg-gray-800 hover:bg-gray-700"
+                    }`}
+                  >
+                    <span>{reason}</span>
+                    {reportReason === reason && (
+                      <Check size={18} className="text-blue-400" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
         </div>
         
-        {/* Close button */}
-        <button
-          className="absolute top-4 right-4 text-gray-400 hover:text-white transition"
-          onClick={() => setShowReportModal(false)}
-          aria-label="Close"
-        >
-          <XCircle size={24} />
-        </button>
+        {/* Footer */}
+        <div className="p-6 pt-3 flex justify-end gap-3">
+          <button
+            onClick={() => setShowReportModal(false)}
+            className="px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors"
+          >
+            Cancel
+          </button>
+          
+          <button
+            onClick={() => handleReport(reportReason)}
+            disabled={!reportReason || reportLoading || alreadyReported}
+            className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 ${
+              !reportReason || reportLoading || alreadyReported
+                ? "bg-gray-700 text-gray-400 cursor-not-allowed"
+                : "bg-red-600 hover:bg-red-700 text-white"
+            }`}
+          >
+            {reportLoading ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                Submitting...
+              </>
+            ) : alreadyReported ? (
+              "Already Reported"
+            ) : (
+              "Submit Report"
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );
 };
 
 export default Post;
+
 
 
 

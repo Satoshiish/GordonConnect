@@ -193,32 +193,94 @@ const Reports = () => {
   const getReportCategories = () => {
     return [
       { id: 'all', label: 'All Reports' },
-      { id: 'content', label: 'Content Issues', reasons: [
-        "Contains inaccurate or outdated information",
-        "Not clearly explained or confusing"
-      ]},
-      { id: 'relevance', label: 'Relevance Issues', reasons: [
-        "Irrelevant to my program or department",
-        "Too many repetitive posts"
-      ]},
-      { id: 'tone', label: 'Tone & Professionalism', reasons: [
-        "Unprofessional tone or wording",
-        "Disrespectful or inconsiderate messaging"
-      ]},
-      { id: 'timing', label: 'Timing Issues', reasons: [
-        "Announced too late or last-minute"
-      ]},
-      { id: 'accessibility', label: 'Accessibility', reasons: [
-        "Not accessible (e.g., unclear for PWDs or non-English speakers)"
-      ]},
-      { id: 'standards', label: 'Standards Violations', reasons: [
-        "Fails to follow official GC communication standards",
-        "Violates school values or community standards"
-      ]},
-      { id: 'fairness', label: 'Fairness Issues', reasons: [
-        "Unfair to certain groups or students",
-        "Triggers anxiety or unnecessary pressure"
-      ]}
+      { 
+        id: 'inappropriate', 
+        label: 'Inappropriate Content',
+        reasons: [
+          "Sexual content",
+          "Nudity or pornography",
+          "Violence or graphic content",
+          "Hate speech or symbols",
+          "Promotes illegal activities"
+        ]
+      },
+      { 
+        id: 'harassment', 
+        label: 'Harassment or Bullying',
+        reasons: [
+          "Targeted harassment",
+          "Threatening language",
+          "Cyberbullying",
+          "Encouraging others to harass"
+        ]
+      },
+      { 
+        id: 'misinformation', 
+        label: 'False Information',
+        reasons: [
+          "Contains inaccurate or outdated information",
+          "Misleading content",
+          "Health misinformation",
+          "Manipulated media"
+        ]
+      },
+      { 
+        id: 'spam', 
+        label: 'Spam or Misleading',
+        reasons: [
+          "Repetitive posting",
+          "Fake engagement",
+          "Scams or fraud",
+          "Misleading claims or clickbait"
+        ]
+      },
+      { 
+        id: 'intellectual', 
+        label: 'Intellectual Property',
+        reasons: [
+          "Copyright infringement",
+          "Trademark violation",
+          "Unauthorized use of content"
+        ]
+      },
+      { 
+        id: 'privacy', 
+        label: 'Privacy Violation',
+        reasons: [
+          "Shares personal information without consent",
+          "Doxxing",
+          "Impersonation"
+        ]
+      },
+      { 
+        id: 'academic', 
+        label: 'Academic Integrity',
+        reasons: [
+          "Cheating or plagiarism",
+          "Selling academic materials",
+          "Unauthorized sharing of exam content"
+        ]
+      },
+      { 
+        id: 'campus', 
+        label: 'Campus Policy Violation',
+        reasons: [
+          "Violates school values or community standards",
+          "Fails to follow official GC communication standards",
+          "Unfair to certain groups or students",
+          "Triggers anxiety or unnecessary pressure"
+        ]
+      },
+      { 
+        id: 'other', 
+        label: 'Other Issues',
+        reasons: [
+          "Not accessible (e.g., unclear for PWDs)",
+          "Announced too late or last-minute",
+          "Irrelevant to my program or department",
+          "Other concern not listed"
+        ]
+      }
     ];
   };
 
@@ -732,6 +794,8 @@ const Reports = () => {
 };
 
 export default Reports; 
+
+
 
 
 
