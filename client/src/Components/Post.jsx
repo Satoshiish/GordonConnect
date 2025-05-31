@@ -36,7 +36,10 @@ import {
   ExternalLink, 
   ChevronDown, 
   AlertTriangle,
-  Check 
+  Check,
+  AlertCircle,
+  Eye,
+  MessageSquare
 } from 'lucide-react';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || "https://gordonconnect-production-f2bd.up.railway.app/api";
@@ -713,7 +716,7 @@ const ReportModal = ({ setShowReportModal, reportLoading, alreadyReported, handl
   const getIcon = (iconName) => {
     const icons = {
       'alert-triangle': AlertTriangle,
-      'message-square-off': MessageCircle,
+      'message-square-off': MessageSquare,
       'ban': AlertCircle,
       'mail': MessageCircle,
       'copyright': AlertCircle,
@@ -867,6 +870,7 @@ const ReportModal = ({ setShowReportModal, reportLoading, alreadyReported, handl
 };
 
 export default Post;
+
 
 
 
