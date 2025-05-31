@@ -762,7 +762,7 @@ const ReportModal = ({ setShowReportModal, reportLoading, alreadyReported, handl
         </div>
         
         {/* Content */}
-        <div className="p-6 pt-3 overflow-y-auto max-h-[60vh] scrollbar-none">
+        <div className="p-6 pt-3 overflow-y-auto max-h-[60vh] relative">
           <div className="absolute right-0 top-0 bottom-0 w-2 bg-transparent">
             <div className="absolute top-0 right-0 w-2 h-full bg-gray-800/50 rounded-full">
               <div className="absolute top-0 right-0 w-2 h-24 bg-emerald-500/50 rounded-full transition-all duration-300 hover:bg-emerald-500/70" style={{ top: '0%' }}></div>
@@ -780,10 +780,10 @@ const ReportModal = ({ setShowReportModal, reportLoading, alreadyReported, handl
                   <button
                     key={category.id}
                     onClick={() => selectCategory(category)}
-                    className="w-full text-left p-3 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 transition-colors flex items-center justify-between"
+                    className="w-full text-left p-3 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors flex items-center justify-between"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="p-1.5 rounded-full bg-gray-700/50">
+                      <div className="p-1.5 rounded-full bg-gray-700">
                         {getIcon(category.icon)}
                       </div>
                       <span>{category.label}</span>
@@ -808,7 +808,7 @@ const ReportModal = ({ setShowReportModal, reportLoading, alreadyReported, handl
                   </svg>
                 </button>
                 <div className="flex items-center gap-2">
-                  <div className="p-1.5 rounded-full bg-gray-700/50">
+                  <div className="p-1.5 rounded-full bg-gray-700">
                     {getIcon(selectedCategory.icon)}
                   </div>
                   <span className="font-medium">{selectedCategory.label}</span>
@@ -876,8 +876,6 @@ const ReportModal = ({ setShowReportModal, reportLoading, alreadyReported, handl
 };
 
 export default Post;
-
-
 
 
 
