@@ -249,8 +249,11 @@ function Profile() {
                       >
                         {data?.name || "Unknown User"}
                         {data?.role === "admin" && (
-                          <span className="inline-flex items-center" title="Admin">
+                          <span className="inline-flex items-center relative" title="Admin">
                             <BadgeCheck size={20} className="text-emerald-500 fill-emerald-500" />
+                            <span className="absolute -top-1 -right-1">
+                              <BadgeCheck size={12} className="text-blue-500 fill-blue-500" />
+                            </span>
                           </span>
                         )}
                       </motion.h1>
@@ -626,6 +629,7 @@ function Profile() {
 }
 
 export default Profile;
+
 
 
 
