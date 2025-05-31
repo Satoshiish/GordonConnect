@@ -17,6 +17,8 @@ const Reports = () => {
   const { theme } = useTheme();
   const navigate = useNavigate();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  // Add this state for categorizing reports
+  const [activeCategory, setActiveCategory] = useState('all');
 
   useEffect(() => {
     fetchReports();
@@ -187,6 +189,53 @@ const Reports = () => {
     }
   };
 
+  // Add this function to categorize reports
+  const getReportCategories = () => {
+    return [
+      { id: 'all', label: 'All Reports' },
+      { id: 'content', label: 'Content Issues', reasons: [
+        "Contains inaccurate or outdated information",
+        "Not clearly explained or confusing"
+      ]},
+      { id: 'relevance', label: 'Relevance Issues', reasons: [
+        "Irrelevant to my program or department",
+        "Too many repetitive posts"
+      ]},
+      { id: 'tone', label: 'Tone & Professionalism', reasons: [
+        "Unprofessional tone or wording",
+        "Disrespectful or inconsiderate messaging"
+      ]},
+      { id: 'timing', label: 'Timing Issues', reasons: [
+        "Announced too late or last-minute"
+      ]},
+      { id: 'accessibility', label: 'Accessibility', reasons: [
+        "Not accessible (e.g., unclear for PWDs or non-English speakers)"
+      ]},
+      { id: 'standards', label: 'Standards Violations', reasons: [
+        "Fails to follow official GC communication standards",
+        "Violates school values or community standards"
+      ]},
+      { id: 'fairness', label: 'Fairness Issues', reasons: [
+        "Unfair to certain groups or students",
+        "Triggers anxiety or unnecessary pressure"
+      ]}
+    ];
+  };
+
+  // Add this to filter reports by category
+  const getFilteredReports = () => {
+    if (activeCategory === 'all') return reports;
+    
+    const categories = getReportCategories();
+    const category = categories.find(c => c.id === activeCategory);
+    
+    if (!category || !category.reasons) return reports;
+    
+    return reports.filter(report => 
+      category.reasons.includes(report.reason)
+    );
+  };
+
   if (loading) return <div className={`text-center py-20 text-lg font-semibold ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>Loading...</div>;
   if (error) return <div className={`text-center py-20 font-semibold ${theme === "dark" ? "text-red-400" : "text-red-500"}`}>{error}</div>;
 
@@ -266,9 +315,32 @@ const Reports = () => {
             </div>
         </motion.div>
         
+        {/* Add Category Tabs */}
+        <div className="mb-6 overflow-x-auto">
+          <div className="flex space-x-2 pb-2 min-w-max">
+            {getReportCategories().map(category => (
+              <button
+                key={category.id}
+                onClick={() => setActiveCategory(category.id)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  activeCategory === category.id
+                    ? theme === "dark"
+                      ? "bg-emerald-500/20 text-emerald-400"
+                      : "bg-emerald-100 text-emerald-700"
+                    : theme === "dark"
+                      ? "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                      : "bg-white text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                {category.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        
         {/* Improve Mobile Card View spacing and sizing */}
         <div className="block sm:hidden space-y-3">
-          {reports.map((report) => (
+          {getFilteredReports().map((report) => (
             <motion.div 
               key={report.id}
               initial={{ opacity: 0, y: 10 }}
@@ -388,7 +460,7 @@ const Reports = () => {
               </tr>
             </thead>
             <tbody className={`divide-y ${theme === "dark" ? "divide-gray-800" : "divide-gray-200"}`}>
-              {reports.map((report) => (
+              {getFilteredReports().map((report) => (
                 <tr key={report.id} className={`${theme === "dark" ? "hover:bg-gray-800/70" : "hover:bg-gray-50"} transition-colors`}>
                   <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-xs sm:text-sm whitespace-nowrap font-medium">{report.id}</td>
                   <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-xs sm:text-sm whitespace-nowrap">
@@ -480,7 +552,7 @@ const Reports = () => {
         </div>
         
         {/* Empty State */}
-        {reports.length === 0 && (
+        {getFilteredReports().length === 0 && (
           <div className={`text-center py-12 rounded-xl border ${theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"} shadow-lg`}>
             <div className="mx-auto w-16 h-16 mb-4 flex items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30">
               <CheckCircle2 className="w-8 h-8 text-emerald-500 dark:text-emerald-400" />
@@ -660,6 +732,8 @@ const Reports = () => {
 };
 
 export default Reports; 
+
+
 
 
 
