@@ -611,234 +611,102 @@ const ReportModal = ({ setShowReportModal, reportLoading, alreadyReported, handl
   const [reportReason, setReportReason] = useState("");
   const { theme } = useTheme();
   
-  // Define comprehensive report categories with subcategories
-  const reportCategories = [
-    {
-      id: 'inappropriate',
-      label: 'Inappropriate Content',
-      icon: 'alert-triangle',
-      reasons: [
-        "Sexual content",
-        "Nudity or pornography",
-        "Violence or graphic content",
-        "Hate speech or symbols",
-        "Promotes illegal activities"
-      ]
-    },
-    {
-      id: 'harassment',
-      label: 'Harassment or Bullying',
-      icon: 'message-square-off',
-      reasons: [
-        "Targeted harassment",
-        "Threatening language",
-        "Cyberbullying",
-        "Encouraging others to harass"
-      ]
-    },
-    {
-      id: 'misinformation',
-      label: 'False Information',
-      icon: 'ban',
-      reasons: [
-        "Contains inaccurate or outdated information",
-        "Misleading content",
-        "Health misinformation",
-        "Manipulated media"
-      ]
-    },
-    {
-      id: 'spam',
-      label: 'Spam or Misleading',
-      icon: 'mail',
-      reasons: [
-        "Repetitive posting",
-        "Fake engagement",
-        "Scams or fraud",
-        "Misleading claims or clickbait"
-      ]
-    },
-    {
-      id: 'intellectual',
-      label: 'Intellectual Property',
-      icon: 'copyright',
-      reasons: [
-        "Copyright infringement",
-        "Trademark violation",
-        "Unauthorized use of content"
-      ]
-    },
-    {
-      id: 'privacy',
-      label: 'Privacy Violation',
-      icon: 'eye-off',
-      reasons: [
-        "Shares personal information without consent",
-        "Doxxing",
-        "Impersonation"
-      ]
-    },
-    {
-      id: 'academic',
-      label: 'Academic Integrity',
-      icon: 'graduation-cap',
-      reasons: [
-        "Cheating or plagiarism",
-        "Selling academic materials",
-        "Unauthorized sharing of exam content"
-      ]
-    },
-    {
-      id: 'campus',
-      label: 'Campus Policy Violation',
-      icon: 'building',
-      reasons: [
-        "Violates school values or community standards",
-        "Fails to follow official GC communication standards",
-        "Unfair to certain groups or students",
-        "Triggers anxiety or unnecessary pressure"
-      ]
-    },
-    {
-      id: 'other',
-      label: 'Something Else',
-      icon: 'more-horizontal',
-      reasons: [
-        "Not accessible (e.g., unclear for PWDs)",
-        "Announced too late or last-minute",
-        "Irrelevant to my program or department",
-        "Other concern not listed"
-      ]
-    }
-  ];
-
-  // Get icon component based on name
-  const getIcon = (iconName) => {
-    const icons = {
-      'alert-triangle': AlertTriangle,
-      'message-square-off': MessageSquare,
-      'ban': AlertCircle,
-      'mail': MessageCircle,
-      'copyright': AlertCircle,
-      'eye-off': Eye,
-      'graduation-cap': BookmarkIcon,
-      'building': Flag,
-      'more-horizontal': MoreVertical
-    };
-    
-    const IconComponent = icons[iconName] || AlertTriangle;
-    return <IconComponent size={18} />;
-  };
-
-  // Handle category selection
-  const selectCategory = (category) => {
-    setSelectedCategory(category);
-    setReportReason(""); // Clear any previously selected reason
-  };
-
-  // Handle reason selection
-  const selectReason = (reason) => {
-    setReportReason(reason);
-  };
-
-  // Handle back button to return to categories
-  const handleBack = () => {
-    setSelectedCategory(null);
-    setReportReason("");
-  };
-
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="w-full max-w-lg bg-[#1a2235] text-white rounded-3xl overflow-visible shadow-2xl relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <div className={`w-full max-w-md rounded-2xl shadow-2xl border relative overflow-hidden ${
+        theme === "dark" 
+          ? "bg-gray-900 border-gray-800 text-white" 
+          : "bg-white border-gray-100 text-gray-900"
+      }`}>
         {/* Header */}
-        <div className="p-6 pb-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-red-900/40">
-              <Flag size={20} className="text-red-400" />
+        <div className={`p-6 pb-4 ${
+          theme === "dark" ? "bg-gray-800/80" : "bg-gray-50"
+        }`}>
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-3">
+              <div className={`p-2 rounded-lg ${
+                theme === "dark" ? "bg-red-900/30 text-red-400" : "bg-red-100 text-red-600"
+              }`}>
+                <Flag size={20} />
+              </div>
+              <h3 className="text-xl font-bold">Report Content</h3>
             </div>
-            <h2 className="text-2xl font-bold">Report Content</h2>
+            <button 
+              onClick={() => setShowReportModal(false)}
+              className={`p-1 rounded-full ${
+                theme === "dark" 
+                  ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700/50" 
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+              }`}
+            >
+              <X size={20} />
+            </button>
           </div>
-          <p className="text-gray-300 text-sm mt-2 ml-9">Let us know what concerns you about this post.</p>
+          <p className={`mt-2 text-sm ${
+            theme === "dark" ? "text-gray-300" : "text-gray-600"
+          }`}>
+            Let us know what concerns you about the post.
+          </p>
         </div>
         
         {/* Content */}
-        <div className="p-6 pt-3 overflow-y-auto max-h-[60vh] scrollbar scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-rounded-full scrollbar-thumb-emerald-500/50 scrollbar-track-gray-800/50 hover:scrollbar-thumb-emerald-500/70">
-          {!selectedCategory ? (
-            // Step 1: Show categories
-            <>
-              <label className="block text-gray-200 mb-3 font-medium">
-                Please select a category:
-              </label>
-              <div className="space-y-2">
-                {reportCategories.map((category) => (
-                  <button
-                    key={category.id}
-                    onClick={() => selectCategory(category)}
-                    className="w-full text-left p-3 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors flex items-center justify-between"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="p-1.5 rounded-full bg-gray-700">
-                        {getIcon(category.icon)}
-                      </div>
-                      <span>{category.label}</span>
-                    </div>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
-                      <polyline points="9 18 15 12 9 6"></polyline>
-                    </svg>
-                  </button>
-                ))}
-              </div>
-            </>
-          ) : (
-            // Step 2: Show reasons within selected category
-            <>
-              <div className="flex items-center mb-4">
-                <button 
-                  onClick={handleBack}
-                  className="p-2 rounded-full hover:bg-gray-700 mr-2"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="15 18 9 12 15 6"></polyline>
-                  </svg>
-                </button>
-                <div className="flex items-center gap-2">
-                  <div className="p-1.5 rounded-full bg-gray-700">
-                    {getIcon(selectedCategory.icon)}
+        <div className={`px-6 py-4 max-h-[60vh] overflow-y-auto ${
+          theme === "dark" ? "text-gray-200" : "text-gray-800"
+        }`}>
+          <p className={`mb-3 font-medium text-sm ${
+            theme === "dark" ? "text-gray-300" : "text-gray-700"
+          }`}>
+            Please select a category:
+          </p>
+          
+          <div className="space-y-2">
+            {reportReasons.map((reason, index) => (
+              <div 
+                key={index}
+                onClick={() => setReportReason(reason)}
+                className={`p-4 rounded-xl flex items-center justify-between cursor-pointer transition-colors ${
+                  reportReason === reason
+                    ? theme === "dark"
+                      ? "bg-blue-900/30 border border-blue-700/50"
+                      : "bg-blue-50 border border-blue-200"
+                    : theme === "dark"
+                      ? "bg-gray-800 border border-gray-700 hover:bg-gray-700"
+                      : "bg-gray-50 border border-gray-200 hover:bg-gray-100"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`p-1.5 rounded-lg ${
+                    theme === "dark" ? "bg-gray-700" : "bg-white"
+                  }`}>
+                    {index % 7 === 0 && <AlertTriangle size={16} className={theme === "dark" ? "text-amber-400" : "text-amber-500"} />}
+                    {index % 7 === 1 && <MessageSquare size={16} className={theme === "dark" ? "text-blue-400" : "text-blue-500"} />}
+                    {index % 7 === 2 && <Info size={16} className={theme === "dark" ? "text-purple-400" : "text-purple-500"} />}
+                    {index % 7 === 3 && <AlertCircle size={16} className={theme === "dark" ? "text-red-400" : "text-red-500"} />}
+                    {index % 7 === 4 && <FileText size={16} className={theme === "dark" ? "text-emerald-400" : "text-emerald-500"} />}
+                    {index % 7 === 5 && <Eye size={16} className={theme === "dark" ? "text-indigo-400" : "text-indigo-500"} />}
+                    {index % 7 === 6 && <BookOpen size={16} className={theme === "dark" ? "text-orange-400" : "text-orange-500"} />}
                   </div>
-                  <span className="font-medium">{selectedCategory.label}</span>
+                  <span className="text-sm">{reason}</span>
                 </div>
+                {reportReason === reason && (
+                  <Check size={18} className={theme === "dark" ? "text-blue-400" : "text-blue-600"} />
+                )}
               </div>
-              
-              <label className="block text-gray-200 mb-3 font-medium">
-                Please select a specific reason:
-              </label>
-              <div className="space-y-2">
-                {selectedCategory.reasons.map((reason) => (
-                  <button
-                    key={reason}
-                    onClick={() => selectReason(reason)}
-                    className={`w-full text-left p-3 rounded-lg transition-colors flex items-center justify-between ${
-                      reportReason === reason 
-                        ? "bg-blue-900/50 border border-blue-500" 
-                        : "bg-gray-800 hover:bg-gray-700"
-                    }`}
-                  >
-                    <span>{reason}</span>
-                    {reportReason === reason && (
-                      <Check size={18} className="text-blue-400" />
-                    )}
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
+            ))}
+          </div>
         </div>
         
         {/* Footer */}
-        <div className="p-6 pt-3 flex justify-end gap-3">
+        <div className={`p-6 pt-3 flex justify-end gap-3 border-t ${
+          theme === "dark" ? "border-gray-800" : "border-gray-200"
+        }`}>
           <button
             onClick={() => setShowReportModal(false)}
-            className="px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors"
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              theme === "dark" 
+                ? "bg-gray-800 text-gray-300 hover:bg-gray-700" 
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
           >
             Cancel
           </button>
@@ -846,10 +714,14 @@ const ReportModal = ({ setShowReportModal, reportLoading, alreadyReported, handl
           <button
             onClick={() => handleReport(reportReason)}
             disabled={!reportReason || reportLoading || alreadyReported}
-            className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors ${
               !reportReason || reportLoading || alreadyReported
-                ? "bg-gray-700 text-gray-400 cursor-not-allowed"
-                : "bg-red-600 hover:bg-red-700 text-white"
+                ? theme === "dark"
+                  ? "bg-gray-800 text-gray-500 cursor-not-allowed"
+                  : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                : theme === "dark"
+                  ? "bg-red-600 hover:bg-red-700 text-white"
+                  : "bg-red-600 hover:bg-red-700 text-white"
             }`}
           >
             {reportLoading ? (
@@ -870,6 +742,7 @@ const ReportModal = ({ setShowReportModal, reportLoading, alreadyReported, handl
 };
 
 export default Post;
+
 
 
 
