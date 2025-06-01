@@ -579,12 +579,124 @@ const Post = ({ post }) => {
           {/* Report Modal */}
           <AnimatePresence>
             {showReportModal && (
-              <ReportModal 
-                setShowReportModal={setShowReportModal}
-                reportLoading={reportLoading}
-                alreadyReported={alreadyReported}
-                handleReport={handleReport}
-              />
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  className={`w-full max-w-md rounded-xl shadow-xl overflow-hidden ${
+                    theme === "dark" 
+                      ? "bg-gray-800 border border-gray-700" 
+                      : "bg-white border border-gray-200"
+                  }`}
+                >
+                  {/* Header */}
+                  <div className={`p-5 border-b ${
+                    theme === "dark" ? "border-gray-700" : "border-gray-200"
+                  }`}>
+                    <div className="flex items-center gap-3">
+                      <Flag size={20} className="text-red-500" />
+                      <h3 className="text-lg font-semibold">Report Content</h3>
+                    </div>
+                    <p className={`mt-2 text-sm ${
+                      theme === "dark" ? "text-gray-300" : "text-gray-600"
+                    }`}>
+                      Let us know what concerns you about the post.
+                    </p>
+                  </div>
+                  
+                  {/* Report Categories */}
+                  <div className={`max-h-[300px] overflow-y-auto ${
+                    theme === "dark" ? "scrollbar-thumb-gray-600" : "scrollbar-thumb-gray-300"
+                  } scrollbar-thin`}>
+                    <div className="p-5">
+                      <p className={`mb-3 text-sm font-medium ${
+                        theme === "dark" ? "text-gray-300" : "text-gray-700"
+                      }`}>
+                        Please select a category:
+                      </p>
+                      
+                      <div className="space-y-2">
+                        {[
+                          { icon: <AlertTriangle size={18} />, label: "Inappropriate Content" },
+                          { icon: <MessageSquare size={18} />, label: "Harassment or Bullying" },
+                          { icon: <Info size={18} />, label: "False Information" },
+                          { icon: <Mail size={18} />, label: "Spam or Misleading" },
+                          { icon: <BookCopy size={18} />, label: "Intellectual Property" },
+                          { icon: <Shield size={18} />, label: "Privacy Violation" },
+                          { icon: <GraduationCap size={18} />, label: "Academic Integrity" }
+                        ].map((category) => (
+                          <button
+                            key={category.label}
+                            onClick={() => setReportReason(category.label)}
+                            className={`w-full flex items-center justify-between p-3 rounded-lg transition-colors ${
+                              reportReason === category.label
+                                ? theme === "dark"
+                                  ? "bg-blue-900/30 text-blue-400 border border-blue-800/50"
+                                  : "bg-blue-50 text-blue-700 border border-blue-200"
+                                : theme === "dark"
+                                  ? "hover:bg-gray-700 text-gray-200 border border-gray-700"
+                                  : "hover:bg-gray-100 text-gray-700 border border-gray-200"
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className={reportReason === category.label
+                                ? "text-blue-500"
+                                : theme === "dark" ? "text-gray-400" : "text-gray-500"
+                              }>
+                                {category.icon}
+                              </span>
+                              <span>{category.label}</span>
+                            </div>
+                            <ChevronRight size={18} className={
+                              theme === "dark" ? "text-gray-500" : "text-gray-400"
+                            } />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Footer */}
+                  <div className={`p-5 border-t ${
+                    theme === "dark" ? "border-gray-700" : "border-gray-200"
+                  } flex justify-end gap-3`}>
+                    <button
+                      onClick={() => setShowReportModal(false)}
+                      className={`px-4 py-2 rounded-lg font-medium ${
+                        theme === "dark"
+                          ? "bg-gray-700 hover:bg-gray-600 text-gray-200"
+                          : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                      } transition-colors`}
+                    >
+                      Cancel
+                    </button>
+                    
+                    <button
+                      onClick={() => handleReport(reportReason)}
+                      disabled={!reportReason || reportLoading || alreadyReported}
+                      className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 ${
+                        !reportReason || reportLoading || alreadyReported
+                          ? theme === "dark"
+                            ? "bg-gray-700 text-gray-400 cursor-not-allowed"
+                            : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                          : "bg-red-600 hover:bg-red-700 text-white"
+                      }`}
+                    >
+                      {reportLoading ? (
+                        <>
+                          <Loader2 size={16} className="animate-spin" />
+                          Submitting...
+                        </>
+                      ) : alreadyReported ? (
+                        "Already Reported"
+                      ) : (
+                        "Submit Report"
+                      )}
+                    </button>
+                  </div>
+                </motion.div>
+              </div>
             )}
           </AnimatePresence>
         </motion.div>
@@ -870,6 +982,8 @@ const ReportModal = ({ setShowReportModal, reportLoading, alreadyReported, handl
 };
 
 export default Post;
+
+
 
 
 
