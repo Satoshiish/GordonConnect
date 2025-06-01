@@ -251,8 +251,8 @@ function Profile() {
                         {data?.role === "admin" && (
                           <span className="inline-flex items-center justify-center relative ml-1" title="Admin">
                             <span className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500 to-emerald-500 animate-pulse opacity-70"></span>
-                            <span className="relative flex items-center justify-center bg-gray-900 dark:bg-gray-800 rounded-full p-1 border-2 border-emerald-400">
-                              <BadgeCheck size={16} className="text-emerald-400" />
+                            <span className="relative flex items-center justify-center bg-gradient-to-br from-blue-600 to-emerald-600 rounded-full p-1 border-2 border-emerald-400">
+                              <BadgeCheck size={16} className="text-white" />
                             </span>
                           </span>
                         )}
@@ -629,6 +629,7 @@ function Profile() {
 }
 
 export default Profile;
+
 
 
 
