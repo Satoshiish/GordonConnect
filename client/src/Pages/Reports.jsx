@@ -508,7 +508,7 @@ const Reports = () => {
         </div>
         
         {/* Improve Desktop Table View responsiveness */}
-        <div className="hidden sm:block overflow-x-auto rounded-xl border shadow-lg">
+        <div className="hidden sm:block overflow-x-auto rounded-xl border shadow-lg scrollbar-none">
           <table className={`w-full min-w-full divide-y ${theme === "dark" ? "bg-gray-850 border-gray-700 divide-gray-700" : "bg-white border-gray-200 divide-gray-200"}`}>
             <thead className={`${theme === "dark" ? "bg-gray-900/90" : "bg-emerald-50"}`}>
               <tr>
@@ -794,6 +794,7 @@ const Reports = () => {
 };
 
 export default Reports; 
+
 
 
 
