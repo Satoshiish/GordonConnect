@@ -39,11 +39,7 @@ import {
   Check,
   AlertCircle,
   Eye,
-  MessageSquare,
-  Info,
-  FileText,
-  BookOpen,
-  X
+  MessageSquare
 } from 'lucide-react';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || "https://gordonconnect-production-f2bd.up.railway.app/api";
@@ -746,7 +742,6 @@ const ReportModal = ({ setShowReportModal, reportLoading, alreadyReported, handl
 };
 
 export default Post;
-
 
 
 
