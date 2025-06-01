@@ -620,7 +620,7 @@ const Post = ({ post }) => {
                         {[
                           { icon: <AlertTriangle size={18} />, label: "Inappropriate Content" },
                           { icon: <MessageSquare size={18} />, label: "Harassment or Bullying" },
-                          { icon: <Info size={18} />, label: "False Information" },
+                          { icon: <AlertCircle size={18} />, label: "False Information" },
                           { icon: <Mail size={18} />, label: "Spam or Misleading" },
                           { icon: <BookCopy size={18} />, label: "Intellectual Property" },
                           { icon: <Shield size={18} />, label: "Privacy Violation" },
@@ -982,6 +982,9 @@ const ReportModal = ({ setShowReportModal, reportLoading, alreadyReported, handl
 };
 
 export default Post;
+
+
+
 
 
 
