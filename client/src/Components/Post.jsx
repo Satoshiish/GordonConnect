@@ -124,7 +124,7 @@ const Post = ({ post }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
-  const [reportReason, setReportReason] = useState("");
+  const [selectedReasons, setSelectedReasons] = useState([]);
   const [reportLoading, setReportLoading] = useState(false);
   const [alreadyReported, setAlreadyReported] = useState(false);
 
@@ -264,30 +264,31 @@ const Post = ({ post }) => {
     "Violates school values or community standards"
   ]);
 
-  const handleReport = async (reason) => {
-    if (!reason) {
-      toast.error("Please select a reason for reporting.");
+  const handleReport = async () => {
+    if (selectedReasons.length === 0) {
+      toast.error("Please select at least one reason for reporting.");
       return;
     }
     
     setReportLoading(true);
     try {
-      // Make sure we're passing the correct data to the API
+      // Join multiple reasons with a separator
+      const reasonText = selectedReasons.join(" | ");
+      
       await makeRequest.post("/reports", {
         user_id: currentUser?.id || currentUser?.user_id || null,
         post_id: post.posts_id,
-        reason: reason,
+        reason: reasonText,
       });
       
       toast.success("Report submitted. Thank you!");
       setShowReportModal(false);
-      setReportReason("");
+      setSelectedReasons([]);
       setAlreadyReported(true);
     } catch (err) {
       console.error("Report submission error:", err);
       
-      if (err.response && err.response.data && err.response.data.error && 
-          err.response.data.error.toLowerCase().includes("duplicate")) {
+      if (err.response?.data?.error?.toLowerCase().includes("duplicate")) {
         setAlreadyReported(true);
         toast.error("You have already reported this post.");
       } else {
@@ -306,59 +307,12 @@ const Post = ({ post }) => {
     setShowReportModal(true);
   };
 
-  // Custom dropdown component to replace the native select
-  const ReportReasonDropdown = () => {
-    const [isOpen, setIsOpen] = useState(false);
-    const dropdownRef = useRef(null);
-
-    // Close dropdown when clicking outside
-    useEffect(() => {
-      function handleClickOutside(event) {
-        if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-          setIsOpen(false);
-        }
-      }
-      
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
-
-    return (
-      <div className="relative" ref={dropdownRef}>
-        {/* Custom dropdown trigger */}
-        <div 
-          className="w-full p-4 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 shadow-sm border border-gray-200 dark:border-gray-700 flex justify-between items-center cursor-pointer"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          <span className={reportReason ? "" : "text-gray-400 dark:text-gray-500"}>
-            {reportReason || "Select a reason"}
-          </span>
-          <ChevronDown size={20} className={`transition-transform duration-200 ${isOpen ? "transform rotate-180" : ""}`} />
-        </div>
-        
-        {/* Dropdown options */}
-        {isOpen && (
-          <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-2 max-h-80 overflow-y-auto">
-            {reportReasons.map((reason, index) => (
-              <div
-                key={index}
-                className={`px-4 py-3 cursor-pointer flex items-center justify-between ${
-                  reportReason === reason 
-                    ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" 
-                    : "hover:bg-gray-50 dark:hover:bg-gray-700/50 text-gray-700 dark:text-gray-200"
-                }`}
-                onClick={() => {
-                  setReportReason(reason);
-                  setIsOpen(false);
-                }}
-              >
-                <span className="pr-2">{reason}</span>
-                {reportReason === reason && <Check size={18} />}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+  // Function to toggle a reason in the selected list
+  const toggleReason = (reason) => {
+    setSelectedReasons(prev => 
+      prev.includes(reason)
+        ? prev.filter(r => r !== reason)
+        : [...prev, reason]
     );
   };
 
@@ -584,6 +538,8 @@ const Post = ({ post }) => {
                 reportLoading={reportLoading}
                 alreadyReported={alreadyReported}
                 handleReport={handleReport}
+                toggleReason={toggleReason}
+                selectedReasons={selectedReasons}
               />
             )}
           </AnimatePresence>
@@ -606,9 +562,7 @@ const Post = ({ post }) => {
 };
 
 // Report modal component
-const ReportModal = ({ setShowReportModal, reportLoading, alreadyReported, handleReport }) => {
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const [reportReason, setReportReason] = useState("");
+const ReportModal = ({ setShowReportModal, reportLoading, alreadyReported, handleReport, toggleReason, selectedReasons }) => {
   const { theme } = useTheme();
   
   // Define comprehensive report categories with subcategories
@@ -870,6 +824,7 @@ const ReportModal = ({ setShowReportModal, reportLoading, alreadyReported, handl
 };
 
 export default Post;
+
 
 
 
