@@ -542,7 +542,6 @@ const Post = ({ post }) => {
                 handleReport={handleReport}
                 toggleReason={toggleReason}
                 selectedReasons={selectedReasons}
-                reportReasons={reportReasons}
               />
             )}
           </AnimatePresence>
@@ -564,6 +563,100 @@ const Post = ({ post }) => {
   );
 };
 
+// Get the report categories from Reports.jsx
+const getReportCategories = () => {
+  return [
+    { 
+      id: 'inappropriate', 
+      label: 'Inappropriate Content',
+      reasons: [
+        "Sexual content",
+        "Nudity or pornography",
+        "Violence or graphic content",
+        "Hate speech or symbols",
+        "Promotes illegal activities"
+      ]
+    },
+    { 
+      id: 'harassment', 
+      label: 'Harassment or Bullying',
+      reasons: [
+        "Targeted harassment",
+        "Threatening language",
+        "Cyberbullying",
+        "Encouraging others to harass"
+      ]
+    },
+    { 
+      id: 'misinformation', 
+      label: 'False Information',
+      reasons: [
+        "Contains inaccurate or outdated information",
+        "Misleading content",
+        "Health misinformation",
+        "Manipulated media"
+      ]
+    },
+    { 
+      id: 'spam', 
+      label: 'Spam or Misleading',
+      reasons: [
+        "Repetitive posting",
+        "Fake engagement",
+        "Scams or fraud",
+        "Misleading claims or clickbait"
+      ]
+    },
+    { 
+      id: 'intellectual', 
+      label: 'Intellectual Property',
+      reasons: [
+        "Copyright infringement",
+        "Trademark violation",
+        "Unauthorized use of content"
+      ]
+    },
+    { 
+      id: 'privacy', 
+      label: 'Privacy Violation',
+      reasons: [
+        "Shares personal information without consent",
+        "Doxxing",
+        "Impersonation"
+      ]
+    },
+    { 
+      id: 'academic', 
+      label: 'Academic Integrity',
+      reasons: [
+        "Cheating or plagiarism",
+        "Selling academic materials",
+        "Unauthorized sharing of exam content"
+      ]
+    },
+    { 
+      id: 'campus', 
+      label: 'Campus Policy Violation',
+      reasons: [
+        "Violates school values or community standards",
+        "Fails to follow official GC communication standards",
+        "Unfair to certain groups or students",
+        "Triggers anxiety or unnecessary pressure"
+      ]
+    },
+    { 
+      id: 'other', 
+      label: 'Other Issues',
+      reasons: [
+        "Not accessible (e.g., unclear for PWDs)",
+        "Announced too late or last-minute",
+        "Irrelevant to my program or department",
+        "Other concern not listed"
+      ]
+    }
+  ];
+};
+
 // Report modal component
 const ReportModal = ({ 
   setShowReportModal, 
@@ -571,79 +664,105 @@ const ReportModal = ({
   alreadyReported, 
   handleReport, 
   toggleReason, 
-  selectedReasons,
-  reportReasons 
+  selectedReasons
 }) => {
   const { theme } = useTheme();
+  const reportCategories = getReportCategories();
+  
+  // Flatten all reasons for easier checking
+  const allReasons = reportCategories.flatMap(category => category.reasons);
   
   return (
     <div className={`fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4`}>
-      <div className={`w-full max-w-lg rounded-3xl overflow-visible shadow-2xl relative ${
+      <div className={`w-full max-w-3xl rounded-3xl overflow-visible shadow-2xl relative ${
         theme === "dark" 
           ? "bg-gray-900 text-white border border-gray-700" 
           : "bg-white text-gray-900 border border-gray-200"
       }`}>
         {/* Header */}
         <div className="p-6 pb-4">
-          <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-lg ${theme === "dark" ? "bg-red-900/40" : "bg-red-100"}`}>
-              <Flag size={20} className={theme === "dark" ? "text-red-400" : "text-red-500"} />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className={`p-2 rounded-lg ${theme === "dark" ? "bg-red-900/40" : "bg-red-100"}`}>
+                <Flag size={20} className={theme === "dark" ? "text-red-400" : "text-red-500"} />
+              </div>
+              <h2 className="text-2xl font-bold">Report Content</h2>
             </div>
-            <h2 className="text-2xl font-bold">Report Content</h2>
+            <button
+              onClick={() => setShowReportModal(false)}
+              className={`p-2 rounded-full ${
+                theme === "dark" 
+                  ? "hover:bg-gray-800 text-gray-400 hover:text-gray-200" 
+                  : "hover:bg-gray-100 text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              <XCircle size={24} />
+            </button>
           </div>
           <p className={`text-sm mt-2 ml-9 ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>
-            Select all issues that apply to this post (up to all).
+            Select all issues that apply to this post.
           </p>
         </div>
         
-        {/* Content - Checkboxes for multiple selection */}
-        <div className={`p-6 pt-3 overflow-y-auto max-h-[60vh] scrollbar-thin ${
+        {/* Content - Categories and checkboxes */}
+        <div className={`px-6 pt-2 pb-4 overflow-y-auto max-h-[60vh] scrollbar-thin ${
           theme === "dark" 
             ? "scrollbar-thumb-emerald-500/50 scrollbar-track-gray-800/50" 
             : "scrollbar-thumb-emerald-500/50 scrollbar-track-gray-200/50"
         }`}>
-          <div className="space-y-3">
-            {reportReasons.map((reason, index) => (
-              <div 
-                key={index}
-                className={`p-3 rounded-lg flex items-center gap-3 cursor-pointer ${
-                  selectedReasons.includes(reason)
-                    ? theme === "dark" 
-                      ? "bg-emerald-900/30 border border-emerald-700" 
-                      : "bg-emerald-50 border border-emerald-200"
-                    : theme === "dark"
-                      ? "bg-gray-800 hover:bg-gray-700" 
-                      : "bg-gray-50 hover:bg-gray-100"
-                }`}
-                onClick={() => toggleReason(reason)}
-              >
-                <div className={`w-5 h-5 flex-shrink-0 rounded border ${
-                  selectedReasons.includes(reason)
-                    ? theme === "dark" 
-                      ? "bg-emerald-500 border-emerald-400" 
-                      : "bg-emerald-500 border-emerald-600"
-                    : theme === "dark"
-                      ? "border-gray-600" 
-                      : "border-gray-400"
-                } flex items-center justify-center`}>
-                  {selectedReasons.includes(reason) && (
-                    <Check size={14} className="text-white" />
-                  )}
+          <div className="space-y-6">
+            {reportCategories.map((category) => (
+              <div key={category.id} className="space-y-2">
+                <h3 className={`font-semibold text-lg ${
+                  theme === "dark" ? "text-emerald-400" : "text-emerald-600"
+                }`}>
+                  {category.label}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {category.reasons.map((reason, index) => (
+                    <div 
+                      key={`${category.id}-${index}`}
+                      className={`p-3 rounded-lg flex items-center gap-3 cursor-pointer ${
+                        selectedReasons.includes(reason)
+                          ? theme === "dark" 
+                            ? "bg-emerald-900/30 border border-emerald-700" 
+                            : "bg-emerald-50 border border-emerald-200"
+                          : theme === "dark"
+                            ? "bg-gray-800 hover:bg-gray-700" 
+                            : "bg-gray-50 hover:bg-gray-100"
+                      }`}
+                      onClick={() => toggleReason(reason)}
+                    >
+                      <div className={`w-5 h-5 flex-shrink-0 rounded border ${
+                        selectedReasons.includes(reason)
+                          ? theme === "dark" 
+                            ? "bg-emerald-500 border-emerald-400" 
+                            : "bg-emerald-500 border-emerald-600"
+                          : theme === "dark"
+                            ? "border-gray-600" 
+                            : "border-gray-400"
+                      } flex items-center justify-center`}>
+                        {selectedReasons.includes(reason) && (
+                          <Check size={14} className="text-white" />
+                        )}
+                      </div>
+                      <span className={theme === "dark" ? "text-gray-200" : "text-gray-700"}>
+                        {reason}
+                      </span>
+                    </div>
+                  ))}
                 </div>
-                <span className={theme === "dark" ? "text-gray-200" : "text-gray-700"}>
-                  {reason}
-                </span>
               </div>
             ))}
           </div>
         </div>
         
         {/* Footer */}
-        <div className="p-6 pt-3 flex justify-between items-center">
+        <div className="p-6 pt-4 border-t flex justify-between items-center gap-4 flex-wrap sm:flex-nowrap">
           <div className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>
             {selectedReasons.length} reason{selectedReasons.length !== 1 ? 's' : ''} selected
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-3 ml-auto">
             <button
               onClick={() => setShowReportModal(false)}
               className={`px-4 py-2 rounded-lg ${
@@ -687,6 +806,8 @@ const ReportModal = ({
 };
 
 export default Post;
+
+
 
 
 
