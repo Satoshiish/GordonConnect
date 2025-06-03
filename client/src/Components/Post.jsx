@@ -127,6 +127,8 @@ const Post = ({ post }) => {
   const [selectedReasons, setSelectedReasons] = useState([]);
   const [reportLoading, setReportLoading] = useState(false);
   const [alreadyReported, setAlreadyReported] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [reportReason, setReportReason] = useState("");
 
   const { currentUser, canLike, canComment, canBookmark } = useContext(AuthContext);
   const queryClient = useQueryClient();
@@ -565,107 +567,6 @@ const Post = ({ post }) => {
 const ReportModal = ({ setShowReportModal, reportLoading, alreadyReported, handleReport, toggleReason, selectedReasons }) => {
   const { theme } = useTheme();
   
-  // Define comprehensive report categories with subcategories
-  const reportCategories = [
-    {
-      id: 'inappropriate',
-      label: 'Inappropriate Content',
-      icon: 'alert-triangle',
-      reasons: [
-        "Sexual content",
-        "Nudity or pornography",
-        "Violence or graphic content",
-        "Hate speech or symbols",
-        "Promotes illegal activities"
-      ]
-    },
-    {
-      id: 'harassment',
-      label: 'Harassment or Bullying',
-      icon: 'message-square-off',
-      reasons: [
-        "Targeted harassment",
-        "Threatening language",
-        "Cyberbullying",
-        "Encouraging others to harass"
-      ]
-    },
-    {
-      id: 'misinformation',
-      label: 'False Information',
-      icon: 'ban',
-      reasons: [
-        "Contains inaccurate or outdated information",
-        "Misleading content",
-        "Health misinformation",
-        "Manipulated media"
-      ]
-    },
-    {
-      id: 'spam',
-      label: 'Spam or Misleading',
-      icon: 'mail',
-      reasons: [
-        "Repetitive posting",
-        "Fake engagement",
-        "Scams or fraud",
-        "Misleading claims or clickbait"
-      ]
-    },
-    {
-      id: 'intellectual',
-      label: 'Intellectual Property',
-      icon: 'copyright',
-      reasons: [
-        "Copyright infringement",
-        "Trademark violation",
-        "Unauthorized use of content"
-      ]
-    },
-    {
-      id: 'privacy',
-      label: 'Privacy Violation',
-      icon: 'eye-off',
-      reasons: [
-        "Shares personal information without consent",
-        "Doxxing",
-        "Impersonation"
-      ]
-    },
-    {
-      id: 'academic',
-      label: 'Academic Integrity',
-      icon: 'graduation-cap',
-      reasons: [
-        "Cheating or plagiarism",
-        "Selling academic materials",
-        "Unauthorized sharing of exam content"
-      ]
-    },
-    {
-      id: 'campus',
-      label: 'Campus Policy Violation',
-      icon: 'building',
-      reasons: [
-        "Violates school values or community standards",
-        "Fails to follow official GC communication standards",
-        "Unfair to certain groups or students",
-        "Triggers anxiety or unnecessary pressure"
-      ]
-    },
-    {
-      id: 'other',
-      label: 'Something Else',
-      icon: 'more-horizontal',
-      reasons: [
-        "Not accessible (e.g., unclear for PWDs)",
-        "Announced too late or last-minute",
-        "Irrelevant to my program or department",
-        "Other concern not listed"
-      ]
-    }
-  ];
-
   // Get icon component based on name
   const getIcon = (iconName) => {
     const icons = {
@@ -702,121 +603,109 @@ const ReportModal = ({ setShowReportModal, reportLoading, alreadyReported, handl
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="w-full max-w-lg bg-[#1a2235] text-white rounded-3xl overflow-visible shadow-2xl relative">
+    <div className={`fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4`}>
+      <div className={`w-full max-w-lg rounded-3xl overflow-visible shadow-2xl relative ${
+        theme === "dark" 
+          ? "bg-gray-900 text-white border border-gray-700" 
+          : "bg-white text-gray-900 border border-gray-200"
+      }`}>
         {/* Header */}
         <div className="p-6 pb-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-red-900/40">
-              <Flag size={20} className="text-red-400" />
+            <div className={`p-2 rounded-lg ${theme === "dark" ? "bg-red-900/40" : "bg-red-100"}`}>
+              <Flag size={20} className={theme === "dark" ? "text-red-400" : "text-red-500"} />
             </div>
             <h2 className="text-2xl font-bold">Report Content</h2>
           </div>
-          <p className="text-gray-300 text-sm mt-2 ml-9">Let us know what concerns you about this post.</p>
+          <p className={`text-sm mt-2 ml-9 ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>
+            Select all issues that apply to this post (up to all).
+          </p>
         </div>
         
-        {/* Content */}
-        <div className="p-6 pt-3 overflow-y-auto max-h-[60vh] scrollbar scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-rounded-full scrollbar-thumb-emerald-500/50 scrollbar-track-gray-800/50 hover:scrollbar-thumb-emerald-500/70">
-          {!selectedCategory ? (
-            // Step 1: Show categories
-            <>
-              <label className="block text-gray-200 mb-3 font-medium">
-                Please select a category:
-              </label>
-              <div className="space-y-2">
-                {reportCategories.map((category) => (
-                  <button
-                    key={category.id}
-                    onClick={() => selectCategory(category)}
-                    className="w-full text-left p-3 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors flex items-center justify-between"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="p-1.5 rounded-full bg-gray-700">
-                        {getIcon(category.icon)}
-                      </div>
-                      <span>{category.label}</span>
-                    </div>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
-                      <polyline points="9 18 15 12 9 6"></polyline>
-                    </svg>
-                  </button>
-                ))}
-              </div>
-            </>
-          ) : (
-            // Step 2: Show reasons within selected category
-            <>
-              <div className="flex items-center mb-4">
-                <button 
-                  onClick={handleBack}
-                  className="p-2 rounded-full hover:bg-gray-700 mr-2"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="15 18 9 12 15 6"></polyline>
-                  </svg>
-                </button>
-                <div className="flex items-center gap-2">
-                  <div className="p-1.5 rounded-full bg-gray-700">
-                    {getIcon(selectedCategory.icon)}
-                  </div>
-                  <span className="font-medium">{selectedCategory.label}</span>
+        {/* Content - Checkboxes for multiple selection */}
+        <div className={`p-6 pt-3 overflow-y-auto max-h-[60vh] scrollbar-thin ${
+          theme === "dark" 
+            ? "scrollbar-thumb-emerald-500/50 scrollbar-track-gray-800/50" 
+            : "scrollbar-thumb-emerald-500/50 scrollbar-track-gray-200/50"
+        }`}>
+          <div className="space-y-3">
+            {reportReasons.map((reason, index) => (
+              <div 
+                key={index}
+                className={`p-3 rounded-lg flex items-center gap-3 cursor-pointer ${
+                  selectedReasons.includes(reason)
+                    ? theme === "dark" 
+                      ? "bg-emerald-900/30 border border-emerald-700" 
+                      : "bg-emerald-50 border border-emerald-200"
+                    : theme === "dark"
+                      ? "bg-gray-800 hover:bg-gray-700" 
+                      : "bg-gray-50 hover:bg-gray-100"
+                }`}
+                onClick={() => toggleReason(reason)}
+              >
+                <div className={`w-5 h-5 flex-shrink-0 rounded border ${
+                  selectedReasons.includes(reason)
+                    ? theme === "dark" 
+                      ? "bg-emerald-500 border-emerald-400" 
+                      : "bg-emerald-500 border-emerald-600"
+                    : theme === "dark"
+                      ? "border-gray-600" 
+                      : "border-gray-400"
+                } flex items-center justify-center`}>
+                  {selectedReasons.includes(reason) && (
+                    <Check size={14} className="text-white" />
+                  )}
                 </div>
+                <span className={theme === "dark" ? "text-gray-200" : "text-gray-700"}>
+                  {reason}
+                </span>
               </div>
-              
-              <label className="block text-gray-200 mb-3 font-medium">
-                Please select a specific reason:
-              </label>
-              <div className="space-y-2">
-                {selectedCategory.reasons.map((reason) => (
-                  <button
-                    key={reason}
-                    onClick={() => selectReason(reason)}
-                    className={`w-full text-left p-3 rounded-lg transition-colors flex items-center justify-between ${
-                      reportReason === reason 
-                        ? "bg-blue-900/50 border border-blue-500" 
-                        : "bg-gray-800 hover:bg-gray-700"
-                    }`}
-                  >
-                    <span>{reason}</span>
-                    {reportReason === reason && (
-                      <Check size={18} className="text-blue-400" />
-                    )}
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
+            ))}
+          </div>
         </div>
         
         {/* Footer */}
-        <div className="p-6 pt-3 flex justify-end gap-3">
-          <button
-            onClick={() => setShowReportModal(false)}
-            className="px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors"
-          >
-            Cancel
-          </button>
-          
-          <button
-            onClick={() => handleReport(reportReason)}
-            disabled={!reportReason || reportLoading || alreadyReported}
-            className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 ${
-              !reportReason || reportLoading || alreadyReported
-                ? "bg-gray-700 text-gray-400 cursor-not-allowed"
-                : "bg-red-600 hover:bg-red-700 text-white"
-            }`}
-          >
-            {reportLoading ? (
-              <>
-                <Loader2 size={16} className="animate-spin" />
-                Submitting...
-              </>
-            ) : alreadyReported ? (
-              "Already Reported"
-            ) : (
-              "Submit Report"
-            )}
-          </button>
+        <div className="p-6 pt-3 flex justify-between items-center">
+          <div className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>
+            {selectedReasons.length} reason{selectedReasons.length !== 1 ? 's' : ''} selected
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowReportModal(false)}
+              className={`px-4 py-2 rounded-lg ${
+                theme === "dark" 
+                  ? "bg-gray-800 hover:bg-gray-700 text-gray-200" 
+                  : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+              }`}
+            >
+              Cancel
+            </button>
+            
+            <button
+              onClick={handleReport}
+              disabled={selectedReasons.length === 0 || reportLoading || alreadyReported}
+              className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 ${
+                selectedReasons.length === 0 || reportLoading || alreadyReported
+                  ? theme === "dark"
+                    ? "bg-gray-700 text-gray-400 cursor-not-allowed"
+                    : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                  : theme === "dark"
+                    ? "bg-red-600 hover:bg-red-700 text-white"
+                    : "bg-red-500 hover:bg-red-600 text-white"
+              }`}
+            >
+              {reportLoading ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  Submitting...
+                </>
+              ) : alreadyReported ? (
+                "Already Reported"
+              ) : (
+                "Submit Report"
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -824,6 +713,7 @@ const ReportModal = ({ setShowReportModal, reportLoading, alreadyReported, handl
 };
 
 export default Post;
+
 
 
 
