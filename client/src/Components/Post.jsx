@@ -542,6 +542,7 @@ const Post = ({ post }) => {
                 handleReport={handleReport}
                 toggleReason={toggleReason}
                 selectedReasons={selectedReasons}
+                reportReasons={reportReasons}
               />
             )}
           </AnimatePresence>
@@ -564,44 +565,17 @@ const Post = ({ post }) => {
 };
 
 // Report modal component
-const ReportModal = ({ setShowReportModal, reportLoading, alreadyReported, handleReport, toggleReason, selectedReasons }) => {
+const ReportModal = ({ 
+  setShowReportModal, 
+  reportLoading, 
+  alreadyReported, 
+  handleReport, 
+  toggleReason, 
+  selectedReasons,
+  reportReasons 
+}) => {
   const { theme } = useTheme();
   
-  // Get icon component based on name
-  const getIcon = (iconName) => {
-    const icons = {
-      'alert-triangle': AlertTriangle,
-      'message-square-off': MessageSquare,
-      'ban': AlertCircle,
-      'mail': MessageCircle,
-      'copyright': AlertCircle,
-      'eye-off': Eye,
-      'graduation-cap': BookmarkIcon,
-      'building': Flag,
-      'more-horizontal': MoreVertical
-    };
-    
-    const IconComponent = icons[iconName] || AlertTriangle;
-    return <IconComponent size={18} />;
-  };
-
-  // Handle category selection
-  const selectCategory = (category) => {
-    setSelectedCategory(category);
-    setReportReason(""); // Clear any previously selected reason
-  };
-
-  // Handle reason selection
-  const selectReason = (reason) => {
-    setReportReason(reason);
-  };
-
-  // Handle back button to return to categories
-  const handleBack = () => {
-    setSelectedCategory(null);
-    setReportReason("");
-  };
-
   return (
     <div className={`fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4`}>
       <div className={`w-full max-w-lg rounded-3xl overflow-visible shadow-2xl relative ${
@@ -713,6 +687,7 @@ const ReportModal = ({ setShowReportModal, reportLoading, alreadyReported, handl
 };
 
 export default Post;
+
 
 
 
